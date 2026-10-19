@@ -6,7 +6,17 @@ const { Invitation } = require('../models');
 // Helper to ensure directory exists
 const ensureDirExists = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
+    try {
+      fs.mkdirSync(dirPath, { recursive: true, mode: 0o775 });
+    } catch (err) {
+      if (err.code === 'EACCES') {
+        const uploadsRoot = path.join(__dirname, '..', 'uploads');
+        throw new Error(
+          `Izin server ditolak (EACCES) saat membuat folder: ${dirPath}. Harap jalankan 'chmod -R 775 ${uploadsRoot}' atau 'chown -R www:www ${uploadsRoot}' di server VPS Anda.`
+        );
+      }
+      throw err;
+    }
   }
 };
 

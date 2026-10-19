@@ -605,7 +605,7 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
   };
 
   const handleCopyLink = (invSlug) => {
-    const url = `http://localhost:8001/api/invitations/slug/${invSlug}`;
+    const url = `${window.location.origin}/invitation/${invSlug}`;
     navigator.clipboard.writeText(url);
     toast.success('Link undangan berhasil disalin ke clipboard!');
   };

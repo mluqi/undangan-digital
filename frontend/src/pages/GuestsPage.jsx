@@ -257,7 +257,7 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             name: String(name).trim(),
             category,
             qr_code: qrCode,
-            qr_link: link || `http://localhost:8001/api/invitations/slug/${currentInvitation?.slug}?to=${encodeURIComponent(name)}&code=${qrCode}`,
+            qr_link: link || `${window.location.origin}/invitation/${currentInvitation?.slug}?to=${encodeURIComponent(name)}&code=${qrCode}`,
           };
         });
 
