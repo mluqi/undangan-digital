@@ -1,0 +1,423 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  body {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #1e293b;
+    background-color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth !important;
+}
+
+/* Theme Fonts */
+.font-cursive {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-serif-theme {
+  font-family: 'Philosopher', 'Playfair Display', Georgia, serif;
+}
+
+.font-editorial {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif;
+}
+
+.font-arabic {
+  font-family: 'Amiri', serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Mildness Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+/* Equalizer Bars Animations */
+@keyframes eq-pulse-1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+@keyframes eq-pulse-2 {
+  0%, 100% { height: 16px; }
+  50% { height: 6px; }
+}
+@keyframes eq-pulse-3 {
+  0%, 100% { height: 8px; }
+  50% { height: 20px; }
+}
+@keyframes eq-pulse-4 {
+  0%, 100% { height: 14px; }
+  50% { height: 5px; }
+}
+
+.animate-eq-1 { animation: eq-pulse-1 0.8s ease-in-out infinite; }
+.animate-eq-2 { animation: eq-pulse-2 0.7s ease-in-out infinite 0.1s; }
+.animate-eq-3 { animation: eq-pulse-3 0.9s ease-in-out infinite 0.2s; }
+.animate-eq-4 { animation: eq-pulse-4 0.75s ease-in-out infinite 0.15s; }
+
+/* Vinyl Grooves Texture */
+.vinyl-grooves {
+  background: radial-gradient(circle, #1a1a1a 20%, #111 25%, #2a2a2a 35%, #111 45%, #222 60%, #0d0d0d 75%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Subtle Shimmer Gold */
+@keyframes gold-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-gold {
+  background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, rgba(255,223,128,0.4) 50%, rgba(212,175,55,0.1) 100%);
+  background-size: 200% 100%;
+  animation: gold-shimmer 3s infinite linear;
+}
+
+/* Floating Flower Petal Drift */
+@keyframes petal-drift {
+  0% {
+    transform: translateY(-20px) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(105vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-petal {
+  animation: petal-drift 9s ease-in-out infinite;
+}
+/* ---------- Scroll Reveal (memakai property `translate` agar tidak bentrok dengan transform elemen) ---------- */
+.reveal {
+  opacity: 0;
+  translate: 0 28px;
+  transition-property: opacity, translate !important;
+  transition-duration: 0.9s !important;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.reveal-in {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; translate: none; transition: none !important; }
+  .animate-sway, .animate-drift-slow, .animate-breathe, .animate-tick, .cover-stagger > * { animation: none !important; }
+}
+
+/* Angka countdown berganti dengan gerakan halus */
+@keyframes tick {
+  from { opacity: 0; translate: 0 -8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.animate-tick { animation: tick 0.35s ease-out; }
+
+/* Isi cover muncul berurutan */
+@keyframes rise-in {
+  from { opacity: 0; translate: 0 22px; }
+  to { opacity: 1; translate: 0 0; }
+}
+.cover-stagger > * { animation: rise-in 1s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.cover-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.cover-stagger > *:nth-child(2) { animation-delay: 0.3s; }
+.cover-stagger > *:nth-child(3) { animation-delay: 0.5s; }
+.cover-stagger > *:nth-child(4) { animation-delay: 0.7s; }
+.cover-stagger > *:nth-child(5) { animation-delay: 0.9s; }
+
+/* Konfeti saat undangan dibuka */
+@keyframes burst {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.6); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 140px)) rotate(var(--r)) scale(1); }
+}
+.burst-particle { animation: burst 2.6s cubic-bezier(0.16, 0.8, 0.3, 1) forwards; }
+
+/* Foto "dicuci" perlahan saat muncul (tema Timeless) */
+.develop-img { transition: filter 1.6s ease-out; }
+.reveal:not(.reveal-in) .develop-img { filter: sepia(1) blur(6px) brightness(1.35); }
+
+/* Kilau lembut pada tombol utama */
+@keyframes sheen {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  60%, 100% { transform: translateX(260%) skewX(-20deg); }
+}
+.btn-sheen { position: relative; overflow: hidden; }
+.btn-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: sheen 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---------- Tema Jawa & Sunda ---------- */
+.font-javanese { font-family: 'Noto Sans Javanese', serif; }
+.font-fraunces { font-family: 'Fraunces', Georgia, serif; }
+.font-nunito { font-family: 'Nunito Sans', sans-serif; }
+
+/* Motif batik kawung (SVG inline, warna emas pudar) */
+.bg-kawung {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23C9A24B' stroke-opacity='0.28' stroke-width='1'%3E%3Cellipse cx='12' cy='24' rx='10' ry='5'/%3E%3Cellipse cx='36' cy='24' rx='10' ry='5'/%3E%3Cellipse cx='24' cy='12' rx='5' ry='10'/%3E%3Cellipse cx='24' cy='36' rx='5' ry='10'/%3E%3Ccircle cx='24' cy='24' r='1.6' fill='%23C9A24B' fill-opacity='0.4'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+.bg-kawung-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%233B2416' stroke-opacity='0.12' stroke-width='1'%3E%3Cellipse cx='12' cy='24' rx='10' ry='5'/%3E%3Cellipse cx='36' cy='24' rx='10' ry='5'/%3E%3Cellipse cx='24' cy='12' rx='5' ry='10'/%3E%3Cellipse cx='24' cy='36' rx='5' ry='10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+/* Motif daun bambu / hiasan Sunda */
+.bg-leaf {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='%232F6B4F' fill-opacity='0.07'%3E%3Cpath d='M8 40c10-2 18-10 20-22-12 2-20 10-20 22z'/%3E%3Cpath d='M40 58c8-1 14-8 15-17-9 1-15 8-15 17z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 64px 64px;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.animate-sway { animation: sway 5s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes drift-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-drift-slow { animation: drift-slow 7s ease-in-out infinite; }
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+.animate-breathe { animation: breathe 4s ease-in-out infinite; }
+
+/* Buka cover: tirai terbelah dua */
+.curtain-left, .curtain-right { transition: transform 1.4s cubic-bezier(0.77, 0, 0.175, 1); }
+.curtain-open .curtain-left { transform: translateX(-101%); }
+.curtain-open .curtain-right { transform: translateX(101%); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Tema Rustic Wood & Royal Gold ---------- */
+.font-caveat { font-family: 'Caveat', cursive; }
+.font-lora { font-family: 'Lora', Georgia, serif; }
+
+/* Papan kayu: serat horizontal + sambungan papan */
+.bg-wood {
+  background-color: #6B4630;
+  background-image:
+    repeating-linear-gradient(180deg, rgba(0,0,0,0.28) 0, rgba(0,0,0,0.28) 2px, transparent 2px, transparent 86px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 7px),
+    linear-gradient(180deg, #7A5238 0%, #5B3A24 50%, #6B4630 100%);
+}
+.bg-kraft {
+  background-color: #E4D2B0;
+  background-image:
+    radial-gradient(rgba(120,85,45,0.10) 1px, transparent 1px),
+    radial-gradient(rgba(120,85,45,0.07) 1px, transparent 1px);
+  background-size: 5px 5px, 11px 11px;
+  background-position: 0 0, 2px 3px;
+}
+
+/* Teks emas berkilau */
+.text-gold {
+  background: linear-gradient(110deg, #9A7420 0%, #F3D98B 25%, #B8892B 50%, #F7E4A6 75%, #9A7420 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-shimmer 7s linear infinite;
+}
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #9A7420 0%, #F3D98B 30%, #B8892B 55%, #F7E4A6 80%, #9A7420 100%);
+}
+.bg-deco {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23D4AF37' stroke-opacity='0.13' stroke-width='1'%3E%3Cpath d='M30 0 60 30 30 60 0 30Z'/%3E%3Cpath d='M30 12 48 30 30 48 12 30Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* ---------- Tema Rustic Wood ---------- */
+/* Woodgrain / Kraft paper subtle SVG pattern */
+.bg-rustic-kraft {
+  background-color: #F8F4EC;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%236D4C2B' fill-opacity='0.03'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Fairy Lights glowing pulse */
+@keyframes warm-glow {
+  0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 4px #F59E0B); }
+  50% { opacity: 1; filter: drop-shadow(0 0 12px #FBBF24); }
+}
+.animate-warm-glow {
+  animation: warm-glow 3s ease-in-out infinite;
+}
+
+/* ---------- Tema Royal Gold ---------- */
+/* Midnight Black with luxury royal damask/star geometry */
+.bg-royal-dark {
+  background-color: #0B0D12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23DFB76C' stroke-opacity='0.12' stroke-width='0.8'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30 Z'/%3E%3Cpath d='M30 10 L50 30 L30 50 L10 30 Z' stroke-opacity='0.08'/%3E%3Ccircle cx='30' cy='30' r='2' fill='%23DFB76C' fill-opacity='0.3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Gold Gradient Shimmer Border */
+.border-gold-royal {
+  border-image: linear-gradient(135deg, #ECC880 0%, #B88728 50%, #F5DE9C 100%) 1;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #F8E7BE 0%, #D8A84E 50%, #FAF0D4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---------- Tema Forest Tropical (Lush Botanical Elegance) ---------- */
+/* Background rimbun hutan tropis dengan daun monstera & pakis subtle SVG */
+.bg-forest-tropical {
+  background-color: #061810;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(45, 106, 79, 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse at 80% 100%, rgba(82, 183, 136, 0.18) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%2352B788' fill-opacity='0.05'%3E%3Cpath d='M60 10 C45 30 25 45 10 60 C25 75 45 90 60 110 C75 90 95 75 110 60 C95 45 75 30 60 10 Z'/%3E%3Ccircle cx='60' cy='60' r='6'/%3E%3C/g%3E%3Cg stroke='%23D4AF37' stroke-opacity='0.07' stroke-width='0.75' fill='none'%3E%3Cpath d='M0 60 Q30 30 60 60 T120 60'/%3E%3Cpath d='M60 0 Q90 30 60 60 T60 120'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Fireflies glowing in tropical forest */
+@keyframes firefly-dance {
+  0%, 100% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 0.2;
+    filter: drop-shadow(0 0 4px #D4AF37);
+  }
+  30% {
+    transform: translate(12px, -18px) scale(1.2);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 10px #74C69D);
+  }
+  60% {
+    transform: translate(-10px, -35px) scale(0.9);
+    opacity: 0.4;
+    filter: drop-shadow(0 0 6px #F3E5AB);
+  }
+  80% {
+    transform: translate(6px, -20px) scale(1.1);
+    opacity: 0.85;
+    filter: drop-shadow(0 0 9px #52B788);
+  }
+}
+
+.animate-firefly {
+  animation: firefly-dance 6s ease-in-out infinite alternate;
+}
+
+/* Tropical Leaf Swaying Fall */
+@keyframes tropical-leaf-sway {
+  0% {
+    transform: translateY(-20px) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(45vh) translateX(30px) rotate(180deg);
+  }
+  85% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(105vh) translateX(-25px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-leaf-fall {
+  animation: tropical-leaf-sway 14s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Sunlight dappled canopy rays */
+@keyframes sunbeam-shift {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.08) rotate(3deg);
+  }
+}
+
+.animate-sunbeam {
+  animation: sunbeam-shift 8s ease-in-out infinite;
+}
+
