@@ -29,8 +29,15 @@ export const InvitationFloatingControls = ({
   showQr = true, // Mengatur apakah floater penanda buku QR ditampilkan atau disembunyikan
   accentColor = '#DFB76C', // default gold/amber
   theme = 'gold', // 'gold' | 'wood' | 'dark' | 'sage'
+  isOpen: externalIsOpen,
+  onOpenChange: setExternalIsOpen,
 }) => {
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isQrModalOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsQrModalOpen = (val) => {
+    setInternalIsOpen(val);
+    if (setExternalIsOpen) setExternalIsOpen(val);
+  };
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const widgetRef = useRef(null);

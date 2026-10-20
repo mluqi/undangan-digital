@@ -12,6 +12,7 @@ import {
   CreditCard,
   Trees,
   Leaf,
+  QrCode,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -870,6 +871,7 @@ export const ForestTropicalTheme = (props) => {
 
   // Auto-slide foto
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   useEffect(() => {
     if (!heroPhotos || heroPhotos.length <= 1) return;
@@ -1063,6 +1065,8 @@ export const ForestTropicalTheme = (props) => {
         showQr={d.showQr}
         theme="forest"
         accentColor="#A6D854"
+        isOpen={isQrModalOpen}
+        onOpenChange={setIsQrModalOpen}
       />
 
       {/* ============================================================ */}
@@ -1256,54 +1260,50 @@ export const ForestTropicalTheme = (props) => {
               return (
                 <div
                   key={idx}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  className={`absolute inset-0 transform-gpu transition-opacity duration-1000 ease-in-out ${
                     isActive
                       ? "opacity-100 z-10"
                       : "opacity-0 z-0 pointer-events-none"
                   }`}
+                  style={{
+                    willChange: "opacity",
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                  }}
                 >
                   <img
                     src={src}
                     alt={`Prewedding ${idx + 1}`}
-                    className={`h-full w-full object-cover object-[center_20%] transition-transform duration-[7500ms] ease-out ${
-                      isActive
-                        ? "scale-[1.08] translate-y-0"
-                        : "scale-100 translate-y-2"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className={`h-full w-full object-cover object-[center_20%] transform-gpu transition-transform duration-[7000ms] ease-out ${
+                      isActive ? "scale-[1.05]" : "scale-100"
                     }`}
+                    style={{
+                      willChange: "transform",
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                    }}
                   />
                 </div>
               );
             })}
 
-            {/* gradasi atas & bawah agar teks terbaca dan menyambung ke section berikutnya */}
+            {/* Filter gradien overlay murni satu lapis (tanpa backdrop-blur) — 60fps bebas flicker di mobile & desktop */}
             <div
-              className="pointer-events-none absolute inset-x-0 top-0 z-20 h-40 bg-gradient-to-b from-[#04120B] via-[#04120B]/50 to-transparent"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-3/5 backdrop-blur-[3px]"
+              className="pointer-events-none absolute inset-0 z-20 transform-gpu"
               style={{
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, transparent 0%, black 70%)",
-                maskImage:
-                  "linear-gradient(to bottom, transparent 0%, black 70%)",
+                background:
+                  "linear-gradient(180deg, rgba(4,18,11,0.85) 0%, rgba(4,18,11,0.3) 20%, rgba(4,18,11,0.12) 40%, rgba(10,42,27,0.65) 68%, rgba(4,18,11,0.92) 88%, #04120B 100%)",
               }}
               aria-hidden="true"
             />
+            {/* Sinar mentari kanopi */}
             <div
-              className="pointer-events-none absolute inset-0 z-20"
+              className="pointer-events-none absolute inset-0 z-20 opacity-35 mix-blend-screen"
               style={{
                 background:
-                  "linear-gradient(to bottom, rgba(4,18,11,0) 30%, rgba(10,42,27,0.55) 62%, rgba(7,36,23,0.92) 88%, #04120B 100%)",
-              }}
-              aria-hidden="true"
-            />
-            {/* sinar mentari kanopi */}
-            <div
-              className="pointer-events-none absolute inset-0 z-20 opacity-40 mix-blend-screen"
-              style={{
-                background:
-                  "radial-gradient(circle at 75% 18%, rgba(254,240,138,0.4) 0%, rgba(166,216,84,0.12) 35%, transparent 65%)",
+                  "radial-gradient(circle at 75% 18%, rgba(254,240,138,0.35) 0%, rgba(166,216,84,0.1) 35%, transparent 65%)",
               }}
               aria-hidden="true"
             />
@@ -1362,10 +1362,23 @@ export const ForestTropicalTheme = (props) => {
                 </span>
               </p>
 
-              <a href="#save-the-date" className={`${primaryBtn} mt-6`}>
-                <Calendar className="h-4 w-4" />
-                <span>Save The Date</span>
-              </a>
+              {/* Tombol Save The Date & QR Code berdampingan */}
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <a href="#save-the-date" className={primaryBtn}>
+                  <Calendar className="h-4 w-4" />
+                  <span>Save The Date</span>
+                </a>
+                {d.showQr && (
+                  <button
+                    type="button"
+                    onClick={() => setIsQrModalOpen(true)}
+                    className={`${ghostBtn} cursor-pointer shadow-[0_0_20px_rgba(166,216,84,0.15)]`}
+                  >
+                    <QrCode className="h-4 w-4 text-[#A6D854]" />
+                    <span>QR Code</span>
+                  </button>
+                )}
+              </div>
 
               <ChevronDown
                 className="mx-auto mt-5 h-5 w-5 animate-bounce text-[#E8D27A]/80"
@@ -1516,15 +1529,27 @@ export const ForestTropicalTheme = (props) => {
                 kami menanti hari istimewa kami.
               </p>
 
-              <a
-                href={d.googleCalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={`${ghostBtn} mt-5`}
-              >
-                <Calendar className="h-3.5 w-3.5 text-[#E8D27A]" />
-                <span>Simpan ke Google Calendar</span>
-              </a>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href={d.googleCalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={ghostBtn}
+                >
+                  <Calendar className="h-3.5 w-3.5 text-[#E8D27A]" />
+                  <span>Google Calendar</span>
+                </a>
+                {d.showQr && (
+                  <button
+                    type="button"
+                    onClick={() => setIsQrModalOpen(true)}
+                    className={`${ghostBtn} cursor-pointer`}
+                  >
+                    <QrCode className="h-3.5 w-3.5 text-[#A6D854]" />
+                    <span>QR Code Tamu</span>
+                  </button>
+                )}
+              </div>
             </div>
           </Reveal>
 
@@ -1748,7 +1773,7 @@ export const ForestTropicalTheme = (props) => {
         >
           <CanopyEdge />
           <SectionTitle
-            title="Ucapkan Sesuatu"
+            title="Berikan Pesan"
             desc="Berikan ucapan & doa restu, serta konfirmasi kehadiran Anda"
           />
 
