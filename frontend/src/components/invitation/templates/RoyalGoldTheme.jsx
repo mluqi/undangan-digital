@@ -136,7 +136,7 @@ export const RoyalGoldTheme = (props) => {
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-royal-dark text-[#E6E1D8] shadow-2xl overflow-hidden font-serif-theme border-x border-[#3A2E17] selection:bg-[#B88728] selection:text-black scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-royal-dark text-[#E6E1D8] shadow-2xl overflow-hidden font-serif-theme border-x border-[#3A2E17] selection:bg-[#B88728] selection:text-black scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -353,7 +353,7 @@ export const RoyalGoldTheme = (props) => {
             <GoldFiligreeDivider />
           </div>
 
-          <div className="grid gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {/* Mempelai Pria */}
             <div className="p-6 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 relative overflow-hidden shadow-xl text-center group">
               <RoyalCorner position="top-right" />
@@ -376,7 +376,7 @@ export const RoyalGoldTheme = (props) => {
             </div>
 
             {/* Simbol Dan (&) */}
-            <div className="flex items-center justify-center my-[-10px]">
+            <div className="flex items-center justify-center my-[-10px] md:hidden lg:flex">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#DFB76C] to-[#9A7228] text-black font-bold font-serif-theme flex items-center justify-center shadow-lg text-lg">
                 &amp;
               </div>
@@ -419,7 +419,7 @@ export const RoyalGoldTheme = (props) => {
             <GoldFiligreeDivider />
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {eventsList.map((evt, idx) => (
               <div
                 key={idx}
@@ -572,7 +572,7 @@ export const RoyalGoldTheme = (props) => {
               <GoldFiligreeDivider />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-2.5 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
               {d.gallery.map((photo, i) => (
                 <button
                   key={i}
@@ -612,7 +612,7 @@ export const RoyalGoldTheme = (props) => {
             </p>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {d.bankAccounts?.map((g, idx) => (
               <div
                 key={idx}
@@ -659,7 +659,7 @@ export const RoyalGoldTheme = (props) => {
 
             {/* Alamat Fisik Kado */}
             {d.giftAddress && (
-              <div className="p-5 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 text-center font-sans space-y-2">
+              <div className="p-5 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 text-center font-sans space-y-2 md:col-span-2 lg:col-span-1">
                 <MapPin className="w-5 h-5 text-[#DFB76C] mx-auto" />
                 <h5 className="text-xs font-bold uppercase tracking-wider text-[#DFB76C]">
                   Kirim Kado Fisik

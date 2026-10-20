@@ -328,7 +328,7 @@ export const MildnessTheme = ({
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-[#FAF8F5] text-stone-800 shadow-2xl overflow-hidden font-sans border-x border-stone-200 selection:bg-amber-100 scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-[#FAF8F5] text-stone-800 shadow-2xl overflow-hidden font-sans border-x border-stone-200 selection:bg-amber-100 scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -562,19 +562,21 @@ export const MildnessTheme = ({
             </p>
           </div>
 
-          <div className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {/* MEMPELAI WANITA */}
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm max-w-sm mx-auto space-y-4 transition-all hover:shadow-md">
-              <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
-                <img
-                  src={photoBride}
-                  alt={bride}
-                  className="w-full h-full object-cover rounded-t-full rounded-b-xl"
-                />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-cursive text-stone-900">{bride}</h3>
-                <p className="text-xs text-stone-500 font-medium">Mempelai Wanita</p>
+            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm w-full max-w-sm mx-auto space-y-4 transition-all hover:shadow-md flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
+                  <img
+                    src={photoBride}
+                    alt={bride}
+                    className="w-full h-full object-cover rounded-t-full rounded-b-xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-cursive text-stone-900">{bride}</h3>
+                  <p className="text-xs text-stone-500 font-medium">Mempelai Wanita</p>
+                </div>
               </div>
               <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
                 <p className="text-stone-400 text-[11px]">Putri tercinta dari:</p>
@@ -585,24 +587,26 @@ export const MildnessTheme = ({
             </div>
 
             {/* Ampersand Divider */}
-            <div className="flex items-center justify-center gap-3">
+            <div className="hidden lg:flex items-center justify-center gap-3">
               <span className="h-px w-12 bg-stone-300" />
               <span className="text-3xl font-cursive text-amber-800">&</span>
               <span className="h-px w-12 bg-stone-300" />
             </div>
 
             {/* MEMPELAI PRIA */}
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm max-w-sm mx-auto space-y-4 transition-all hover:shadow-md">
-              <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
-                <img
-                  src={photoGroom}
-                  alt={groom}
-                  className="w-full h-full object-cover rounded-t-full rounded-b-xl"
-                />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-cursive text-stone-900">{groom}</h3>
-                <p className="text-xs text-stone-500 font-medium">Mempelai Pria</p>
+            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm w-full max-w-sm mx-auto space-y-4 transition-all hover:shadow-md flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
+                  <img
+                    src={photoGroom}
+                    alt={groom}
+                    className="w-full h-full object-cover rounded-t-full rounded-b-xl"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-cursive text-stone-900">{groom}</h3>
+                  <p className="text-xs text-stone-500 font-medium">Mempelai Pria</p>
+                </div>
               </div>
               <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
                 <p className="text-stone-400 text-[11px]">Putra tercinta dari:</p>
@@ -657,7 +661,7 @@ export const MildnessTheme = ({
           </div>
 
           {/* EVENT CARDS */}
-          <div className="space-y-6 max-w-sm mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {/* AKAD NIKAH CARD */}
             <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-0" />
@@ -832,7 +836,7 @@ export const MildnessTheme = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-3 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {gallery.map((photo, index) => (
               <div
                 key={index}
@@ -873,7 +877,7 @@ export const MildnessTheme = ({
             </p>
           </div>
 
-          <div className="space-y-4 max-w-sm mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {bankAccounts.map((acc, index) => (
               <div
                 key={index}
@@ -917,7 +921,7 @@ export const MildnessTheme = ({
 
             {/* OPSI KIRIM KADO FISIK */}
             {giftAddress && (
-              <div className="bg-white rounded-3xl p-5 border border-stone-200 text-left space-y-2">
+              <div className="bg-white rounded-3xl p-5 border border-stone-200 text-left space-y-2 md:col-span-2 lg:col-span-1">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-stone-700">
                     Alamat Pengiriman Kado

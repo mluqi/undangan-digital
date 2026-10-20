@@ -279,7 +279,7 @@ export const SnapPhotoTheme = ({
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-[#0F1014] text-[#E4E4E7] shadow-2xl overflow-hidden font-sans border-x border-zinc-800 selection:bg-amber-500 selection:text-black scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-[#0F1014] text-[#E4E4E7] shadow-2xl overflow-hidden font-sans border-x border-zinc-800 selection:bg-amber-500 selection:text-black scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -468,7 +468,7 @@ export const SnapPhotoTheme = ({
             <h3 className="text-3xl font-cinzel font-bold text-white">Mempelai Pengantin</h3>
           </div>
 
-          <div className="space-y-8 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {/* Groom Card */}
             <div className="p-5 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4">
               <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-inner">
@@ -526,7 +526,7 @@ export const SnapPhotoTheme = ({
             <h3 className="text-3xl font-cinzel font-bold text-white">Rangkaian Acara</h3>
           </div>
 
-          <div className="space-y-6 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {/* Akad Card */}
             <div className="p-6 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4 text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
@@ -699,7 +699,7 @@ export const SnapPhotoTheme = ({
             <h3 className="text-3xl font-cinzel font-bold text-white">Momen Bahagia</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-3 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {gallery.map((photo, i) => (
               <div
                 key={i}
@@ -739,7 +739,7 @@ export const SnapPhotoTheme = ({
             </p>
           </div>
 
-          <div className="space-y-4 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {bankAccounts.map((acc, index) => (
               <div
                 key={index}

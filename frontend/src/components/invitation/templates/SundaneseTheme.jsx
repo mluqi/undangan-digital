@@ -103,7 +103,7 @@ export const SundaneseTheme = (props) => {
 
   return (
     <div
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto'} font-nunito shadow-2xl scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} font-nunito shadow-2xl scroll-smooth`}
       style={{ background: C.bone, color: C.ink }}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
@@ -249,12 +249,13 @@ export const SundaneseTheme = (props) => {
           <h2 className="font-fraunces text-4xl">Mempelai</h2>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
         {[
           { photo: d.bride, img: d.photoBride, role: 'Mempelai Wanita', f: d.brideFather, m: d.brideMother, kid: 'Putri' },
           { photo: d.groom, img: d.photoGroom, role: 'Mempelai Pria', f: d.groomFather, m: d.groomMother, kid: 'Putra' },
         ].map((p, i) => (
           <Reveal key={p.role}>
-            <div className={`flex items-center gap-5 ${i % 2 ? 'flex-row-reverse text-right' : ''}`}>
+            <div className={`flex items-center gap-5 ${i % 2 ? 'flex-row-reverse md:flex-row text-right md:text-left' : ''}`}>
               <div className={`shrink-0 w-40 h-52 overflow-hidden ${LEAF_SHAPE} shadow-lg`} style={{ border: `4px solid ${C.bone}` }}>
                 <img src={p.img} alt={p.photo} loading="lazy" className="w-full h-full object-cover" />
               </div>
@@ -268,6 +269,7 @@ export const SundaneseTheme = (props) => {
             </div>
           </Reveal>
         ))}
+        </div>
       </section>
 
       {/* ===================== ACARA (TAB) ===================== */}
@@ -380,7 +382,7 @@ export const SundaneseTheme = (props) => {
           <Eyebrow>Galeri</Eyebrow>
           <h2 className="font-fraunces text-4xl">Foto Kenangan</h2>
         </div>
-        <div className="columns-2 gap-3 [column-fill:_balance]">
+        <div className="columns-2 md:columns-4 lg:columns-2 gap-3 [column-fill:_balance] max-w-md md:max-w-4xl lg:max-w-md mx-auto">
           {d.gallery.map((photo, i) => (
             <Reveal key={i} delay={(i % 2) * 120} className="mb-3 break-inside-avoid">
               <button
@@ -409,6 +411,7 @@ export const SundaneseTheme = (props) => {
             Doa restu Bapak/Ibu adalah hadiah terindah bagi kami. Bila berkenan memberikan tanda kasih, dapat disalurkan melalui:
           </p>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
         {d.bankAccounts.map((acc, i) => (
           <Reveal key={i}>
             <div className="rounded-3xl p-5 space-y-2 shadow-sm" style={{ background: C.bone }}>
@@ -427,7 +430,7 @@ export const SundaneseTheme = (props) => {
           </Reveal>
         ))}
         {d.giftAddress && (
-          <div className="rounded-3xl p-5 space-y-2 border-2 border-dashed text-center" style={{ borderColor: `${C.leaf}66` }}>
+          <div className="rounded-3xl p-5 space-y-2 border-2 border-dashed text-center md:col-span-2 lg:col-span-1" style={{ borderColor: `${C.leaf}66` }}>
             <p className="text-xs font-bold tracking-[0.25em]" style={{ color: C.clay }}>KIRIM KADO</p>
             <p className="text-sm leading-relaxed">{d.giftAddress}</p>
             <button
@@ -440,6 +443,7 @@ export const SundaneseTheme = (props) => {
             </button>
           </div>
         )}
+        </div>
       </section>
 
 

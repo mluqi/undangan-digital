@@ -12,7 +12,6 @@ import {
   CreditCard,
   Trees,
   Leaf,
-  Flower2,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -36,7 +35,35 @@ import { DesktopSidePanel } from "../DesktopSidePanel";
  */
 const FOREST_BG = "/images/forest-tropical-bg.webp";
 
-/** Palet — diambil dari gambar referensi */
+/**
+ * ------------------------------------------------------------------
+ * VIDEO TRANSISI MASUK HUTAN
+ * Video diputar saat tombol "Buka Undangan" ditekan (kamera zoom-in
+ * ke dalam hutan), lalu cover memudar menuju undangan.
+ * - Bisa dioverride lewat prop: <ForestTropicalTheme introVideoUrl="..." />
+ * - Isi "" / null untuk menonaktifkan (kembali ke animasi semak saja).
+ * - Video dimuat otomatis di latar; jika gagal/belum siap saat tombol
+ *   ditekan, tema otomatis memakai animasi semak sebagai cadangan.
+ * ------------------------------------------------------------------
+ */
+const FOREST_INTRO_VIDEO = "/videos/forest-intro.mp4";
+const FOREST_INTRO_POSTER = ""; // opsional, mis. "/images/forest-intro-poster.webp"
+/**
+ * Desktop: selama cover tampil, area sisi kiri (di balik/atas DesktopSidePanel)
+ * hanya menampilkan slide foto tanpa teks. Setelah undangan terbuka,
+ * DesktopSidePanel normal muncul kembali. Set true agar slide foto
+ * dipertahankan di sisi kiri selamanya.
+ */
+const SIDE_PHOTO_ONLY_ALWAYS = false;
+/** Batas aman: jika video macet, cover tetap ditutup setelah sekian ms */
+const INTRO_SAFETY_MS = 15000;
+/** Mulai memudarkan cover sekian detik sebelum video selesai */
+const INTRO_FADE_LEAD_S = 0.9;
+
+/** Jumlah ucapan per halaman pada daftar RSVP */
+const WISHES_PER_PAGE = 5;
+
+/** Palet — tetap sama seperti tema hutan sebelumnya */
 const C = {
   night: "#04120B", // bayangan terdalam
   canopy: "#0E3B28", // kanopi gelap
@@ -45,10 +72,10 @@ const C = {
   mist: "#E9F3C9", // kabut / langit di sela pohon
   bark: "#6B4A2B", // batang pohon
   stone: "#D2B48C", // batu
-  gold: "#D4AF37", // aksen emas (dipertahankan dari tema awal)
+  gold: "#D4AF37", // aksen emas
 };
 
-/** Panel kaca gelap di atas background hutan */
+/** Panel kaca gelap — sekarang hanya dipakai untuk elemen kecil/form */
 const glass =
   "bg-[#04120B]/55 backdrop-blur-md border border-[#E9F3C9]/15 shadow-[0_10px_40px_rgba(0,0,0,0.45)]";
 
@@ -56,26 +83,62 @@ const glass =
 const ghostBtn =
   "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold text-[#E9F3C9] bg-[#0E3B28]/70 hover:bg-[#3F9B58]/50 border border-[#A6D854]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A6D854] transition-colors cursor-pointer";
 
+/** Tombol utama (hijau menyala) */
+const primaryBtn =
+  "group relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2F8A48] via-[#7CC04A] to-[#2F8A48] px-6 py-3 text-sm font-bold text-[#04120B] shadow-[0_6px_26px_rgba(166,216,84,0.35)] transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white";
+
+/** Latar band tiap section — gelap-hijau transparan di atas backdrop hutan */
+const band = {
+  dark: "bg-[#04120B]/80",
+  mid: "bg-[#0A2A1B]/72",
+  moss: "bg-[#0E3B28]/62",
+};
+
+/** Input form */
+const inputCls =
+  "w-full rounded-xl border border-[#A6D854]/25 bg-[#04120B]/70 px-4 py-2.5 text-xs text-white placeholder:text-stone-500 focus:border-[#A6D854] focus:outline-none focus:ring-1 focus:ring-[#A6D854]";
+
 /* =================================================================
  * ORNAMEN SVG
  * ================================================================= */
-const MonsteraLeafSVG = ({ className = "", style = {}, color = "#52B788" }) => (
+const MonsteraLeafSVG = ({ className = "", style = {}, color = "#A6D854" }) => (
   <svg
     viewBox="0 0 100 120"
-    fill="currentColor"
     className={className}
     style={style}
     xmlns="http://www.w3.org/2000/svg"
   >
+    <defs>
+      <linearGradient id="monsteraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#E8D27A" />
+        <stop offset="35%" stopColor={color} />
+        <stop offset="100%" stopColor="#0E3B28" />
+      </linearGradient>
+    </defs>
     <path
-      d="M50 5 C30 15 10 35 8 65 C6 90 25 112 50 118 C75 112 94 90 92 65 C90 35 70 15 50 5 Z 
-         M50 20 C52 40 54 80 50 110 
-         M46 45 C35 40 22 42 16 50 C26 55 38 52 47 52 
-         M54 45 C65 40 78 42 84 50 C74 55 62 52 53 52 
-         M47 68 C32 66 20 74 18 84 C28 84 39 77 48 74 
-         M53 68 C68 66 80 74 82 84 C72 84 61 77 52 74"
-      stroke={color}
+      d="M50 8 C30 18 12 36 10 65 C8 92 26 114 50 118 C74 114 92 92 90 65 C88 36 70 18 50 8 Z"
+      fill="url(#monsteraGrad)"
+      opacity="0.95"
+    />
+    {/* Urat daun emas */}
+    <path
+      d="M50 14 Q51 60 50 112"
+      stroke="#F3E5AB"
       strokeWidth="2.5"
+      strokeLinecap="round"
+      fill="none"
+      opacity="0.85"
+    />
+    {/* Celah belahan daun monstera alami */}
+    <path
+      d="M47 38 C36 32 24 35 18 42 C28 47 38 45 46 45 
+         M53 38 C64 32 76 35 82 42 C72 47 62 45 54 45 
+         M46 62 C32 58 20 66 18 76 C28 76 38 70 47 67 
+         M54 62 C68 58 80 66 82 76 C72 76 62 70 53 67 
+         M47 84 C36 84 26 92 24 100 C34 98 42 92 48 89 
+         M53 84 C64 84 74 92 76 100 C66 98 58 92 52 89"
+      stroke="#04120B"
+      strokeWidth="3.2"
       strokeLinecap="round"
       fill="none"
     />
@@ -223,6 +286,7 @@ const HangingVinesSVG = ({ className = "", style = {} }) => (
     className={className}
     style={style}
     xmlns="http://www.w3.org/2000/svg"
+    preserveAspectRatio="none"
   >
     <path
       d="M30 0 Q40 50 32 95 Q28 115 35 125"
@@ -337,135 +401,112 @@ const HangingVinesSVG = ({ className = "", style = {} }) => (
   </svg>
 );
 
-/** Berkas sinar matahari kanopi yang memancar saat semak tersibak */
-const SunbeamGodRays = ({ active }) => (
+/** Pembungkus ornamen yang bergoyang lembut (rotasi dasar lewat prop `rot`) */
+const Sway = ({ className = "", rot = "0deg", delay = "0s", children }) => (
+  <span
+    className={`ft-sway pointer-events-none absolute block ${className}`}
+    style={{ "--r": rot, animationDelay: delay }}
+    aria-hidden="true"
+  >
+    {children}
+  </span>
+);
+
+/* =================================================================
+ * GERBANG COVER (semak tersibak selaras dengan visual video intro)
+ * ================================================================= */
+/** Pendar cahaya mentari kanopi di tengah atas yang memancar lembut saat gerbang terbuka */
+const CanopySunbeam = ({ active }) => (
   <div
-    className={`pointer-events-none absolute inset-0 z-20 flex items-center justify-center transition-all duration-[1250ms] ease-out ${
-      active ? "scale-150 opacity-95" : "scale-75 opacity-0"
+    className={`pointer-events-none absolute inset-x-0 top-0 z-15 flex justify-center transition-all duration-[1400ms] ease-out ${
+      active ? "scale-125 opacity-90" : "scale-90 opacity-40"
     }`}
     aria-hidden="true"
   >
     <div
-      className="h-[42rem] w-[42rem] rounded-full blur-3xl"
+      className="h-80 w-80 rounded-full blur-3xl"
       style={{
         background:
-          "radial-gradient(circle, rgba(254,240,138,0.75) 0%, rgba(166,216,84,0.4) 35%, rgba(14,59,40,0) 70%)",
-      }}
-    />
-    <div
-      className="absolute inset-0 opacity-45 mix-blend-screen"
-      style={{
-        background:
-          "repeating-conic-gradient(from 0deg at 50% 45%, rgba(254,240,138,0.4) 0deg 16deg, transparent 16deg 32deg)",
+          "radial-gradient(circle, rgba(246,247,212,0.35) 0%, rgba(232,240,198,0.18) 40%, transparent 70%)",
       }}
     />
   </div>
 );
 
-/** Semak hutan sisi kiri — tersibak ke kiri & berputar keluar saat dibuka, tidak menutupi isi kartu */
-const BushGateLeft = ({ isOpening }) => (
+/** Gerbang semak hutan sisi kiri — lukisan dedaunan selaras video (crop bagian kiri) */
+const FoliageGateLeft = ({ isOpening }) => (
   <div
-    className={`pointer-events-none absolute inset-y-0 -left-20 sm:-left-14 z-10 w-48 sm:w-56 transition-all duration-[1250ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+    className={`pointer-events-none absolute inset-y-0 left-0 z-20 w-[55%] overflow-hidden transition-all duration-[1300ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
       isOpening
-        ? "-translate-x-full -rotate-12 scale-110 opacity-0 blur-sm"
+        ? "-translate-x-full -rotate-6 scale-105 opacity-0 blur-xs"
         : "translate-x-0 rotate-0 scale-100 opacity-100 ft-bush-sway-left"
     }`}
     aria-hidden="true"
   >
-    <BananaLeafSVG
-      className="absolute -left-10 top-10 h-72 w-36 rotate-6 drop-shadow-2xl"
-      color="#051910"
-    />
-    <PalmFrondSVG className="absolute -left-6 top-36 h-28 w-44 rotate-[18deg] text-[#0E3B28] drop-shadow-xl" />
-    <MonsteraLeafSVG
-      className="absolute -left-2 top-56 h-36 w-32 rotate-6 text-[#1B6B43] drop-shadow-xl"
-      color="#1B6B43"
-    />
-    <BananaLeafSVG
-      className="absolute -left-8 bottom-16 h-56 w-36 rotate-[16deg] drop-shadow-xl"
-      color="#2F8A48"
-    />
-    <FernSVG className="absolute -left-6 -bottom-6 h-44 w-28 rotate-6 text-[#0A2A1B]" />
-    <FernSVG className="absolute left-6 -bottom-8 h-40 w-24 rotate-[18deg] text-[#145232]" />
-    <PalmFrondSVG className="absolute left-6 bottom-36 h-24 w-32 rotate-[25deg] text-[#D4AF37]/70" />
-    <MonsteraLeafSVG
-      className="absolute left-10 top-24 h-20 w-20 rotate-[12deg] text-[#A6D854]/50"
-      color="#A6D854"
+    <img
+      src="/images/forest-foliage-left.png"
+      onError={(e) => {
+        e.currentTarget.src = "/images/forest-foliage-curtain.png";
+      }}
+      alt=""
+      className="h-full w-full object-cover object-right filter contrast-[1.05]"
     />
   </div>
 );
 
-/** Semak hutan sisi kanan — tersibak ke kanan & berputar keluar saat dibuka, tidak menutupi isi kartu */
-const BushGateRight = ({ isOpening }) => (
+/** Gerbang semak hutan sisi kanan — lukisan dedaunan selaras video (crop bagian kanan) */
+const FoliageGateRight = ({ isOpening }) => (
   <div
-    className={`pointer-events-none absolute inset-y-0 -right-20 sm:-right-14 z-10 w-48 sm:w-56 transition-all duration-[1250ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+    className={`pointer-events-none absolute inset-y-0 right-0 z-20 w-[55%] overflow-hidden transition-all duration-[1300ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
       isOpening
-        ? "translate-x-full rotate-12 scale-110 opacity-0 blur-sm"
+        ? "translate-x-full rotate-6 scale-105 opacity-0 blur-xs"
         : "translate-x-0 rotate-0 scale-100 opacity-100 ft-bush-sway-right"
     }`}
     aria-hidden="true"
   >
-    <BananaLeafSVG
-      className="absolute -right-10 top-10 h-72 w-36 -rotate-6 drop-shadow-2xl [transform:scaleX(-1)]"
-      color="#051910"
-    />
-    <PalmFrondSVG className="absolute -right-6 top-36 h-28 w-44 -rotate-[18deg] text-[#0E3B28] drop-shadow-xl [transform:scaleX(-1)]" />
-    <MonsteraLeafSVG
-      className="absolute -right-2 top-56 h-36 w-32 -rotate-6 text-[#1B6B43] drop-shadow-xl [transform:scaleX(-1)]"
-      color="#1B6B43"
-    />
-    <BananaLeafSVG
-      className="absolute -right-8 bottom-16 h-56 w-36 -rotate-[16deg] drop-shadow-xl [transform:scaleX(-1)]"
-      color="#2F8A48"
-    />
-    <FernSVG className="absolute -right-6 -bottom-6 h-44 w-28 -rotate-6 text-[#0A2A1B] [transform:scaleX(-1)]" />
-    <FernSVG className="absolute right-6 -bottom-8 h-40 w-24 -rotate-[18deg] text-[#145232] [transform:scaleX(-1)]" />
-    <PalmFrondSVG className="absolute right-6 bottom-36 h-24 w-32 -rotate-[25deg] text-[#D4AF37]/70 [transform:scaleX(-1)]" />
-    <MonsteraLeafSVG
-      className="absolute right-10 top-24 h-20 w-20 -rotate-[12deg] text-[#A6D854]/50 [transform:scaleX(-1)]"
-      color="#A6D854"
+    <img
+      src="/images/forest-foliage-right.png"
+      onError={(e) => {
+        e.currentTarget.src = "/images/forest-foliage-curtain.png";
+      }}
+      alt=""
+      className="h-full w-full object-cover object-left filter contrast-[1.05]"
     />
   </div>
 );
 
-/** Semak pakis bawah penutup gerbang rimba — tidak menjulang ke tombol */
-const BushGateBottom = ({ isOpening }) => (
-  <div
-    className={`pointer-events-none absolute inset-x-0 -bottom-4 z-10 h-24 overflow-hidden transition-all duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-      isOpening ? "translate-y-full opacity-0" : "translate-y-0 opacity-100"
-    }`}
-    aria-hidden="true"
-  >
-    <FernSVG className="absolute -bottom-6 left-1/4 h-32 w-24 -rotate-6 text-[#0A2A1B]" />
-    <FernSVG className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-36 w-24 rotate-2 text-[#0E3B28]" />
-    <FernSVG className="absolute -bottom-6 right-1/4 h-32 w-24 rotate-6 text-[#145232]" />
-  </div>
-);
+/* =================================================================
+ * ORNAMEN SECTION
+ * ================================================================= */
+/** Sulur & semak tepi dinonaktifkan agar tidak memotong section secara kaku */
+const CanopyEdge = () => null;
+const FoliageEdge = () => null;
 
-/** Sulur atas penutup gerbang rimba — tidak menutupi judul */
-const BushGateTop = ({ isOpening }) => (
-  <div
-    className={`pointer-events-none absolute inset-x-0 -top-2 z-10 h-24 overflow-hidden transition-all duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-      isOpening ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
-    }`}
-    aria-hidden="true"
-  >
-    <HangingVinesSVG className="h-full w-full object-cover" />
-  </div>
-);
-
-/** Semak pakis di tepi bawah sebuah section */
-const FoliageEdge = ({ flip = false }) => (
-  <div
-    className={`pointer-events-none absolute inset-x-0 ${flip ? "top-0 rotate-180" : "bottom-0"} h-28 overflow-hidden`}
-    aria-hidden="true"
-  >
-    <FernSVG className="absolute -bottom-8 -left-6 h-40 w-24 -rotate-12 text-[#0E3B28]" />
-    <FernSVG className="absolute -bottom-10 left-8 h-44 w-28 rotate-6 text-[#145232]" />
-    <FernSVG className="absolute -bottom-12 left-1/3 h-36 w-24 -rotate-3 text-[#0A2A1B]" />
-    <FernSVG className="absolute -bottom-10 right-1/4 h-44 w-28 rotate-12 text-[#1B6B43]" />
-    <FernSVG className="absolute -bottom-8 -right-4 h-40 w-24 rotate-[18deg] text-[#0E3B28]" />
-  </div>
+/** Rumpun dedaunan lukisan di tepi kiri/kanan section (ornamen samping hidup) */
+const SideLeaves = () => (
+  <>
+    <Sway
+      className="-left-12 top-6 h-48 w-36 opacity-85 pointer-events-none"
+      rot="6deg"
+    >
+      <img
+        src="/images/forest-botanical-cluster.png"
+        alt=""
+        className="h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)]"
+      />
+    </Sway>
+    <Sway
+      className="-right-12 top-6 h-48 w-36 opacity-85 pointer-events-none"
+      rot="-6deg"
+      delay="1.2s"
+    >
+      <img
+        src="/images/forest-botanical-cluster.png"
+        alt=""
+        className="h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] [transform:scaleX(-1)]"
+      />
+    </Sway>
+  </>
 );
 
 /** Pembatas daun */
@@ -477,7 +518,7 @@ const LeafDivider = () => (
   </div>
 );
 
-/** Judul section — rata tengah, tanpa eyebrow berlebihan */
+/** Judul section — rata tengah */
 const SectionTitle = ({ title, desc }) => (
   <Reveal className="mb-9 text-center">
     <h2 className="font-serif-theme text-[2rem] font-bold leading-tight text-[#F4F9E4] drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
@@ -487,7 +528,7 @@ const SectionTitle = ({ title, desc }) => (
       <LeafDivider />
     </div>
     {desc && (
-      <p className="mx-auto mt-3 max-w-[18rem] text-[13px] leading-relaxed text-[#CFE3C2]">
+      <p className="mx-auto mt-3 max-w-[19rem] text-[13px] leading-relaxed text-[#CFE3C2]">
         {desc}
       </p>
     )}
@@ -513,6 +554,86 @@ const ArchPhoto = ({
     </div>
   </div>
 );
+
+/** Bingkai foto & ornamen dedaunan khusus Mempelai Pria */
+const GroomBotanicalFrame = ({
+  src,
+  alt,
+  ringFrom = C.gold,
+  ringTo = C.fern,
+}) => (
+  <div className="relative mx-auto h-72 w-52">
+    {/* Rumpun daun di BELAKANG bingkai foto (z-0), mengintip dari sisi kiri bawah */}
+    <Sway
+      className="pointer-events-none absolute -bottom-6 -left-16 z-0 h-48 w-44 opacity-90"
+      rot="-6deg"
+    >
+      <img
+        src="/images/forest-botanical-cluster.png"
+        alt=""
+        className="h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.85)] filter contrast-[1.08]"
+      />
+    </Sway>
+
+    {/* Foto Mempelai (z-10 di depan daun, bersih tanpa tertutupi) */}
+    <ArchPhoto
+      src={src}
+      alt={alt}
+      className="h-full w-full relative z-10"
+      ringFrom={ringFrom}
+      ringTo={ringTo}
+    />
+  </div>
+);
+
+/** Bingkai foto & ornamen dedaunan khusus Mempelai Wanita (posisi diatur sendiri) */
+const BrideBotanicalFrame = ({
+  src,
+  alt,
+  ringFrom = C.fern,
+  ringTo = C.gold,
+}) => (
+  <div className="relative mx-auto h-72 w-52">
+    {/* Rumpun daun di BELAKANG bingkai foto (z-0), mengintip dari sisi kanan bawah */}
+    <Sway
+      className="pointer-events-none absolute -bottom-6 -right-16 z-0 h-48 w-44 opacity-90"
+      rot="6deg"
+    >
+      <img
+        src="/images/forest-botanical-cluster.png"
+        alt=""
+        className="h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.85)] filter contrast-[1.08] [transform:scaleX(-1)]"
+      />
+    </Sway>
+
+    {/* Foto Mempelai (z-10 di depan daun, bersih tanpa tertutupi) */}
+    <ArchPhoto
+      src={src}
+      alt={alt}
+      className="h-full w-full relative z-10"
+      ringFrom={ringFrom}
+      ringTo={ringTo}
+    />
+  </div>
+);
+
+/** Kompatibilitas BotanicalFrame */
+const BotanicalFrame = ({ src, alt, flip = false, ringFrom, ringTo }) =>
+  flip ? (
+    <BrideBotanicalFrame
+      src={src}
+      alt={alt}
+      ringFrom={ringFrom}
+      ringTo={ringTo}
+    />
+  ) : (
+    <GroomBotanicalFrame
+      src={src}
+      alt={alt}
+      ringFrom={ringFrom}
+      ringTo={ringTo}
+    />
+  );
 
 /* =================================================================
  * PARTIKEL
@@ -597,78 +718,98 @@ const FallingLeaves = ({ count = 10 }) => {
   );
 };
 
-/** Lapisan background hutan (menempel di layar, konten bergulir di atasnya) */
-const ForestBackdrop = () => (
+/** Desktop: slide foto polos di sisi kiri (tanpa teks), menutupi DesktopSidePanel */
+const DesktopPhotoSlides = ({ photos, current, hidden }) => (
   <div
-    className="pointer-events-none fixed inset-y-0 left-1/2 z-0 w-full max-w-lg -translate-x-1/2"
+    className={`pointer-events-none fixed inset-y-0 left-0 right-0 z-40 hidden overflow-hidden bg-[#04120B] transition-opacity duration-700 ease-out lg:right-[480px] lg:block xl:right-[520px] ${
+      hidden ? "opacity-0" : "opacity-100"
+    }`}
     aria-hidden="true"
   >
-    {/* gambar referensi + gradasi cadangan */}
+    {photos.map((src, idx) => {
+      const isActive = idx === current;
+      return (
+        <div
+          key={idx}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            isActive ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <img
+            src={src}
+            alt=""
+            className={`h-full w-full object-cover object-[center_30%] transition-transform duration-[7500ms] ease-out ${
+              isActive ? "scale-[1.08]" : "scale-100"
+            }`}
+          />
+        </div>
+      );
+    })}
+    <div className="absolute inset-0 bg-gradient-to-b from-[#04120B]/35 via-transparent to-[#04120B]/55" />
     <div
       className="absolute inset-0"
       style={{
-        backgroundImage: `url(${FOREST_BG}), radial-gradient(ellipse at 50% 12%, ${C.mist} 0%, rgba(233,243,201,0) 38%), linear-gradient(180deg, #0E3B28 0%, #145232 45%, #2F8A48 78%, #8CC84B 100%)`,
-        backgroundSize: "cover, auto, auto",
-        backgroundPosition: "center top",
-        backgroundRepeat: "no-repeat",
+        background:
+          "radial-gradient(ellipse at 50% 45%, rgba(4,18,11,0) 55%, rgba(4,18,11,0.55) 100%)",
       }}
     />
-    {/* peredam agar teks tetap terbaca */}
-    <div className="absolute inset-0 bg-gradient-to-b from-[#04120B]/55 via-[#04120B]/35 to-[#04120B]/70" />
-    {/* kabut melayang */}
+  </div>
+);
+
+/** Lapisan background hutan (menempel di layar, konten bergulir di atasnya) */
+const ForestBackdrop = () => (
+  <div
+    className="pointer-events-none fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-lg md:left-0 md:translate-x-0 md:w-full md:max-w-none lg:left-auto lg:right-0 lg:w-[480px] xl:w-[520px] lg:translate-x-0 z-0 overflow-hidden"
+    aria-hidden="true"
+  >
     <div
-      className="ft-mist absolute -left-16 top-1/3 h-56 w-[28rem] rounded-full blur-3xl"
-      style={{ background: "rgba(233,243,201,0.16)" }}
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url(${FOREST_BG}), radial-gradient(ellipse at 50% 12%, ${C.mist} 0%, rgba(233,243,201,0) 38%), linear-gradient(180deg, #0E3B28 0%, #145232 45%, #2F8A48 78%, #8CC84B 100%)`,
+      }}
+    />
+    <div className="absolute inset-0 bg-gradient-to-b from-[#04120B]/60 via-[#04120B]/40 to-[#04120B]/75" />
+    <div
+      className="ft-mist absolute -left-16 top-1/3 h-64 w-[30rem] rounded-full blur-3xl opacity-30"
+      style={{ background: "rgba(233,243,201,0.2)" }}
     />
     <div
-      className="ft-mist-slow absolute -right-20 top-2/3 h-64 w-[30rem] rounded-full blur-3xl"
-      style={{ background: "rgba(166,216,84,0.12)" }}
+      className="ft-mist-slow absolute -right-20 top-2/3 h-72 w-[32rem] rounded-full blur-3xl opacity-25"
+      style={{ background: "rgba(166,216,84,0.18)" }}
     />
   </div>
 );
 
 /* =================================================================
- * KARTU ACARA (dipakai Akad & Resepsi — field data sama persis)
+ * BLOK ACARA (dipakai Akad & Resepsi — field data sama persis)
+ * Datar & rata tengah, tanpa kartu kaca.
  * ================================================================= */
-const EventCard = ({ title, icon: Icon, event, align = "left" }) => (
-  <article
-    className={`relative overflow-hidden rounded-[2rem] p-6 ${glass} ${
-      align === "right" ? "rounded-tr-[4rem]" : "rounded-tl-[4rem]"
-    }`}
-  >
-    <MonsteraLeafSVG
-      className={`pointer-events-none absolute -top-3 h-24 w-24 text-[#A6D854]/15 ${
-        align === "right" ? "-left-4 -rotate-12" : "-right-4 rotate-12"
-      }`}
-    />
-    <div className="relative mb-5 flex items-center gap-3">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#D4AF37]/50 bg-[#0E3B28]/80">
-        <Icon className="h-5 w-5 text-[#E8D27A]" />
-      </span>
-      <h3 className="font-serif-theme text-xl font-bold text-[#F4F9E4]">
-        {title}
-      </h3>
-    </div>
+const EventBlock = ({ title, icon: Icon, event }) => (
+  <div className="relative mx-auto max-w-xs text-center">
+    <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/55 bg-[#0E3B28]/70 shadow-[0_0_24px_rgba(166,216,84,0.18)]">
+      <Icon className="h-6 w-6 text-[#E8D27A]" />
+    </span>
+    <h3 className="font-serif-theme text-2xl font-bold text-[#F4F9E4]">
+      {title}
+    </h3>
 
-    <div className="relative space-y-3.5 text-[13px] text-[#E2EFD2]">
-      <div className="flex items-start gap-3">
-        <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#A6D854]" />
+    <div className="mt-5 space-y-2 text-[13px] text-[#E2EFD2]">
+      <p className="flex items-center justify-center gap-2">
+        <Calendar className="h-4 w-4 shrink-0 text-[#A6D854]" />
         <span>{event.tanggal}</span>
-      </div>
-      <div className="flex items-start gap-3">
-        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#A6D854]" />
+      </p>
+      <p className="flex items-center justify-center gap-2">
+        <Clock className="h-4 w-4 shrink-0 text-[#A6D854]" />
         <span>{event.waktu}</span>
-      </div>
-      <div className="flex items-start gap-3">
-        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#A6D854]" />
-        <div>
-          <strong className="block text-sm font-semibold text-white">
-            {event.lokasi}
-          </strong>
-          <p className="mt-0.5 text-xs leading-relaxed text-[#B9D2B0]">
-            {event.alamat}
-          </p>
-        </div>
+      </p>
+      <div className="pt-2">
+        <MapPin className="mx-auto mb-1 h-4 w-4 text-[#A6D854]" />
+        <strong className="block text-sm font-semibold text-white">
+          {event.lokasi}
+        </strong>
+        <p className="mx-auto mt-1 text-xs leading-relaxed text-[#B9D2B0]">
+          {event.alamat}
+        </p>
       </div>
     </div>
 
@@ -677,20 +818,21 @@ const EventCard = ({ title, icon: Icon, event, align = "left" }) => (
         href={event.mapUrl}
         target="_blank"
         rel="noreferrer"
-        className={`${ghostBtn} relative mt-6 w-full`}
+        className={`${ghostBtn} mt-6`}
       >
         <MapPin className="h-3.5 w-3.5 text-[#E8D27A]" />
         <span>Buka Google Maps</span>
         <ExternalLink className="h-3 w-3 opacity-70" />
       </a>
     )}
-  </article>
+  </div>
 );
 
 /* =================================================================
  * TEMA: FOREST TROPICAL
- * Menyusuri jalan setapak hutan — background gambar hutan menempel,
- * konten muncul sebagai panel kaca & jendela lengkung.
+ * Tata letak editorial rata tengah: cover → hero → ayat → mempelai
+ * (foto berbingkai dedaunan) → Save The Date (countdown + acara) →
+ * kisah → galeri → amplop (toggle) → ucapan (berpaginasi) → penutup.
  * ================================================================= */
 export const ForestTropicalTheme = (props) => {
   const d = useInvitationData(props);
@@ -701,8 +843,10 @@ export const ForestTropicalTheme = (props) => {
   const [isOpeningTransition, setIsOpeningTransition] = useState(false);
   const [isCoverDismissed, setIsCoverDismissed] = useState(false);
   const [coverExited, setCoverExited] = useState(false);
+  const [showGift, setShowGift] = useState(false);
+  const [wishPage, setWishPage] = useState(0);
 
-  // Koleksi foto untuk slide photo awal bergradien dramatis
+  // Koleksi foto untuk slide hero & cover
   const heroPhotos = useMemo(() => {
     const list = [];
     if (d.photoCover) list.push(d.photoCover);
@@ -724,7 +868,7 @@ export const ForestTropicalTheme = (props) => {
     return list;
   }, [d.photoCover, d.gallery, d.photoGroom, d.photoBride]);
 
-  // State & timer auto-slide untuk hero background full-size
+  // Auto-slide foto
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
   useEffect(() => {
@@ -735,36 +879,131 @@ export const ForestTropicalTheme = (props) => {
     return () => clearInterval(timer);
   }, [heroPhotos]);
 
-  const handleStartOpen = () => {
-    if (isOpeningTransition) return;
-    setIsOpeningTransition(true);
+  // Ucapan RSVP: statistik + paginasi
+  const wishes = Array.isArray(d.rsvp?.list) ? d.rsvp.list : [];
+  const hadirCount = wishes.filter(
+    (r) => r.attendance_status === "Hadir",
+  ).length;
+  const tidakHadirCount = wishes.filter(
+    (r) => r.attendance_status === "Tidak Hadir",
+  ).length;
+  const totalWishPages = Math.max(
+    1,
+    Math.ceil(wishes.length / WISHES_PER_PAGE),
+  );
+  const safeWishPage = Math.min(wishPage, totalWishPages - 1);
+  const pagedWishes = wishes.slice(
+    safeWishPage * WISHES_PER_PAGE,
+    safeWishPage * WISHES_PER_PAGE + WISHES_PER_PAGE,
+  );
 
-    // Buka undangan dan putar alunan musik satu kali saja
-    d.openInvitation();
+  /* ------------------------------------------------------------ */
+  /* Video intro                                                   */
+  /* ------------------------------------------------------------ */
+  const introSrc =
+    props?.introVideoUrl !== undefined
+      ? props.introVideoUrl
+      : FOREST_INTRO_VIDEO;
+  const videoRef = useRef(null);
+  const introDoneRef = useRef(false);
+  const timersRef = useRef([]);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(false);
 
-    // Selesaikan efek visual semak tersibak & zoom-out
-    setTimeout(() => {
-      setIsCoverDismissed(true);
-    }, 1060);
+  const later = (fn, ms) => {
+    const id = setTimeout(fn, ms);
+    timersRef.current.push(id);
+    return id;
+  };
 
-    // Unmount cover secara bersih setelah transisi tuntas
-    setTimeout(() => {
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  /** Tutup cover (dipanggil sekali saja) */
+  const finishIntro = () => {
+    if (introDoneRef.current) return;
+    introDoneRef.current = true;
+    setIsCoverDismissed(true);
+    later(() => setCoverExited(true), 750);
+  };
+
+  /** Cadangan tanpa video: hanya animasi semak tersibak */
+  const runBushFallback = () => {
+    later(() => setIsCoverDismissed(true), 1060);
+    later(() => {
+      introDoneRef.current = true;
       setCoverExited(true);
     }, 1500);
   };
 
+  const handleStartOpen = () => {
+    if (isOpeningTransition) return;
+    setIsOpeningTransition(true);
+
+    // Buka undangan & putar musik (harus dalam gesture klik agar tidak diblokir browser)
+    d.openInvitation();
+
+    const video = videoRef.current;
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const canUseVideo = !!introSrc && !videoFailed && !reduceMotion && video;
+
+    if (!canUseVideo) {
+      runBushFallback();
+      return;
+    }
+
+    try {
+      video.currentTime = 0;
+    } catch (_) {
+      /* abaikan */
+    }
+    setIsIntroPlaying(true);
+    const playing = video.play();
+    if (playing && typeof playing.catch === "function") {
+      playing.catch(() => {
+        setVideoFailed(true);
+        setIsIntroPlaying(false);
+        runBushFallback();
+      });
+    }
+    // pengaman bila video macet / tidak pernah selesai
+    later(finishIntro, INTRO_SAFETY_MS);
+  };
+
+  const handleVideoTimeUpdate = (e) => {
+    const v = e.currentTarget;
+    if (!isIntroPlaying || !v.duration || Number.isNaN(v.duration)) return;
+    if (v.duration - v.currentTime <= INTRO_FADE_LEAD_S) finishIntro();
+  };
+
+  const showCover = !coverExited && (!d.isOpened || isOpeningTransition);
+  const showSidePhotos =
+    !props?.isModalView && (SIDE_PHOTO_ONLY_ALWAYS || showCover);
+
+  const closingPhoto = d.photoCover || heroPhotos[0];
+
   return (
     <div
       ref={motionRef}
-      className={`bg-forest-tropical relative ${d.isOpened ? "min-h-screen lg:ml-auto lg:mr-0" : "h-screen max-h-screen overflow-hidden mx-auto"} w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] border-x border-[#0E3B28]/60 bg-[#04120B] font-sans text-[#EAF4DA] shadow-2xl selection:bg-[#A6D854] selection:text-black scroll-smooth`}
+      className={`bg-forest-tropical relative ${
+        d.isOpened
+          ? "min-h-screen"
+          : "h-screen max-h-screen overflow-hidden"
+      } w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0 border-x border-[#0E3B28]/60 bg-[#04120B] font-sans text-[#EAF4DA] shadow-2xl selection:bg-[#A6D854] selection:text-black scroll-smooth`}
     >
-      {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
+      {/* Panel Showcase Sisi Kiri untuk Layar Desktop (selalu aktif di layar desktop) */}
       <DesktopSidePanel
         theme="forest"
         invitationData={d}
         isOpened={d.isOpened}
+        alwaysVisible={true}
         isModalView={props?.isModalView}
       />
+
       {/* animasi lokal (menghormati prefers-reduced-motion) */}
       <style>{`
         @keyframes ft-drift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(46px); } }
@@ -779,7 +1018,7 @@ export const ForestTropicalTheme = (props) => {
         }
         .ft-mist { animation: ft-drift 18s ease-in-out infinite; }
         .ft-mist-slow { animation: ft-drift 28s ease-in-out infinite reverse; }
-        .ft-sway { transform-origin: 50% 100%; animation: ft-sway 7s ease-in-out infinite; }
+        .ft-sway { transform-origin: 50% 100%; transform: rotate(var(--r, 0deg)); animation: ft-sway 7s ease-in-out infinite; }
         .ft-bush-sway-left { transform-origin: 0% 100%; animation: ft-bush-sway-left 7s ease-in-out infinite; }
         .ft-bush-sway-right { transform-origin: 100% 100%; animation: ft-bush-sway-right 7.5s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
@@ -801,7 +1040,7 @@ export const ForestTropicalTheme = (props) => {
         </>
       )}
 
-      {/* Pemutar musik bertema forest tropical */}
+      {/* Pemutar musik */}
       {d.isOpened && (
         <MusicVinylPlayer
           musicUrl={d.musicUrl}
@@ -827,54 +1066,70 @@ export const ForestTropicalTheme = (props) => {
       />
 
       {/* ============================================================ */}
-      {/* COVER: gerbang masuk hutan dengan semak tersibak & zoom-out   */}
+      {/* COVER: video transisi hutan sebagai background utama          */}
       {/* ============================================================ */}
-      {!coverExited && (!d.isOpened || isOpeningTransition) && (
+      {showCover && (
         <div
-          className={`fixed inset-0 z-50 flex items-end justify-center overflow-hidden bg-[#04120B] transition-opacity duration-700 ease-out ${
+          className={`fixed inset-y-0 left-1/2 z-50 flex w-full max-w-lg -translate-x-1/2 items-stretch justify-center overflow-hidden bg-[#04120B] transition-opacity duration-700 ease-out md:left-0 md:w-full md:max-w-none md:translate-x-0 lg:left-auto lg:right-0 lg:w-[480px] lg:translate-x-0 xl:w-[520px] ${
             isCoverDismissed ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
         >
-          {/* Background Slide Foto Prewedding Full Size di Cover Awal */}
-          <div
-            className={`absolute inset-0 z-0 overflow-hidden bg-[#04120B] transition-transform duration-[1350ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              isOpeningTransition ? "scale-100" : "scale-[1.08]"
-            }`}
-            aria-hidden="true"
-          >
-            {heroPhotos.map((src, idx) => {
-              const isActive = idx === currentHeroSlide;
-              return (
-                <div
-                  key={idx}
-                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                    isActive
-                      ? "opacity-100 z-10"
-                      : "opacity-0 z-0 pointer-events-none"
-                  }`}
-                >
-                  <img
-                    src={src}
-                    alt={`Cover Prewedding ${idx + 1}`}
-                    className={`h-full w-full object-cover object-[center_30%] transition-transform duration-[7500ms] ease-out ${
+          {/* Latar Belakang Cover: Video Transisi Hutan (atau Foto Fallback) */}
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#04120B]">
+            {introSrc && !videoFailed ? (
+              <video
+                ref={videoRef}
+                src={`${introSrc}#t=0.001`}
+                poster={FOREST_INTRO_POSTER || undefined}
+                muted
+                playsInline
+                preload="auto"
+                disablePictureInPicture
+                onLoadedMetadata={(e) => {
+                  try {
+                    e.currentTarget.currentTime = 0.001;
+                  } catch (_) {}
+                }}
+                onError={() => setVideoFailed(true)}
+                onTimeUpdate={handleVideoTimeUpdate}
+                onEnded={finishIntro}
+                className="h-full w-full object-cover"
+                aria-hidden="true"
+              />
+            ) : (
+              /* Fallback foto prewedding bila video tidak tersedia */
+              heroPhotos.map((src, idx) => {
+                const isActive = idx === currentHeroSlide;
+                return (
+                  <div
+                    key={idx}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
                       isActive
-                        ? "scale-108 translate-y-0"
-                        : "scale-100 translate-y-2"
+                        ? "opacity-100 z-10"
+                        : "opacity-0 z-0 pointer-events-none"
                     }`}
-                  />
-                </div>
-              );
-            })}
+                  >
+                    <img
+                      src={src}
+                      alt={`Cover Prewedding ${idx + 1}`}
+                      className="h-full w-full object-cover object-[center_30%]"
+                    />
+                  </div>
+                );
+              })
+            )}
 
-            {/* Peredam gelap & gradasi hijau kanopi rimbun tropis agar teks tetap kontras */}
+            {/* Peredam gelap lembut agar teks cover terbaca jelas, memudar saat video berputar */}
             <div
-              className="absolute inset-0 z-20 bg-gradient-to-b from-[#04120B]/65 via-[#04120B]/35 to-[#04120B]/90 pointer-events-none"
+              className={`absolute inset-0 z-10 bg-gradient-to-b from-[#04120B]/80 via-[#04120B]/25 to-[#04120B]/90 transition-opacity duration-700 pointer-events-none ${
+                isOpeningTransition ? "opacity-10" : "opacity-100"
+              }`}
               aria-hidden="true"
             />
-
-            {/* Ambient Forest Underglow — nuansa zamrud di bagian bawah kartu */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-96 z-20 opacity-75"
+              className={`pointer-events-none absolute inset-x-0 bottom-0 h-96 z-10 transition-opacity duration-700 ${
+                isOpeningTransition ? "opacity-0" : "opacity-75"
+              }`}
               style={{
                 background:
                   "radial-gradient(ellipse 90% 60% at 50% 100%, rgba(20,82,50,0.5) 0%, rgba(14,59,40,0.25) 50%, transparent 85%)",
@@ -883,47 +1138,61 @@ export const ForestTropicalTheme = (props) => {
             />
           </div>
 
-          {/* Kabut lembut atmosferik */}
+          {/* Tombol lewati video jika tamu ingin langsung ke konten */}
+          {isIntroPlaying && !isCoverDismissed && (
+            <button
+              type="button"
+              onClick={finishIntro}
+              className="absolute bottom-6 right-5 z-40 cursor-pointer rounded-full border border-[#E9F3C9]/30 bg-[#04120B]/55 px-4 py-2 text-[11px] font-semibold text-[#E9F3C9] backdrop-blur-md transition-colors hover:bg-[#0E3B28]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A6D854]"
+            >
+              Lewati
+            </button>
+          )}
+
+          {/* Kabut lembut */}
           <div
-            className="ft-mist absolute -left-10 top-1/4 z-10 h-52 w-96 rounded-full bg-[#E9F3C9]/15 blur-3xl pointer-events-none"
+            className={`ft-mist absolute -left-10 top-1/4 z-10 h-52 w-96 rounded-full bg-[#E9F3C9]/15 blur-3xl pointer-events-none transition-opacity duration-700 ${
+              isOpeningTransition ? "opacity-0" : "opacity-100"
+            }`}
             aria-hidden="true"
           />
 
-          {/* Semak-semak hutan lebat: membuka ke kiri & kanan, bawah & atas */}
-          <BushGateLeft isOpening={isOpeningTransition} />
-          <BushGateRight isOpening={isOpeningTransition} />
-          <BushGateBottom isOpening={isOpeningTransition} />
-          <BushGateTop isOpening={isOpeningTransition} />
+          {/* Pendar cahaya mentari kanopi */}
+          <CanopySunbeam active={isOpeningTransition} />
 
-          {/* Isi kartu pass cover - berada di z-30 di atas semua semak agar tidak tertutupi */}
+          {/* Gerbang semak selaras lukisan video yang menyibak halus */}
+          <FoliageGateLeft isOpening={isOpeningTransition} />
+          <FoliageGateRight isOpening={isOpeningTransition} />
+
+          {/* Isi cover */}
           <div
-            className={`relative z-30 flex w-full max-w-sm sm:max-w-md flex-col items-center px-4 sm:px-6 pb-6 pt-4 text-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`relative z-30 flex w-full max-w-sm sm:max-w-md flex-col items-center justify-between px-6 pb-10 pt-16 text-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               isOpeningTransition
                 ? "opacity-0 translate-y-12 scale-90 pointer-events-none"
                 : "opacity-100 translate-y-0 scale-100"
             }`}
           >
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37]/60 bg-[#04120B]/70 backdrop-blur-sm shadow-[0_0_25px_rgba(183,227,107,0.25)]">
-              <Trees className="h-8 w-8 text-[#B7E36B]" />
+            {/* atas: judul */}
+            <div className="flex flex-col items-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/60 bg-[#04120B]/60 backdrop-blur-sm shadow-[0_0_25px_rgba(183,227,107,0.25)]">
+                <Trees className="h-7 w-7 text-[#B7E36B]" />
+              </div>
+              <p className="mb-2 text-xs font-medium tracking-[0.25em] text-[#E8D27A]">
+                The Wedding of
+              </p>
+              <h2 className="font-serif-theme text-[2.8rem] font-bold leading-[1.1] text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)]">
+                {d.groomShort}
+                <span className="font-cursive mx-2 text-[#E8D27A]">&</span>
+                {d.brideShort}
+              </h2>
             </div>
 
-            <p className="mb-2 text-xs font-medium tracking-[0.25em] text-[#E8D27A]">
-              The Wedding Invitation
-            </p>
-            <h2 className="font-serif-theme text-[2.6rem] font-bold leading-[1.1] text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)]">
-              {d.groomShort}
-              <span className="font-cursive mx-2 text-[#E8D27A]">&</span>
-              {d.brideShort}
-            </h2>
-            <p className="mt-2 text-xs italic text-[#D3E6C5]">
-              Lush Forest & Botanical Celebration
-            </p>
-
-            <div className={`mt-8 w-full rounded-[1.75rem] p-5 ${glass}`}>
+            {/* bawah: tamu + tombol */}
+            <div className="flex w-full flex-col items-center">
               <p className="text-[11px] text-[#CFE3C2]">
                 Kepada Yth. Bapak/Ibu/Saudara/i
               </p>
-              <h3 className="mt-1 text-lg font-bold tracking-wide text-white">
+              <h3 className="mt-1 text-xl font-bold tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                 {d.guestName}
               </h3>
               <div className="mt-2 flex items-center justify-center gap-2">
@@ -940,36 +1209,35 @@ export const ForestTropicalTheme = (props) => {
                   Reservasi {d.guestPax} Pax
                 </span>
               </div>
-            </div>
 
-            {/* Tombol buka undangan dengan pulsating aura glow */}
-            <div className="relative mt-5 w-full">
-              <div
-                className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#2F8A48] via-[#A6D854] to-[#2F8A48] opacity-60 blur-md transition-opacity duration-300 group-hover:opacity-100 animate-pulse pointer-events-none"
-                aria-hidden="true"
-              />
-              <button
-                type="button"
-                onClick={handleStartOpen}
-                disabled={isOpeningTransition}
-                className="group relative flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2F8A48] via-[#7CC04A] to-[#2F8A48] px-6 py-3.5 text-sm font-bold text-[#04120B] shadow-[0_6px_26px_rgba(166,216,84,0.35)] transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-80"
-              >
-                <Leaf className="h-4 w-4 transition-transform group-hover:rotate-45" />
-                <span>Buka Undangan</span>
-                <Sparkles className="h-4 w-4" />
-              </button>
-            </div>
+              <div className="relative mt-6 w-full max-w-xs">
+                <div
+                  className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#2F8A48] via-[#A6D854] to-[#2F8A48] opacity-60 blur-md animate-pulse pointer-events-none"
+                  aria-hidden="true"
+                />
+                <button
+                  type="button"
+                  onClick={handleStartOpen}
+                  disabled={isOpeningTransition}
+                  className={`${primaryBtn} w-full py-3.5 disabled:opacity-80`}
+                >
+                  <Leaf className="h-4 w-4 transition-transform group-hover:rotate-45" />
+                  <span>Buka Undangan</span>
+                  <Sparkles className="h-4 w-4" />
+                </button>
+              </div>
 
-            <p className="mt-3 text-[10px] italic text-[#B9D2B0]">
-              Sentuh tombol di atas untuk membuka undangan & memutar alunan
-              musik
-            </p>
+              <p className="mt-3 text-[10px] italic text-[#B9D2B0]">
+                Sentuh tombol di atas untuk membuka undangan & memutar alunan
+                musik
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {/* ============================================================ */}
-      {/* KONTEN UTAMA UNDANGAN: Transisi kemunculan halus & sinematik */}
+      {/* KONTEN UTAMA                                                  */}
       {/* ============================================================ */}
       <div
         className={`relative z-[1] transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
@@ -979,11 +1247,10 @@ export const ForestTropicalTheme = (props) => {
         }`}
       >
         {/* ============================================================ */}
-        {/* HERO: FULL-SIZE SCREEN DENGAN SLIDE FOTO MENYATU PENUH        */}
+        {/* HERO: foto penuh, nama di tengah, tanggal + Save The Date     */}
         {/* ============================================================ */}
-        <section className="relative z-[1] min-h-[106dvh] sm:min-h-[112dvh] w-full flex flex-col justify-between overflow-hidden text-center pb-20 sm:pb-24 pt-10">
-          {/* Latar Belakang Slide Foto Full Size (Menjulur Lebih ke Bawah & Frameless) */}
-          <div className="absolute -inset-x-0 -top-0 -bottom-24 sm:-bottom-32 z-0 overflow-hidden bg-[#04120B]">
+        <section className="relative z-[1] flex min-h-[100dvh] w-full flex-col justify-between overflow-hidden pb-24 pt-12 text-center">
+          <div className="absolute inset-0 z-0 overflow-hidden bg-[#04120B]">
             {heroPhotos.map((src, idx) => {
               const isActive = idx === currentHeroSlide;
               return (
@@ -1000,164 +1267,54 @@ export const ForestTropicalTheme = (props) => {
                     alt={`Prewedding ${idx + 1}`}
                     className={`h-full w-full object-cover object-[center_20%] transition-transform duration-[7500ms] ease-out ${
                       isActive
-                        ? "scale-108 translate-y-0"
+                        ? "scale-[1.08] translate-y-0"
                         : "scale-100 translate-y-2"
                     }`}
-                    style={{
-                      WebkitMaskImage:
-                        "linear-gradient(to bottom, black 0%, black 50%, rgba(0,0,0,0.92) 68%, rgba(0,0,0,0.62) 82%, rgba(0,0,0,0.22) 93%, transparent 100%)",
-                      maskImage:
-                        "linear-gradient(to bottom, black 0%, black 50%, rgba(0,0,0,0.92) 68%, rgba(0,0,0,0.62) 82%, rgba(0,0,0,0.22) 93%, transparent 100%)",
-                    }}
                   />
                 </div>
               );
             })}
 
-            {/* ======================================================== */}
-            {/* GRADIENT OVERLAYS & PROGRESSIVE OPTICAL BLUR TRANSITION   */}
-            {/* ======================================================== */}
-            {/* 1. Gradien Atas: menyatu lembut dengan kanopi rimbun */}
+            {/* gradasi atas & bawah agar teks terbaca dan menyambung ke section berikutnya */}
             <div
-              className="absolute inset-x-0 top-0 z-20 h-36 bg-gradient-to-b from-[#04120B] via-[#04120B]/60 to-transparent pointer-events-none"
+              className="pointer-events-none absolute inset-x-0 top-0 z-20 h-40 bg-gradient-to-b from-[#04120B] via-[#04120B]/50 to-transparent"
               aria-hidden="true"
             />
-
-            {/* 2. PROGRESSIVE MULTI-STAGE OPTICAL BLUR DI BAGIAN BAWAH */}
-            {/* Mengaburkan foto secara optik bertingkat (bokeh lembut) */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[32rem] sm:h-[40rem] overflow-hidden"
-              aria-hidden="true"
-            >
-              {/* Layer 1: Feathered Micro Blur (2px) */}
-              <div
-                className="absolute inset-0 backdrop-blur-[2px]"
-                style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)",
-                  maskImage:
-                    "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)",
-                }}
-              />
-              {/* Layer 2: Soft Intermediate Blur (6px) */}
-              <div
-                className="absolute inset-0 backdrop-blur-[6px]"
-                style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,1) 70%, rgba(0,0,0,1) 100%)",
-                  maskImage:
-                    "linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,1) 70%, rgba(0,0,0,1) 100%)",
-                }}
-              />
-              {/* Layer 3: Creamy Bokeh Blur (14px) */}
-              <div
-                className="absolute inset-0 backdrop-blur-[14px]"
-                style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,1) 85%, rgba(0,0,0,1) 100%)",
-                  maskImage:
-                    "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,1) 85%, rgba(0,0,0,1) 100%)",
-                }}
-              />
-              {/* Layer 4: Deep Atmosphere Blur (28px) */}
-              <div
-                className="absolute inset-0 backdrop-blur-[28px]"
-                style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.9) 82%, rgba(0,0,0,1) 100%)",
-                  maskImage:
-                    "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.9) 82%, rgba(0,0,0,1) 100%)",
-                }}
-              />
-
-              {/* Multi-stop smooth atmospheric shadow gradient yang serasi dengan component berikutnya */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(4,18,11,0) 0%, rgba(7,36,23,0.18) 28%, rgba(10,42,27,0.48) 52%, rgba(14,59,40,0.78) 72%, rgba(7,36,23,0.94) 88%, #04120B 100%)",
-                }}
-              />
-
-              {/* Ambient Forest Underglow — rona hijau zamrud alami menyelaraskan dengan kartu Ayat & Mempelai */}
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-80 z-20 opacity-75"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 90% 60% at 50% 92%, rgba(20,82,50,0.42) 0%, rgba(14,59,40,0.22) 45%, transparent 80%)",
-                }}
-              />
-
-              {/* Subtle Golden Canopy Mist Accent — pendar halus menyatu dengan aksen emas component berikutnya */}
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-64 z-20 opacity-35 mix-blend-screen"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 70% 50% at 50% 88%, rgba(232,210,122,0.2) 0%, rgba(166,216,84,0.08) 40%, transparent 75%)",
-                }}
-              />
-            </div>
-
-            {/* 3. Radial Vignette: bayangan sudut lembut */}
-            <div
-              className="absolute inset-0 z-20 pointer-events-none"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-3/5 backdrop-blur-[3px]"
               style={{
-                background:
-                  "radial-gradient(ellipse at 50% 45%, rgba(4,18,11,0.02) 0%, rgba(4,18,11,0.35) 60%, rgba(4,18,11,0.9) 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, transparent 0%, black 70%)",
+                maskImage:
+                  "linear-gradient(to bottom, transparent 0%, black 70%)",
               }}
               aria-hidden="true"
             />
-
-            {/* 4. Berkas Sinar Mentari Kanopi (God Rays) */}
             <div
-              className="absolute inset-0 z-20 pointer-events-none opacity-40 mix-blend-screen"
+              className="pointer-events-none absolute inset-0 z-20"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(4,18,11,0) 30%, rgba(10,42,27,0.55) 62%, rgba(7,36,23,0.92) 88%, #04120B 100%)",
+              }}
+              aria-hidden="true"
+            />
+            {/* sinar mentari kanopi */}
+            <div
+              className="pointer-events-none absolute inset-0 z-20 opacity-40 mix-blend-screen"
               style={{
                 background:
                   "radial-gradient(circle at 75% 18%, rgba(254,240,138,0.4) 0%, rgba(166,216,84,0.12) 35%, transparent 65%)",
               }}
               aria-hidden="true"
             />
-
-            {/* Tombol Navigasi Panah Kiri & Kanan */}
-            {/* {heroPhotos.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentHeroSlide((prev) =>
-                      prev === 0 ? heroPhotos.length - 1 : prev - 1,
-                    );
-                  }}
-                  className="absolute left-3.5 top-1/2 z-30 -translate-y-1/2 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-[#A6D854]/40 bg-[#04120B]/50 text-[#E8D27A] backdrop-blur-md transition-all hover:bg-[#0E3B28] hover:scale-110 active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.7)] cursor-pointer"
-                  aria-label="Foto Sebelumnya"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentHeroSlide(
-                      (prev) => (prev + 1) % heroPhotos.length,
-                    );
-                  }}
-                  className="absolute right-3.5 top-1/2 z-30 -translate-y-1/2 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-[#A6D854]/40 bg-[#04120B]/50 text-[#E8D27A] backdrop-blur-md transition-all hover:bg-[#0E3B28] hover:scale-110 active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.7)] cursor-pointer"
-                  aria-label="Foto Selanjutnya"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </>
-            )} */}
           </div>
 
-          {/* Konten Hero Melayang di Atas Foto */}
+          {/* Konten hero */}
           <div className="relative z-30 flex flex-1 flex-col justify-between px-6">
-            {/* Bagian Atas */}
+            {/* indikator slide */}
             <div className="pt-2">
-
               {heroPhotos.length > 1 && (
-                <div className="mt-4 flex items-center justify-center gap-1.5">
+                <div className="flex items-center justify-center gap-1.5">
                   {heroPhotos.map((_, dotIdx) => (
                     <button
                       key={dotIdx}
@@ -1175,10 +1332,10 @@ export const ForestTropicalTheme = (props) => {
               )}
             </div>
 
-            {/* Bagian Tengah: Judul & Nama Mempelai */}
-            <div className="my-auto py-8">
+            {/* nama + tanggal + CTA, ditaruh di bawah seperti referensi */}
+            <div className="mt-auto pt-24">
               <p className="mb-2 text-xs font-semibold tracking-[0.25em] text-[#E8D27A] uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                The Wedding Celebration of
+                The Wedding of
               </p>
               <h1 className="font-serif-theme text-[3.2rem] sm:text-[4rem] font-bold leading-[1.05] text-[#F7FBE9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
                 {d.groomShort}
@@ -1188,269 +1345,198 @@ export const ForestTropicalTheme = (props) => {
                 {d.brideShort}
               </h1>
 
+              <div
+                className="mt-4 flex items-center justify-center gap-3"
+                aria-hidden="true"
+              >
+                <span className="h-px w-12 bg-gradient-to-r from-transparent to-[#E8D27A]/70" />
+                <Leaf className="h-4 w-4 text-[#E8D27A]" />
+                <span className="h-px w-12 bg-gradient-to-l from-transparent to-[#E8D27A]/70" />
+              </div>
+
               <p className="mt-4 text-[13px] font-medium tracking-wide text-[#E2EFD2] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 {d.akad.tanggal}
                 <br />
-                <span className="text-[#B9D2B0] text-xs font-normal">
+                <span className="text-xs font-normal text-[#B9D2B0]">
                   {d.akad.lokasi}
                 </span>
               </p>
+
+              <a href="#save-the-date" className={`${primaryBtn} mt-6`}>
+                <Calendar className="h-4 w-4" />
+                <span>Save The Date</span>
+              </a>
+
+              <ChevronDown
+                className="mx-auto mt-5 h-5 w-5 animate-bounce text-[#E8D27A]/80"
+                aria-hidden="true"
+              />
             </div>
-
-            {/* Bagian Bawah: Countdown Floating di atas gradien transisi lembut */}
-            <div className="w-full">
-              <div
-                className={`w-full rounded-[2rem] p-5 ${glass} border border-[#A6D854]/30 shadow-[0_12px_40px_rgba(0,0,0,0.65)]`}
-              >
-                <p className="mb-3.5 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-semibold text-[#E8D27A]">
-                  <Clock className="h-4 w-4 text-[#A6D854]" />
-                  <span>Menuju Hari Bahagia</span>
-                </p>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {[
-                    { val: d.timeLeft.days, label: "Hari" },
-                    { val: d.timeLeft.hours, label: "Jam" },
-                    { val: d.timeLeft.minutes, label: "Menit" },
-                    { val: d.timeLeft.seconds, label: "Detik" },
-                  ].map((t, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-center justify-center rounded-2xl border border-[#A6D854]/20 bg-[#04120B]/75 py-2.5 sm:py-3"
-                    >
-                      <span className="font-serif-theme text-xl sm:text-2xl font-bold tabular-nums text-white">
-                        {String(t.val).padStart(2, "0")}
-                      </span>
-                      <span className="mt-0.5 text-[10px] text-[#B9D2B0]">
-                        {t.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <a
-                  href={d.googleCalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${ghostBtn} mt-3.5 text-xs py-2.5`}
-                >
-                  <Calendar className="h-3.5 w-3.5 text-[#E8D27A]" />
-                  <span>Simpan ke Google Calendar</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* ======================================================== */}
-          {/* SEAMLESS CANOPY BRIDGE: Dedaunan & Kabut Tumpang Tindih   */}
-          {/* Menghubungkan hero secara organik ke section berikutnya   */}
-          {/* ======================================================== */}
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 overflow-hidden"
-            aria-hidden="true"
-          >
-            {/* Gradasi kabut bawah pekat yang selaras dengan rona hijau hutan zamrud */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to bottom, transparent 0%, rgba(7,36,23,0.3) 35%, rgba(10,42,27,0.7) 70%, #04120B 100%)",
-              }}
-            />
-
-            {/* Kabut atmosferik melayang di zona sambungan */}
-            <div
-              className="ft-mist absolute -left-12 bottom-0 h-28 w-80 rounded-full blur-2xl"
-              style={{ background: "rgba(233,243,201,0.15)" }}
-            />
-            <div
-              className="ft-mist-slow absolute -right-16 bottom-0 h-32 w-96 rounded-full blur-3xl"
-              style={{ background: "rgba(166,216,84,0.12)" }}
-            />
-
-            {/* Dedaunan pakis bertingkat yang menyeberangi perbatasan hero */}
-            <FernSVG className="absolute -bottom-8 -left-8 h-36 w-28 -rotate-12 text-[#051910] drop-shadow-2xl" />
-            <FernSVG className="absolute -bottom-10 left-6 h-40 w-28 rotate-6 text-[#0A2A1B] drop-shadow-xl" />
-            <PalmFrondSVG className="absolute -bottom-6 left-16 h-28 w-36 rotate-[28deg] text-[#0E3B28]/90" />
-            <MonsteraLeafSVG className="absolute -bottom-4 left-1/3 h-24 w-24 -rotate-12 text-[#145232] drop-shadow-lg" />
-            <FernSVG className="absolute -bottom-12 right-1/4 h-40 w-28 rotate-12 text-[#0A2A1B] drop-shadow-xl" />
-            <PalmFrondSVG className="absolute -bottom-6 right-10 h-28 w-36 -rotate-[22deg] text-[#0E3B28]/90 [transform:scaleX(-1)]" />
-            <FernSVG className="absolute -bottom-8 -right-6 h-36 w-28 rotate-[18deg] text-[#051910] drop-shadow-2xl" />
           </div>
         </section>
 
         {/* ============================================================ */}
-        {/* AYAT: SANCTUARY CARD MENYATU LEMBUT DENGAN KABUT HERO        */}
+        {/* AYAT                                                          */}
         {/* ============================================================ */}
-        <section className="relative z-20 px-6 pb-16 pt-8 text-center">
-          {/* Layer kabut penerus yang memudar mulus ke section berikutnya */}
-          <div
-            className="pointer-events-none absolute -inset-x-0 top-0 -bottom-10 z-0"
-            style={{
-              background:
-                "linear-gradient(to bottom, #04120B 0%, rgba(7,36,23,0.85) 30%, rgba(10,42,27,0.55) 60%, rgba(4,18,11,0.15) 90%, transparent 100%)",
-            }}
-            aria-hidden="true"
-          />
+        <section
+          className={`relative z-[1] overflow-hidden px-8 pb-20 pt-14 text-center ${band.dark}`}
+        >
+          <SideLeaves />
 
-          {/* Kabut pendar lembut di belakang kartu */}
-          <div
-            className="ft-mist pointer-events-none absolute left-1/2 top-10 -translate-x-1/2 h-44 w-72 rounded-full blur-3xl"
-            style={{ background: "rgba(166,216,84,0.08)" }}
-            aria-hidden="true"
-          />
-
-          {/* Kartu Ayat Kaca Rimba yang Nyaru & Terintegrasi */}
-          <Reveal delay={120}>
-            <div className="relative z-10 mx-auto max-w-sm rounded-[2.2rem] border border-[#A6D854]/25 bg-gradient-to-b from-[#04120B]/85 via-[#072417]/70 to-[#04120B]/85 p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] backdrop-blur-md">
-              {/* Ornamen sulur daun di sudut atas kartu */}
-              <MonsteraLeafSVG
-                className="pointer-events-none absolute -top-4 -left-3 h-12 w-12 -rotate-12 text-[#A6D854]/25"
+          <Reveal delay={100}>
+            <div className="relative mx-auto max-w-sm">
+              <div
+                className="mx-auto mb-5 flex items-center justify-center gap-2.5"
                 aria-hidden="true"
-              />
-              <MonsteraLeafSVG
-                className="pointer-events-none absolute -bottom-4 -right-3 h-12 w-12 rotate-12 text-[#A6D854]/20 [transform:scaleX(-1)]"
-                aria-hidden="true"
-              />
-
-              {/* Header Monstera Emas dengan Aksen Garis Cahaya */}
-              <div className="mx-auto mb-4 flex items-center justify-center gap-2.5">
+              >
                 <span className="h-px w-10 bg-gradient-to-r from-transparent to-[#E8D27A]/60" />
-                <MonsteraLeafSVG className="h-7 w-7 text-[#E8D27A] drop-shadow-[0_2px_8px_rgba(232,210,122,0.5)]" />
+                <MonsteraLeafSVG className="h-8 w-8 text-[#E8D27A] drop-shadow-[0_2px_8px_rgba(232,210,122,0.5)]" />
                 <span className="h-px w-10 bg-gradient-to-l from-transparent to-[#E8D27A]/60" />
               </div>
 
-              <p className="font-serif text-[14px] sm:text-[15px] italic leading-[1.9] text-[#F0F8E0] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+              <p className="font-serif text-[14px] sm:text-[15px] italic leading-[1.95] text-[#F0F8E0] drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
                 &ldquo;Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia
                 menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar
                 kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan
                 di antaramu rasa kasih dan sayang.&rdquo;
               </p>
 
-              <div className="mt-5 flex items-center justify-center gap-2">
-                <span className="h-px w-6 bg-[#A6D854]/40" />
-                <p className="text-xs sm:text-sm font-semibold tracking-wide text-[#E8D27A] drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
-                  {d.ayatQuote}
-                </p>
-                <span className="h-px w-6 bg-[#A6D854]/40" />
-              </div>
+              <p className="mt-6 text-xs sm:text-sm font-semibold tracking-wide text-[#E8D27A]">
+                {d.ayatQuote}
+              </p>
             </div>
           </Reveal>
         </section>
 
         {/* ============================================================ */}
-        {/* MEMPELAI: dua potret lengkung berselang-seling                */}
+        {/* MEMPELAI                                                      */}
         {/* ============================================================ */}
-        <section className="relative z-[1] px-6 py-14">
+        <section
+          className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.mid}`}
+        >
+          <CanopyEdge />
           <SectionTitle
-            title="Pasangan Mempelai"
+            title="Bride & Groom"
             desc="Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud melangsungkan pernikahan suci:"
           />
 
-          <div className="space-y-10">
+          <div className="mx-auto grid max-w-md grid-cols-1 gap-12 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
             {/* Pria */}
             <Reveal delay={100}>
-              <div className="flex items-center gap-5">
-                <ArchPhoto
-                  src={d.photoGroom}
-                  alt={d.groom}
-                  className="h-52 w-36 shrink-0"
-                />
-                <div
-                  className={`flex-1 rounded-[1.75rem] rounded-bl-[3rem] p-5 ${glass}`}
-                >
-                  <p className="text-xs font-medium text-[#A6D854]">
-                    Mempelai Pria
-                  </p>
-                  <h3 className="font-serif-theme mt-1 text-xl font-bold leading-snug text-white">
-                    {d.groom}
-                  </h3>
-                  <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
-                    Putra tercinta dari
-                    <br />
-                    <strong className="font-semibold text-white">
-                      {d.groomFather}
-                    </strong>
-                    <br />&{" "}
-                    <strong className="font-semibold text-white">
-                      {d.groomMother}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={150}>
-              <div
-                className="flex items-center justify-center gap-3 text-[#E8D27A]"
-                aria-hidden="true"
-              >
-                <span className="h-px w-16 bg-[#E8D27A]/40" />
-                <span className="font-cursive text-4xl">&</span>
-                <span className="h-px w-16 bg-[#E8D27A]/40" />
+              <div className="text-center">
+                <GroomBotanicalFrame src={d.photoGroom} alt={d.groom} />
+                <p className="mt-8 text-xs font-medium text-[#A6D854]">
+                  Mempelai Pria
+                </p>
+                <h3 className="font-serif-theme mt-1 text-2xl font-bold leading-snug text-white">
+                  {d.groom}
+                </h3>
+                <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
+                  Putra tercinta dari
+                  <br />
+                  <strong className="font-semibold text-white">
+                    {d.groomFather}
+                  </strong>
+                  <br />&{" "}
+                  <strong className="font-semibold text-white">
+                    {d.groomMother}
+                  </strong>
+                </p>
               </div>
             </Reveal>
 
             {/* Wanita */}
             <Reveal delay={200}>
-              <div className="flex flex-row-reverse items-center gap-5">
-                <ArchPhoto
+              <div className="text-center">
+                <BrideBotanicalFrame
                   src={d.photoBride}
                   alt={d.bride}
-                  className="h-52 w-36 shrink-0"
                   ringFrom={C.fern}
                   ringTo={C.gold}
                 />
-                <div
-                  className={`flex-1 rounded-[1.75rem] rounded-br-[3rem] p-5 text-right ${glass}`}
-                >
-                  <p className="text-xs font-medium text-[#A6D854]">
-                    Mempelai Wanita
-                  </p>
-                  <h3 className="font-serif-theme mt-1 text-xl font-bold leading-snug text-white">
-                    {d.bride}
-                  </h3>
-                  <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
-                    Putri tercinta dari
-                    <br />
-                    <strong className="font-semibold text-white">
-                      {d.brideFather}
-                    </strong>
-                    <br />&{" "}
-                    <strong className="font-semibold text-white">
-                      {d.brideMother}
-                    </strong>
-                  </p>
-                </div>
+                <p className="mt-8 text-xs font-medium text-[#A6D854]">
+                  Mempelai Wanita
+                </p>
+                <h3 className="font-serif-theme mt-1 text-2xl font-bold leading-snug text-white">
+                  {d.bride}
+                </h3>
+                <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
+                  Putri tercinta dari
+                  <br />
+                  <strong className="font-semibold text-white">
+                    {d.brideFather}
+                  </strong>
+                  <br />&{" "}
+                  <strong className="font-semibold text-white">
+                    {d.brideMother}
+                  </strong>
+                </p>
               </div>
             </Reveal>
           </div>
+
+          <FoliageEdge />
         </section>
 
         {/* ============================================================ */}
-        {/* ACARA                                                         */}
+        {/* SAVE THE DATE: countdown + Akad & Resepsi                      */}
         {/* ============================================================ */}
-        <section className="relative z-[1] px-6 py-14">
-          <SectionTitle
-            title="Rangkaian Acara"
-            desc="Kehadiran dan doa restu Anda merupakan kehormatan terbesar bagi kami"
-          />
+        <section
+          id="save-the-date"
+          className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.dark}`}
+        >
+          <CanopyEdge />
+          <SectionTitle title="Save The Date" />
 
-          <div className="space-y-6">
+          <Reveal delay={80}>
+            <div className="mx-auto max-w-sm">
+              <div className="grid grid-cols-4 gap-2.5">
+                {[
+                  { val: d.timeLeft.days, label: "Hari" },
+                  { val: d.timeLeft.hours, label: "Jam" },
+                  { val: d.timeLeft.minutes, label: "Menit" },
+                  { val: d.timeLeft.seconds, label: "Detik" },
+                ].map((t, idx) => (
+                  <div
+                    key={idx}
+                    className="flex aspect-square flex-col items-center justify-center rounded-full border border-[#E8D27A]/45 bg-[#0E3B28]/60 shadow-[0_0_22px_rgba(166,216,84,0.12)]"
+                  >
+                    <span className="font-serif-theme text-xl sm:text-2xl font-bold tabular-nums text-white">
+                      {String(t.val).padStart(2, "0")}
+                    </span>
+                    <span className="text-[10px] text-[#B9D2B0]">
+                      {t.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mx-auto mt-6 max-w-[18rem] text-[13px] italic leading-relaxed text-[#CFE3C2]">
+                Dan kami bersyukur, dipertemukan Allah di waktu terbaik. Kini
+                kami menanti hari istimewa kami.
+              </p>
+
+              <a
+                href={d.googleCalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`${ghostBtn} mt-5`}
+              >
+                <Calendar className="h-3.5 w-3.5 text-[#E8D27A]" />
+                <span>Simpan ke Google Calendar</span>
+              </a>
+            </div>
+          </Reveal>
+
+          <div className="mx-auto mt-14 grid max-w-md grid-cols-1 gap-12 md:max-w-3xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
             <Reveal delay={100}>
-              <EventCard
-                title="Akad Nikah"
-                icon={Calendar}
-                event={d.akad}
-                align="left"
-              />
+              <EventBlock title="Akad Nikah" icon={Calendar} event={d.akad} />
             </Reveal>
             <Reveal delay={200}>
-              <EventCard
+              <EventBlock
                 title="Resepsi Pernikahan"
                 icon={Clock}
                 event={d.resepsi}
-                align="right"
               />
             </Reveal>
           </div>
@@ -1460,28 +1546,37 @@ export const ForestTropicalTheme = (props) => {
         {/* KISAH CINTA                                                   */}
         {/* ============================================================ */}
         {d.loveStories && d.loveStories.length > 0 && (
-          <section className="relative z-[1] px-6 py-14">
-            <SectionTitle title="Kisah Kasih Kami" />
+          <section
+            className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.moss}`}
+          >
+            <CanopyEdge />
+            <SectionTitle
+              title="Love Story"
+              desc="Setiap langkah menuju satu tujuan yang sama."
+            />
 
-            <div className="relative space-y-7 pl-8 before:absolute before:bottom-2 before:left-[0.6rem] before:top-2 before:w-0.5 before:rounded-full before:bg-gradient-to-b before:from-[#E8D27A] before:via-[#7CC04A] before:to-[#2D6A4F]/30">
+            <div className="mx-auto flex max-w-md flex-col items-center md:max-w-xl">
               {d.loveStories.map((story, idx) => (
-                <Reveal key={idx} delay={idx * 120} className="relative">
-                  <span className="absolute -left-8 top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#E8D27A] bg-[#04120B] text-[#E8D27A]">
-                    <Leaf className="h-2.5 w-2.5" />
-                  </span>
-
-                  <div
-                    className={`rounded-[1.5rem] rounded-tl-md p-4 ${glass}`}
-                  >
-                    <span className="font-serif-theme text-lg font-bold text-[#E8D27A]">
+                <Reveal key={idx} delay={idx * 120} className="w-full">
+                  <div className="flex flex-col items-center text-center">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#E8D27A] bg-[#04120B] text-[#E8D27A] shadow-[0_0_18px_rgba(232,210,122,0.3)]">
+                      <Leaf className="h-4 w-4" />
+                    </span>
+                    <span className="font-serif-theme mt-3 text-xl font-bold text-[#E8D27A]">
                       {story.tahun}
                     </span>
-                    <h4 className="mt-0.5 text-sm font-bold text-white">
+                    <h4 className="mt-1 text-base font-bold text-white">
                       {story.judul}
                     </h4>
-                    <p className="mt-1.5 text-xs leading-relaxed text-[#CFE3C2]">
+                    <p className="mt-2 max-w-sm text-[13px] leading-[1.85] text-[#CFE3C2]">
                       {story.cerita}
                     </p>
+                    {idx < d.loveStories.length - 1 && (
+                      <span
+                        className="my-6 h-12 w-px bg-gradient-to-b from-[#E8D27A]/70 via-[#7CC04A]/40 to-transparent"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                 </Reveal>
               ))}
@@ -1493,10 +1588,13 @@ export const ForestTropicalTheme = (props) => {
         {/* GALERI                                                        */}
         {/* ============================================================ */}
         {d.gallery && d.gallery.length > 0 && (
-          <section className="relative z-[1] px-6 py-14">
-            <SectionTitle title="Galeri Kenangan" />
+          <section
+            className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.dark}`}
+          >
+            <CanopyEdge />
+            <SectionTitle title="Galeri Foto" />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="mx-auto grid max-w-md grid-cols-2 gap-3 md:max-w-4xl md:grid-cols-4 lg:max-w-md lg:grid-cols-2">
               {d.gallery.map((photoUrl, idx) => (
                 <Reveal key={idx} delay={(idx % 2) * 120}>
                   <button
@@ -1527,103 +1625,155 @@ export const ForestTropicalTheme = (props) => {
         )}
 
         {/* ============================================================ */}
-        {/* AMPLOP DIGITAL & KADO                                         */}
+        {/* AMPLOP DIGITAL & KADO (dibuka lewat tombol)                   */}
         {/* ============================================================ */}
-        <section className="relative z-[1] px-6 py-14">
+        <section
+          className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.mid}`}
+        >
+          <CanopyEdge />
           <SectionTitle
-            title="Amplop Digital & Kado"
-            desc="Doa restu Anda adalah hadiah terindah bagi kami. Namun jika Anda ingin memberi tanda kasih, kami menyediakan rekening berikut:"
+            title="Amplop Digital"
+            desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless."
           />
 
-          <div className="mb-6 space-y-4">
-            {d.bankAccounts.map((acc, idx) => (
-              <Reveal key={idx} delay={idx * 120}>
-                <div
-                  className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
-                >
-                  <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
+          <Reveal delay={100}>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowGift((v) => !v)}
+                aria-expanded={showGift}
+                aria-controls="ft-gift-panel"
+                className={primaryBtn}
+              >
+                <Gift className="h-4 w-4" />
+                <span>{showGift ? "Tutup" : "Klik di Sini"}</span>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-500 ${showGift ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+          </Reveal>
 
-                  <div className="relative mb-5 flex items-center justify-between">
-                    <span className="text-sm font-bold tracking-wide text-[#E8D27A]">
-                      {acc.bank}
-                    </span>
-                    <CreditCard className="h-5 w-5 text-[#A6D854]" />
-                  </div>
-
-                  <div className="relative font-mono text-lg font-bold tracking-widest text-white">
-                    {acc.nomor}
-                  </div>
-                  <div className="relative mb-4 mt-1 text-xs text-[#CFE3C2]">
-                    a.n. {acc.nama}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => d.copyBank(acc.nomor, idx)}
-                    className={`${ghostBtn} relative w-full`}
+          <div
+            id="ft-gift-panel"
+            className={`grid transition-[grid-template-rows,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              showGift
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
+                {d.bankAccounts.map((acc, idx) => (
+                  <div
+                    key={idx}
+                    className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
                   >
-                    {d.copiedBankIndex === idx ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
-                        <span>Nomor Tersalin!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
-                        <span>Salin No. Rekening</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+                    <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
 
-          {d.giftAddress && (
-            <Reveal delay={180}>
-              <div className={`rounded-[1.75rem] p-5 text-center ${glass}`}>
-                <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#E8D27A]">
-                  <Gift className="h-4 w-4 text-[#A6D854]" />
-                  <span>Kirim Kado Fisik</span>
-                </div>
-                <p className="mb-4 text-xs leading-relaxed text-[#CFE3C2]">
-                  {d.giftAddress}
-                </p>
-                <button
-                  type="button"
-                  onClick={d.copyAddress}
-                  className={ghostBtn}
-                >
-                  {d.copiedAddress ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
-                      <span>Alamat Tersalin!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
-                      <span>Salin Alamat</span>
-                    </>
-                  )}
-                </button>
+                    <div className="relative mb-5 flex items-center justify-between">
+                      <span className="text-sm font-bold tracking-wide text-[#E8D27A]">
+                        {acc.bank}
+                      </span>
+                      <CreditCard className="h-5 w-5 text-[#A6D854]" />
+                    </div>
+
+                    <div className="relative font-mono text-lg font-bold tracking-widest text-white">
+                      {acc.nomor}
+                    </div>
+                    <div className="relative mb-4 mt-1 text-xs text-[#CFE3C2]">
+                      a.n. {acc.nama}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => d.copyBank(acc.nomor, idx)}
+                      className={`${ghostBtn} relative w-full`}
+                    >
+                      {d.copiedBankIndex === idx ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
+                          <span>Nomor Tersalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
+                          <span>Salin No. Rekening</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ))}
+
+                {d.giftAddress && (
+                  <div
+                    className={`rounded-[1.75rem] p-5 text-center md:col-span-2 lg:col-span-1 ${glass}`}
+                  >
+                    <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#E8D27A]">
+                      <Gift className="h-4 w-4 text-[#A6D854]" />
+                      <span>Kirim Kado Fisik</span>
+                    </div>
+                    <p className="mb-4 text-xs leading-relaxed text-[#CFE3C2]">
+                      {d.giftAddress}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={d.copyAddress}
+                      className={ghostBtn}
+                    >
+                      {d.copiedAddress ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
+                          <span>Alamat Tersalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
+                          <span>Salin Alamat</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
-            </Reveal>
-          )}
+            </div>
+          </div>
         </section>
 
         {/* ============================================================ */}
-        {/* BUKU TAMU & RSVP                                              */}
+        {/* UCAPAN & RSVP                                                 */}
         {/* ============================================================ */}
-        <section className="relative z-[1] px-6 py-14">
+        <section
+          className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.dark}`}
+        >
+          <CanopyEdge />
           <SectionTitle
-            title="Buku Tamu & RSVP"
-            desc="Mohon konfirmasikan kehadiran Anda untuk membantu kami mempersiapkan acara"
+            title="Ucapkan Sesuatu"
+            desc="Berikan ucapan & doa restu, serta konfirmasi kehadiran Anda"
           />
+
+          {/* statistik kehadiran */}
+          <Reveal delay={60}>
+            <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 py-3 text-center">
+                <span className="font-serif-theme block text-2xl font-bold tabular-nums text-emerald-300">
+                  {hadirCount}
+                </span>
+                <span className="text-[11px] text-[#CFE3C2]">Hadir</span>
+              </div>
+              <div className="rounded-2xl border border-rose-400/30 bg-rose-500/10 py-3 text-center">
+                <span className="font-serif-theme block text-2xl font-bold tabular-nums text-rose-300">
+                  {tidakHadirCount}
+                </span>
+                <span className="text-[11px] text-[#CFE3C2]">Tidak Hadir</span>
+              </div>
+            </div>
+          </Reveal>
 
           <Reveal delay={100}>
             <form
               onSubmit={d.rsvp.send}
-              className={`mb-8 space-y-4 rounded-[2rem] rounded-tr-[4rem] p-6 ${glass}`}
+              className={`mx-auto mb-10 max-w-md space-y-4 rounded-[2rem] p-6 text-left ${glass}`}
             >
               <div>
                 <label
@@ -1639,7 +1789,7 @@ export const ForestTropicalTheme = (props) => {
                   value={d.rsvp.name}
                   onChange={(e) => d.rsvp.setName(e.target.value)}
                   placeholder="Nama Anda"
-                  className="w-full rounded-xl border border-[#A6D854]/25 bg-[#04120B]/70 px-4 py-2.5 text-xs text-white placeholder:text-stone-500 focus:border-[#A6D854] focus:outline-none focus:ring-1 focus:ring-[#A6D854]"
+                  className={inputCls}
                 />
               </div>
 
@@ -1655,7 +1805,7 @@ export const ForestTropicalTheme = (props) => {
                     id="ft-rsvp-status"
                     value={d.rsvp.status}
                     onChange={(e) => d.rsvp.setStatus(e.target.value)}
-                    className="w-full rounded-xl border border-[#A6D854]/25 bg-[#04120B]/70 px-3 py-2.5 text-xs text-white focus:border-[#A6D854] focus:outline-none focus:ring-1 focus:ring-[#A6D854]"
+                    className={inputCls}
                   >
                     <option value="Hadir">Hadir</option>
                     <option value="Tidak Hadir">Tidak Hadir</option>
@@ -1674,7 +1824,7 @@ export const ForestTropicalTheme = (props) => {
                     id="ft-rsvp-pax"
                     value={d.rsvp.pax}
                     onChange={(e) => d.rsvp.setPax(e.target.value)}
-                    className="w-full rounded-xl border border-[#A6D854]/25 bg-[#04120B]/70 px-3 py-2.5 text-xs text-white focus:border-[#A6D854] focus:outline-none focus:ring-1 focus:ring-[#A6D854]"
+                    className={inputCls}
                   >
                     <option value="1 Orang">1 Orang</option>
                     <option value="2 Orang">2 Orang</option>
@@ -1697,7 +1847,7 @@ export const ForestTropicalTheme = (props) => {
                   value={d.rsvp.message}
                   onChange={(e) => d.rsvp.setMessage(e.target.value)}
                   placeholder="Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
-                  className="w-full rounded-xl border border-[#A6D854]/25 bg-[#04120B]/70 px-4 py-2.5 text-xs text-white placeholder:text-stone-500 focus:border-[#A6D854] focus:outline-none focus:ring-1 focus:ring-[#A6D854]"
+                  className={inputCls}
                 />
               </div>
 
@@ -1711,39 +1861,75 @@ export const ForestTropicalTheme = (props) => {
             </form>
           </Reveal>
 
-          {/* daftar ucapan */}
-          <Reveal delay={180}>
-            <div className="max-h-96 space-y-3 overflow-y-auto pr-1">
-              {d.rsvp.list && d.rsvp.list.length > 0 ? (
-                d.rsvp.list.map((r) => (
-                  <div
-                    key={r.id}
-                    className="space-y-1.5 rounded-2xl rounded-tl-md border border-[#E9F3C9]/15 bg-[#04120B]/70 p-4 backdrop-blur-md"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-xs font-bold text-white">
-                        {r.guest_name}
-                      </h4>
-                      <span
-                        className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
-                          r.attendance_status === "Hadir"
-                            ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
-                            : r.attendance_status === "Tidak Hadir"
-                              ? "border-rose-500/30 bg-rose-500/20 text-rose-300"
-                              : "border-amber-500/30 bg-amber-500/20 text-amber-300"
-                        }`}
+          {/* daftar ucapan (berpaginasi) */}
+          <Reveal delay={160}>
+            <div className="mx-auto max-w-md">
+              {wishes.length > 0 ? (
+                <>
+                  <div className="space-y-3">
+                    {pagedWishes.map((r) => (
+                      <div
+                        key={r.id}
+                        className="space-y-1.5 rounded-2xl rounded-tl-md border border-[#E9F3C9]/15 bg-[#04120B]/70 p-4 text-left backdrop-blur-md"
                       >
-                        {r.attendance_status}
-                      </span>
-                    </div>
-                    <p className="text-xs leading-relaxed text-[#CFE3C2]">
-                      {r.message}
-                    </p>
-                    <span className="block text-[10px] text-stone-400">
-                      {formatRsvpDate(r.created_at)}
-                    </span>
+                        <div className="flex items-center justify-between gap-2">
+                          <h4 className="text-xs font-bold text-white">
+                            {r.guest_name}
+                          </h4>
+                          <span
+                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
+                              r.attendance_status === "Hadir"
+                                ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                                : r.attendance_status === "Tidak Hadir"
+                                  ? "border-rose-500/30 bg-rose-500/20 text-rose-300"
+                                  : "border-amber-500/30 bg-amber-500/20 text-amber-300"
+                            }`}
+                          >
+                            {r.attendance_status}
+                          </span>
+                        </div>
+                        <p className="text-xs leading-relaxed text-[#CFE3C2]">
+                          {r.message}
+                        </p>
+                        <span className="block text-[10px] text-stone-400">
+                          {formatRsvpDate(r.created_at)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))
+
+                  {totalWishPages > 1 && (
+                    <div className="mt-5 flex items-center justify-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setWishPage(Math.max(0, safeWishPage - 1))
+                        }
+                        disabled={safeWishPage === 0}
+                        aria-label="Halaman sebelumnya"
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#A6D854]/35 bg-[#0E3B28]/70 text-[#E8D27A] transition-colors hover:bg-[#3F9B58]/50 disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <span className="text-xs tabular-nums text-[#CFE3C2]">
+                        {safeWishPage + 1} / {totalWishPages}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setWishPage(
+                            Math.min(totalWishPages - 1, safeWishPage + 1),
+                          )
+                        }
+                        disabled={safeWishPage >= totalWishPages - 1}
+                        aria-label="Halaman berikutnya"
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#A6D854]/35 bg-[#0E3B28]/70 text-[#E8D27A] transition-colors hover:bg-[#3F9B58]/50 disabled:cursor-not-allowed disabled:opacity-35"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <p className="py-4 text-center text-xs italic text-[#B9D2B0]">
                   Belum ada ucapan doa. Jadilah yang pertama memberikan ucapan!
@@ -1754,36 +1940,72 @@ export const ForestTropicalTheme = (props) => {
         </section>
 
         {/* ============================================================ */}
-        {/* FOOTER: kembali ke jalan setapak                              */}
+        {/* PENUTUP: foto penuh + ucapan terima kasih                     */}
         {/* ============================================================ */}
-        <footer className="relative z-[1] overflow-hidden px-6 pb-32 pt-16 text-center">
-          <div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-[#04120B]/70 to-[#04120B]"
-            aria-hidden="true"
-          />
+        <footer className="relative z-[1] flex min-h-[34rem] flex-col justify-end overflow-hidden px-6 pb-32 pt-24 text-center">
+          <div className="absolute inset-0 z-0" aria-hidden="true">
+            {closingPhoto && (
+              <img
+                src={closingPhoto}
+                alt=""
+                className="h-full w-full object-cover object-[center_25%]"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#04120B] via-[#04120B]/55 to-[#04120B]/92" />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(20,82,50,0.5) 0%, transparent 75%)",
+              }}
+            />
+          </div>
+
+          {/* Aksen dedaunan sudut penutup yang proporsional dan menyatu */}
+          <Sway
+            className="-left-4 -bottom-4 z-10 h-44 w-32 pointer-events-none opacity-75"
+            rot="6deg"
+          >
+            <img
+              src="/images/forest-botanical-cluster.png"
+              alt=""
+              className="h-full w-full object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] [transform:scaleX(-1)]"
+            />
+          </Sway>
+          <Sway
+            className="-right-4 -bottom-4 z-10 h-44 w-32 pointer-events-none opacity-75"
+            rot="-6deg"
+            delay="1s"
+          >
+            <img
+              src="/images/forest-botanical-cluster.png"
+              alt=""
+              className="h-full w-full object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] "
+            />
+          </Sway>
+
           <Reveal delay={100}>
-            <div className="relative">
+            <div className="relative z-20">
               <MonsteraLeafSVG className="mx-auto mb-4 h-8 w-8 text-[#E8D27A]" />
 
               <p className="mx-auto mb-5 max-w-xs text-[13px] leading-relaxed text-[#D9EBCB]">
                 Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
                 Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+                Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
               </p>
 
               <p className="font-serif-theme mb-1 text-sm font-semibold text-[#E8D27A]">
                 Kami yang berbahagia,
               </p>
-              <h3 className="font-serif-theme text-3xl font-bold text-white">
+              <h3 className="font-serif-theme text-3xl font-bold text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.8)]">
                 {d.groomShort} & {d.brideShort}
               </h3>
 
               <p className="mt-8 text-[10px] text-[#9DB890]">
-                Digital Wedding Invitation • Forest Tropical Edition
+                Tamuva Digital Wedding Invitation
               </p>
             </div>
           </Reveal>
-
-          <FoliageEdge />
         </footer>
       </div>
 

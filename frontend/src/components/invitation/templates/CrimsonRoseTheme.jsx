@@ -148,7 +148,7 @@ export const CrimsonRoseTheme = (props) => {
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-[#FFFFFF] text-[#2E0507] shadow-2xl overflow-hidden font-sans border-x border-[#EED7D9] selection:bg-[#FAD2D4] scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-[#FFFFFF] text-[#2E0507] shadow-2xl overflow-hidden font-sans border-x border-[#EED7D9] selection:bg-[#FAD2D4] scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -396,7 +396,7 @@ export const CrimsonRoseTheme = (props) => {
             </p>
           </div>
 
-          <div className="relative max-w-md mx-auto space-y-12">
+          <div className="relative max-w-md md:max-w-4xl lg:max-w-md mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-10 items-stretch">
             {/* Mempelai Wanita */}
             <div className="relative text-left space-y-4">
               <div
@@ -431,7 +431,7 @@ export const CrimsonRoseTheme = (props) => {
 
             {/* Ampersand '&' Raksasa Artistik di Latar Belakang */}
             <div
-              className="text-center font-serif-theme select-none pointer-events-none -my-14"
+              className="text-center font-serif-theme select-none pointer-events-none -my-14 md:hidden lg:block"
               aria-hidden="true"
             >
               <span className="text-8xl sm:text-9xl font-light text-[#E5989B]/40 italic block leading-none">
@@ -440,7 +440,7 @@ export const CrimsonRoseTheme = (props) => {
             </div>
 
             {/* Mempelai Pria (Aligned Right) */}
-            <div className="relative text-right space-y-4 flex flex-col items-end">
+            <div className="relative text-right md:text-left lg:text-right space-y-4 flex flex-col items-end md:items-start lg:items-end">
               <div
                 className="w-48 h-60 rounded-3xl overflow-hidden border-4 border-[#8A151F] shadow-xl relative bg-stone-100"
                 style={{
@@ -463,7 +463,7 @@ export const CrimsonRoseTheme = (props) => {
                   <span className="font-semibold text-stone-800">{d.groomMother}</span>
                 </p>
                 {/* Social Media Link Buttons */}
-                <div className="flex items-center justify-end gap-2 pt-2">
+                <div className="flex items-center justify-end md:justify-start lg:justify-end gap-2 pt-2">
                   <SocialIconBtn label="Instagram">
                     <Share2 className="w-3.5 h-3.5" />
                   </SocialIconBtn>
@@ -488,7 +488,7 @@ export const CrimsonRoseTheme = (props) => {
             </p>
           </div>
 
-          <div className="space-y-8 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {/* Card Akad Nikah */}
             <div className="bg-white rounded-3xl p-6 border border-[#EED7D9] shadow-sm text-center space-y-4">
               <span className="inline-block px-4 py-1 rounded-full bg-[#6E0F17] text-white text-xs font-bold uppercase tracking-wider font-sans">
@@ -701,7 +701,7 @@ export const CrimsonRoseTheme = (props) => {
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-3 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {d.gallery.map((photo, i) => (
               <div
                 key={i}
@@ -742,7 +742,7 @@ export const CrimsonRoseTheme = (props) => {
             </p>
           </div>
 
-          <div className="space-y-5 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {d.bankAccounts.map((acc, index) => (
               <div
                 key={index}

@@ -90,7 +90,7 @@ export const PublicInvitationPage = ({ slug }) => {
   const TemplateComponent = getTemplateComponent(templateCode);
 
   return (
-    <div className="min-h-screen w-full bg-stone-950 flex justify-center lg:block overflow-x-hidden">
+    <div className="min-h-screen w-full bg-stone-950 flex justify-center md:block lg:block overflow-x-hidden">
       <TemplateComponent
         invitation={invitation}
         guest={guest}

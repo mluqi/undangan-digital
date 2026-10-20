@@ -343,7 +343,7 @@ export const RusticWoodTheme = (props) => {
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-rustic-kraft text-[#2E1F14] shadow-2xl overflow-hidden font-serif-theme border-x border-[#D8C3A5] selection:bg-[#8C6239] selection:text-white scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-rustic-kraft text-[#2E1F14] shadow-2xl overflow-hidden font-serif-theme border-x border-[#D8C3A5] selection:bg-[#8C6239] selection:text-white scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -596,7 +596,7 @@ export const RusticWoodTheme = (props) => {
         <section className="py-16 px-6 space-y-12">
           <SectionHeading eyebrow="Kedua Mempelai" title="Mempelai Pengantin" />
 
-          <div className="space-y-10 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-10 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             <CoupleCard
               photo={d.photoBride}
               alt={d.bride}
@@ -610,7 +610,7 @@ export const RusticWoodTheme = (props) => {
             />
 
             <div
-              className="flex items-center justify-center gap-3"
+              className="flex items-center justify-center gap-3 md:hidden lg:flex"
               aria-hidden="true"
             >
               <BotanicalBranch flip className="w-20" />
@@ -665,7 +665,7 @@ export const RusticWoodTheme = (props) => {
             ))}
           </div>
 
-          <div className="space-y-8 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             <EventTicket
               label="Akad Nikah"
               dotClass="bg-[#FBBF24]"
@@ -722,7 +722,7 @@ export const RusticWoodTheme = (props) => {
         <section className="py-16 px-6 space-y-10 bg-[#F4EBDC]/70 border-y border-[#D8C3A5]/70">
           <SectionHeading eyebrow="Gallery" title="Momen Bahagia" />
 
-          <div className="grid grid-cols-2 gap-5 max-w-md mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-5 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {d.gallery.map((photo, i) => (
               <button
                 key={i}
@@ -769,7 +769,7 @@ export const RusticWoodTheme = (props) => {
             subtitle="Doa restu Anda merupakan karunia terindah bagi kami. Namun jika memberi adalah tanda kasih Anda, Anda dapat mengirimkannya melalui amplop digital:"
           />
 
-          <div className="space-y-5 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {d.bankAccounts.map((acc, index) => (
               <div
                 key={index}
@@ -815,7 +815,7 @@ export const RusticWoodTheme = (props) => {
             ))}
 
             {d.giftAddress && (
-              <div className="relative p-5 pt-7 rounded-xl bg-[#F1E4CC] border border-[#D8C3A5] shadow-xl space-y-2.5 text-xs text-[#5A3821] font-sans">
+              <div className="relative p-5 pt-7 rounded-xl bg-[#F1E4CC] border border-[#D8C3A5] shadow-xl space-y-2.5 text-xs text-[#5A3821] font-sans md:col-span-2 lg:col-span-1">
                 <span
                   aria-hidden="true"
                   className="absolute left-1/2 top-2.5 -translate-x-1/2 w-3 h-3 rounded-full bg-[#2A1B10] ring-2 ring-[#D8C3A5]"

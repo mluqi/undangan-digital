@@ -174,7 +174,7 @@ export const JavaneseTheme = (props) => {
 
   return (
     <div
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto'} font-editorial shadow-2xl selection:bg-[#C9A24B]/40 scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${d.isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen overflow-hidden mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} font-editorial shadow-2xl selection:bg-[#C9A24B]/40 scroll-smooth`}
       style={{ background: C.cream, color: C.sogan }}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
@@ -343,6 +343,7 @@ export const JavaneseTheme = (props) => {
       {/* ===================== MEMPELAI ===================== */}
       <section className="px-7 py-14 space-y-12" style={{ background: C.soganSoft }}>
         <SectionTitle eyebrow="Kedua Mempelai" title="Mempelai" light />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
         {[
           { photo: d.photoBride, name: d.bride, role: 'Mempelai Wanita', parent: 'Putri dari Bapak/Ibu', f: d.brideFather, m: d.brideMother },
           { photo: d.photoGroom, name: d.groom, role: 'Mempelai Pria', parent: 'Putra dari Bapak/Ibu', f: d.groomFather, m: d.groomMother },
@@ -367,9 +368,10 @@ export const JavaneseTheme = (props) => {
                 <span className="font-semibold" style={{ color: C.cream }}>{p.m}</span>
               </p>
             </div>
-            {i === 0 && <Divider light />}
+            {i === 0 && <div className="md:hidden lg:block"><Divider light /></div>}
           </Reveal>
         ))}
+        </div>
       </section>
 
       {/* ===================== ACARA ===================== */}
@@ -391,18 +393,20 @@ export const JavaneseTheme = (props) => {
           </div>
         </Reveal>
 
-        <EventCard
-          label={{ eyebrow: 'Acara Pertama', title: 'Akad Nikah' }}
-          info={d.akad}
-          mapLabel="Petunjuk Lokasi"
-          calendarUrl={d.googleCalUrl}
-        />
-        <EventCard
-          label={{ eyebrow: 'Acara Kedua', title: 'Resepsi Pernikahan' }}
-          info={d.resepsi}
-          mapLabel="Petunjuk Lokasi"
-          calendarUrl={d.googleCalUrl}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <EventCard
+            label={{ eyebrow: 'Acara Pertama', title: 'Akad Nikah' }}
+            info={d.akad}
+            mapLabel="Petunjuk Lokasi"
+            calendarUrl={d.googleCalUrl}
+          />
+          <EventCard
+            label={{ eyebrow: 'Acara Kedua', title: 'Resepsi Pernikahan' }}
+            info={d.resepsi}
+            mapLabel="Petunjuk Lokasi"
+            calendarUrl={d.googleCalUrl}
+          />
+        </div>
       </section>
 
       {/* ===================== KISAH ===================== */}
@@ -463,7 +467,7 @@ export const JavaneseTheme = (props) => {
           Doa restu Bapak/Ibu merupakan anugerah terindah bagi kami. Namun bila berkenan memberikan tanda kasih,
           dapat disalurkan melalui:
         </p>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
           {d.bankAccounts.map((acc, i) => (
             <Reveal key={i}>
               <div className="p-5 text-center space-y-1.5" style={{ border: `1px solid ${C.gold}`, background: '#00000025' }}>
@@ -482,7 +486,7 @@ export const JavaneseTheme = (props) => {
             </Reveal>
           ))}
           {d.giftAddress && (
-            <div className="p-5 text-center space-y-2" style={{ border: `1px dashed ${C.gold}99` }}>
+            <div className="p-5 text-center space-y-2 md:col-span-2 lg:col-span-1" style={{ border: `1px dashed ${C.gold}99` }}>
               <p className="font-cinzel text-[11px] tracking-[0.25em] uppercase" style={{ color: C.gold }}>Kirim Kado</p>
               <p className="text-sm leading-relaxed" style={{ color: C.cream }}>{d.giftAddress}</p>
               <button

@@ -465,7 +465,7 @@ export const SereinTheme = ({
   return (
     <div
       ref={motionRef}
-      className={`relative w-full max-w-lg lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto'} bg-[#FBF9F5] text-[#24201D] shadow-2xl overflow-hidden font-editorial border-x border-[#E8E2D8] selection:bg-[#E8E2D8] scroll-smooth`}
+      className={`relative w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] ${isOpened ? 'min-h-screen md:w-full lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0' : 'h-screen max-h-screen mx-auto md:w-full lg:w-[480px] xl:w-[520px]'} bg-[#FBF9F5] text-[#24201D] shadow-2xl overflow-hidden font-editorial border-x border-[#E8E2D8] selection:bg-[#E8E2D8] scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop */}
       <DesktopSidePanel
@@ -651,7 +651,7 @@ export const SereinTheme = ({
         <section className="py-20 px-6 sm:px-8 space-y-14">
           <SectionTitle eyebrow="KEDUA MEMPELAI" title="Mempelai Pengantin" />
 
-          <div className="space-y-16 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-12 md:gap-8 lg:gap-16 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             <CoupleBlock
               photo={photoGroom}
               alt="Mempelai Pria"
@@ -708,7 +708,7 @@ export const SereinTheme = ({
             </div>
           </div>
 
-          <div className="space-y-6 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             <EventBlock
               no="01"
               title="Akad Nikah"
@@ -767,7 +767,7 @@ export const SereinTheme = ({
         <section className="px-6 py-20 space-y-12">
           <SectionTitle eyebrow="GALLERY" title="Galeri Kenangan" />
 
-          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-2 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
             {gallery.map((photo, index) => (
               <button
                 key={index}
@@ -807,7 +807,7 @@ export const SereinTheme = ({
             </p>
           </SectionTitle>
 
-          <div className="space-y-4 max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
             {bankAccounts.map((acc, index) => (
               <div
                 key={index}
@@ -857,7 +857,7 @@ export const SereinTheme = ({
             ))}
 
             {giftAddress && (
-              <div className="p-5 bg-white/70 border border-[#C8B79B] text-xs text-[#5A4F46] space-y-3 font-sans text-left">
+              <div className="p-5 bg-white/70 border border-[#C8B79B] text-xs text-[#5A4F46] space-y-3 font-sans text-left md:col-span-2 lg:col-span-1">
                 <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] font-bold text-[#7C7369]">
                   <Gift className="w-3.5 h-3.5 text-amber-700" />
                   KIRIM KADO FISIK:

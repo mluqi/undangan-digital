@@ -142,6 +142,7 @@ export const DesktopSidePanel = ({
   invitationData = {},
   isOpened = false,
   isModalView = false,
+  alwaysVisible = false,
 }) => {
   // Jangan tampilkan jika di dalam modal preview sempit
   if (isModalView) return null;
@@ -221,7 +222,7 @@ export const DesktopSidePanel = ({
     <aside
       aria-label="Informasi Mempelai Desktop"
       className={`fixed inset-y-0 left-0 lg:right-[480px] xl:right-[520px] z-10 hidden lg:flex flex-col justify-between overflow-hidden transition-all duration-700 ease-out ${
-        isOpened ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'
+        isOpened || alwaysVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'
       }`}
     >
       {/* Background Slideshow Foto Prewedding */}
