@@ -27,6 +27,7 @@ export const InvitationFloatingControls = ({
   guestPax = 1,
   isOpened = false,
   showQr = true, // Mengatur apakah floater penanda buku QR ditampilkan atau disembunyikan
+  showQrFloater = true, // Khusus menyembunyikan tombol melayang QR (modal tetap bisa dibuka dari tombol konten)
   accentColor = '#DFB76C', // default gold/amber
   theme = 'gold', // 'gold' | 'wood' | 'dark' | 'sage'
   isOpen: externalIsOpen,
@@ -200,7 +201,7 @@ export const InvitationFloatingControls = ({
       {/* ============================================================== */}
       {/* 1. FLOATER QR CODE TAMU VERTIKAL (MUNCUL BERSAMAAN SCROLL TOP) */}
       {/* ============================================================== */}
-      {showQr && showScrollTop && (
+      {showQr && showQrFloater && theme !== 'forest' && showScrollTop && (
         <div className="fixed bottom-[8rem] right-4 sm:bottom-[8.25rem] sm:right-6 z-40 select-none animate-in fade-in-0 zoom-in-95 duration-300">
           <div className="relative group">
             {/* Subtle glowing halo on floater */}

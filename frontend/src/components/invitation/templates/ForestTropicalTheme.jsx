@@ -1063,6 +1063,7 @@ export const ForestTropicalTheme = (props) => {
         guestPax={d.guestPax}
         isOpened={d.isOpened}
         showQr={d.showQr}
+        showQrFloater={false}
         theme="forest"
         accentColor="#A6D854"
         isOpen={isQrModalOpen}
@@ -1362,23 +1363,19 @@ export const ForestTropicalTheme = (props) => {
                 </span>
               </p>
 
-              {/* Tombol Save The Date & QR Code berdampingan */}
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <a href="#save-the-date" className={primaryBtn}>
-                  <Calendar className="h-4 w-4" />
-                  <span>Save The Date</span>
-                </a>
-                {d.showQr && (
+              {/* Tombol QR Code Check-in */}
+              {d.showQr && (
+                <div className="mt-6 flex items-center justify-center">
                   <button
                     type="button"
                     onClick={() => setIsQrModalOpen(true)}
-                    className={`${ghostBtn} cursor-pointer shadow-[0_0_20px_rgba(166,216,84,0.15)]`}
+                    className={primaryBtn}
                   >
-                    <QrCode className="h-4 w-4 text-[#A6D854]" />
-                    <span>QR Code</span>
+                    <QrCode className="h-4 w-4" />
+                    <span>QR Code Check-in</span>
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
               <ChevronDown
                 className="mx-auto mt-5 h-5 w-5 animate-bounce text-[#E8D27A]/80"
