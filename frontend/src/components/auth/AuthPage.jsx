@@ -1,28 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../ui/Toast';
-import { Button, Input, Card, Badge } from '../ui';
-import { Mail, Lock, User, Sparkles, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Button, Input, Card } from '../ui';
+import { Mail, Lock, User, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const AuthPage = ({ onSuccess }) => {
   const { login, register } = useAuth();
   const toast = useToast();
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState('login'); // 'login' | 'register' (mode register di-hide)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  // Quick fill demo accounts from the backend seeders
-  const fillDemoAccount = (demoEmail, demoRole) => {
-    setEmail(demoEmail);
-    setPassword('password123');
-    setErrorMsg('');
-    toast.info(`Kredensial ${demoRole} terisi otomatis: ${demoEmail}`);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,36 +69,11 @@ export const AuthPage = ({ onSuccess }) => {
 
         {/* Auth Card */}
         <Card className="p-6 sm:p-8 shadow-xl border-slate-200/90 backdrop-blur-xs bg-white/95">
-          {/* Mode Switcher Tabs */}
-          <div className="flex rounded-xl bg-slate-100 p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode('login');
-                setErrorMsg('');
-              }}
-              className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
-                mode === 'login'
-                  ? 'bg-white text-indigo-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Masuk
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('register');
-                setErrorMsg('');
-              }}
-              className={`flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
-                mode === 'register'
-                  ? 'bg-white text-indigo-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Daftar Akun
-            </button>
+          <div className="mb-6 text-center sm:text-left">
+            <h2 className="text-lg font-bold text-slate-900">Masuk ke Akun</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Masukkan email dan kata sandi untuk mengakses dashboard
+            </p>
           </div>
 
           {errorMsg && (
@@ -165,44 +132,9 @@ export const AuthPage = ({ onSuccess }) => {
               isLoading={isLoading}
               rightIcon={ArrowRight}
             >
-              {mode === 'login' ? 'Masuk ke Dashboard' : 'Buat Akun Saya'}
+              Masuk ke Dashboard
             </Button>
           </form>
-
-          {/* Quick Demo Seeders Fill Buttons */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-2.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Akun Demo dari Seeder Database:</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('admin@undangan.id', 'Admin')}
-                className="p-2.5 text-left rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-200 transition-all group"
-              >
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[11px] font-bold text-indigo-900">Admin</span>
-                  <Badge variant="primary" size="sm">Admin</Badge>
-                </div>
-                <p className="text-[10px] text-slate-500 truncate">admin@undangan.id</p>
-                <p className="text-[10px] text-indigo-600 font-mono mt-0.5">password123</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('client@undangan.id', 'User')}
-                className="p-2.5 text-left rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all group"
-              >
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[11px] font-bold text-slate-800">User / Client</span>
-                  <Badge variant="default" size="sm">User</Badge>
-                </div>
-                <p className="text-[10px] text-slate-500 truncate">client@undangan.id</p>
-                <p className="text-[10px] text-slate-600 font-mono mt-0.5">password123</p>
-              </button>
-            </div>
-          </div>
         </Card>
       </div>
     </div>

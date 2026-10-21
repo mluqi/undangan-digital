@@ -78,9 +78,10 @@ class GuestService {
       `QR-${invitation.slug.toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // Auto generate link jika belum ada
+    const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
     const link =
       qr_link ||
-      `http://localhost:8001/api/invitations/slug/${invitation.slug}?to=${encodeURIComponent(name)}&code=${uniqueCode}`;
+      `${frontendBase}/invitation/${invitation.slug}?to=${encodeURIComponent(name)}&code=${uniqueCode}`;
 
     return await Guest.create({
       invitation_id: invitationId,
@@ -167,9 +168,10 @@ class GuestService {
         `CHK-${invitation.slug.toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${index + 1}`;
 
       // Link QR: Gunakan link eksternal jika ada, jika tidak generate link default
+      const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
       const finalLink =
         rawLink ||
-        `http://localhost:8001/api/invitations/slug/${invitation.slug}?to=${encodeURIComponent(rawName)}&code=${uniqueCode}`;
+        `${frontendBase}/invitation/${invitation.slug}?to=${encodeURIComponent(rawName)}&code=${uniqueCode}`;
 
       return {
         invitation_id: invitationId,

@@ -10,6 +10,9 @@ import {
   X,
   Share2,
   Copy,
+  Link2,
+  Lock,
+  ShieldCheck,
   Crown,
   FileSpreadsheet,
   ExternalLink,
@@ -130,6 +133,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     slug: '',
     expired_at: '',
     showQrCheckin: true,
+    lockGuestList: false,
     mempelaiPria: '',
     ayahPria: '',
     ibuPria: '',
@@ -299,6 +303,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             : c.showQrCheckin !== undefined
             ? Boolean(c.showQrCheckin)
             : true,
+        lockGuestList: Boolean(c.lockGuestList),
         mempelaiPria: c.mempelaiPria || '',
         ayahPria: c.ayahPria || '',
         ibuPria: c.ibuPria || '',
@@ -631,9 +636,15 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
   const handleCopyShareText = (guest) => {
     const publicUrl = `${window.location.origin}/invitation/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
-    const text = `Kepada Yth. ${guest.name},\nKami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami:\n${publicUrl}\n\n*QR Code Check-In Tamu:* ${guest.qr_link || guest.qr_code}`;
+    const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami:\n\n${publicUrl}`;
     navigator.clipboard.writeText(text);
     toast.success('Teks undangan personal tamu berhasil disalin untuk WhatsApp!');
+  };
+
+  const handleCopyOnlyLink = (guest) => {
+    const publicUrl = `${window.location.origin}/invitation/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
+    navigator.clipboard.writeText(publicUrl);
+    toast.success(`Link undangan untuk ${guest.name} berhasil disalin!`);
   };
 
   // ==============================================================
@@ -784,6 +795,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
         content_json: {
           showQrCheckin: Boolean(settingsForm.showQrCheckin),
           showQr: Boolean(settingsForm.showQrCheckin),
+          lockGuestList: Boolean(settingsForm.lockGuestList),
           mempelaiPria: settingsForm.mempelaiPria,
           ayahPria: settingsForm.ayahPria,
           ibuPria: settingsForm.ibuPria,
@@ -942,8 +954,18 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             variant="ghost"
             title="Salin Pesan Undangan WhatsApp"
             onClick={() => handleCopyShareText(row)}
+            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
           >
-            <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+            <Share2 className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            title="Salin Link Undangan Saja"
+            onClick={() => handleCopyOnlyLink(row)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <Link2 className="w-3.5 h-3.5" />
           </Button>
           <Button
             size="sm"
@@ -1406,33 +1428,74 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             </div>
           </Card>
 
-          {/* Pengaturan Floating QR Check-In & Floater Pass */}
-          <Card className="p-5 border-slate-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50/40 to-slate-50 border border-amber-200/80">
-              <div className="flex items-start gap-3.5">
-                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-700 border border-amber-500/25 mt-0.5 shrink-0">
-                  <QrCode className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-900">
-                      Tampilkan Floater QR Check-In (Akses Tamu)
-                    </h4>
-                    <Badge variant={settingsForm.showQrCheckin ? 'success' : 'neutral'} size="sm" dot>
-                      {settingsForm.showQrCheckin ? 'Floater Aktif' : 'Disembunyikan'}
-                    </Badge>
+          {/* Pengaturan Fitur & Keamanan Undangan */}
+          <Card className="p-5 border-slate-200 space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Fitur & Keamanan Undangan
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Konfigurasi interaktivitas dan tingkat privasi akses untuk tamu undangan Anda.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Floater QR Check-In */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50/80 via-orange-50/30 to-slate-50 border border-amber-200/70">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-700 border border-amber-500/25 mt-0.5 shrink-0">
+                    <QrCode className="w-5 h-5" />
                   </div>
-                  <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
-                    Jika diaktifkan, floater penanda buku QR Code akan muncul di sisi layar undangan publik agar tamu dapat membuka modal kartu akses dan QR check-in saat hadir di lokasi.
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900">
+                        Floater QR Check-In
+                      </h4>
+                      <Badge variant={settingsForm.showQrCheckin ? 'success' : 'neutral'} size="sm" dot>
+                        {settingsForm.showQrCheckin ? 'Aktif' : 'Disembunyikan'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
+                      Menampilkan tombol melayang (floater bookmark) di sisi layar undangan publik agar tamu dapat membuka kartu akses dan QR check-in saat tiba di lokasi acara.
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 pt-1 sm:pt-0 pl-11 sm:pl-0">
+                  <Switch
+                    checked={settingsForm.showQrCheckin}
+                    onChange={(val) => setSettingsForm({ ...settingsForm, showQrCheckin: val })}
+                    label={settingsForm.showQrCheckin ? 'Aktif' : 'Nonaktif'}
+                  />
                 </div>
               </div>
-              <div className="shrink-0 pt-1 sm:pt-0 pl-11 sm:pl-0">
-                <Switch
-                  checked={settingsForm.showQrCheckin}
-                  onChange={(val) => setSettingsForm({ ...settingsForm, showQrCheckin: val })}
-                  label={settingsForm.showQrCheckin ? 'Tampilkan QR' : 'Sembunyikan'}
-                />
+
+              {/* Lock Guest List / Kunci Akses Undangan */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50/80 via-teal-50/30 to-slate-50 border border-emerald-200/70">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-700 border border-emerald-500/25 mt-0.5 shrink-0">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900">
+                        Kunci Akses Undangan (Hanya Tamu Terdaftar)
+                      </h4>
+                      <Badge variant={settingsForm.lockGuestList ? 'success' : 'neutral'} size="sm" dot>
+                        {settingsForm.lockGuestList ? 'Terkunci / Privat' : 'Terbuka'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
+                      Jika diaktifkan, hanya tamu yang terdaftar di daftar tamu resmi yang dapat membuka undangan. Ini mencegah siapapun mengubah parameter tautan (<code className="text-[11px] bg-slate-200/80 px-1 py-0.5 rounded text-slate-800 font-mono">?to=NamaLain</code>) dengan nama yang tidak diundang.
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 pt-1 sm:pt-0 pl-11 sm:pl-0">
+                  <Switch
+                    checked={settingsForm.lockGuestList}
+                    onChange={(val) => setSettingsForm({ ...settingsForm, lockGuestList: val })}
+                    label={settingsForm.lockGuestList ? 'Terkunci' : 'Terbuka'}
+                  />
+                </div>
               </div>
             </div>
           </Card>
@@ -2263,8 +2326,18 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                 className="flex-1 gap-1.5"
                 onClick={() => handleCopyShareText(selectedGuestQr)}
               >
-                <Copy className="w-3.5 h-3.5" />
+                <Share2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Salin WA Tamu</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1.5"
+                onClick={() => handleCopyOnlyLink(selectedGuestQr)}
+              >
+                <Link2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Salin Link Saja</span>
               </Button>
 
               {selectedGuestQr.qr_link && (
@@ -2272,10 +2345,10 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                   href={selectedGuestQr.qr_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50"
+                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50"
+                  title="Buka Link Undangan"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Buka Link</span>
                 </a>
               )}
             </div>

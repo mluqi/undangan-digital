@@ -60,11 +60,33 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
   const [rsvpPax, setRsvpPax] = useState('1 Orang');
   const [rsvpMessage, setRsvpMessage] = useState('');
   const [localRsvps, setLocalRsvps] = useState(rsvps);
+  const [hasJustSubmitted, setHasJustSubmitted] = useState(false);
 
   useEffect(() => setLocalRsvps(rsvps), [rsvps]);
   useEffect(() => {
     if (guest?.name) setRsvpName(guest.name);
   }, [guest]);
+
+  const activeGuestName = (rsvpName || guest?.name || '').trim();
+  const storageKey =
+    invitation?.id && activeGuestName && activeGuestName !== 'Tamu Undangan'
+      ? `rsvp_done_${invitation.id}_${encodeURIComponent(activeGuestName.toLowerCase())}`
+      : null;
+
+  const hasSubmitted = useMemo(() => {
+    if (hasJustSubmitted) return true;
+    if (!activeGuestName || activeGuestName === 'Tamu Undangan') return false;
+
+    if (storageKey && typeof window !== 'undefined') {
+      try {
+        if (localStorage.getItem(storageKey) === 'true') return true;
+      } catch (e) {}
+    }
+
+    return localRsvps.some(
+      (r) => r.guest_name && r.guest_name.trim().toLowerCase() === activeGuestName.toLowerCase()
+    );
+  }, [hasJustSubmitted, activeGuestName, storageKey, localRsvps]);
 
   // Kunci scroll halaman saat cover undangan masih aktif
   useEffect(() => {
@@ -280,20 +302,32 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
 
   const sendRsvp = (e) => {
     e.preventDefault();
-    if (!rsvpName.trim() || !rsvpMessage.trim()) {
-      toast.error('Mohon isi nama dan ucapan Anda.');
+    if (hasSubmitted) {
+      toast.error('Anda sudah mengirimkan ucapan doa restu sebelumnya.');
       return;
     }
+    const finalGuestName = (rsvpName || guest?.name || data.guestName || '').trim();
+    if (!finalGuestName || !rsvpMessage.trim()) {
+      toast.error('Mohon isi pesan ucapan doa Anda.');
+      return;
+    }
+    const nowIso = new Date().toISOString();
     const newRsvp = {
       id: Date.now(),
-      guest_name: rsvpName,
+      guest_name: finalGuestName,
       attendance_status: rsvpStatus,
       pax: rsvpPax,
       message: rsvpMessage,
-      created_at: new Date().toISOString(),
+      created_at: nowIso,
+      createdAt: nowIso,
     };
     setLocalRsvps([newRsvp, ...localRsvps]);
-    setRsvpMessage('');
+    setHasJustSubmitted(true);
+    if (storageKey && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(storageKey, 'true');
+      } catch (e) {}
+    }
     onSubmitRsvp?.(newRsvp);
     toast.success('Terima kasih atas doa restu Anda!');
   };
@@ -318,7 +352,7 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
     copiedAddress,
     copiedQrLink,
     rsvp: {
-      name: rsvpName,
+      name: rsvpName || guest?.name || data.guestName || 'Tamu Undangan',
       setName: setRsvpName,
       status: rsvpStatus,
       setStatus: setRsvpStatus,
@@ -328,6 +362,7 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
       setMessage: setRsvpMessage,
       list: localRsvps,
       send: sendRsvp,
+      hasSubmitted,
     },
     gallerySelected: selectedPhotoIndex,
     setGallerySelected: setSelectedPhotoIndex,
@@ -337,7 +372,49 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
   };
 };
 
-export const formatRsvpDate = (iso) =>
-  iso
-    ? new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-    : 'Baru saja';
+export const formatRsvpDate = (rawDate) => {
+  if (!rawDate) return 'Baru saja';
+  try {
+    if (typeof rawDate === 'object' && !(rawDate instanceof Date)) {
+      rawDate = rawDate.created_at || rawDate.createdAt || rawDate.date;
+      if (!rawDate) return 'Baru saja';
+    }
+
+    if (rawDate instanceof Date) {
+      if (isNaN(rawDate.getTime())) return 'Baru saja';
+      return rawDate.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+
+    // Tangani format MySQL / SQLite: "2026-10-21 14:02:11" agar valid di Safari / Mac
+    let cleaned = String(rawDate).trim();
+    if (cleaned.includes(' ') && !cleaned.includes('T')) {
+      cleaned = cleaned.replace(' ', 'T');
+    }
+
+    const d = new Date(cleaned);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+
+    const fallback = new Date(rawDate);
+    if (!isNaN(fallback.getTime())) {
+      return fallback.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+
+    return 'Baru saja';
+  } catch (err) {
+    return 'Baru saja';
+  }
+};

@@ -33,6 +33,7 @@ import {
   Eye,
   ExternalLink,
   Sparkles,
+  Link2,
 } from 'lucide-react';
 import { InvitationTemplateModal } from '../components/invitation/InvitationTemplateModal';
 
@@ -387,9 +388,22 @@ export const GuestsPage = ({ defaultInvitationId }) => {
   };
 
   const handleCopyShareText = (guest) => {
-    const text = `Kepada Yth. ${guest.name},\nKami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami:\n${guest.qr_link}\n\n*Simpan QR Code check-in Anda: ${guest.qr_code}*`;
+    const inviteUrl =
+      guest.qr_link && !guest.qr_link.includes('/api/invitations')
+        ? guest.qr_link
+        : `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
+    const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami:\n\n${inviteUrl}`;
     navigator.clipboard.writeText(text);
     toast.success('Teks undangan personal disalin untuk dibagikan via WhatsApp!');
+  };
+
+  const handleCopyOnlyLink = (guest) => {
+    const inviteUrl =
+      guest.qr_link && !guest.qr_link.includes('/api/invitations')
+        ? guest.qr_link
+        : `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
+    navigator.clipboard.writeText(inviteUrl);
+    toast.success(`Link undangan untuk ${guest.name} berhasil disalin!`);
   };
 
   const columns = [
@@ -508,10 +522,20 @@ export const GuestsPage = ({ defaultInvitationId }) => {
           <Button
             size="sm"
             variant="ghost"
-            title="Bagikan Teks Undangan"
+            title="Bagikan Teks Undangan WhatsApp"
             onClick={() => handleCopyShareText(row)}
+            className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
           >
-            <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+            <Share2 className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            title="Salin Link Undangan Saja"
+            onClick={() => handleCopyOnlyLink(row)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <Link2 className="w-3.5 h-3.5" />
           </Button>
           <Button
             size="sm"
@@ -861,8 +885,18 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                   className="flex-1 gap-1.5"
                   onClick={() => handleCopyShareText(selectedGuestQr)}
                 >
-                  <Copy className="w-3.5 h-3.5" />
+                  <Share2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Salin WA Tamu</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-1.5"
+                  onClick={() => handleCopyOnlyLink(selectedGuestQr)}
+                >
+                  <Link2 className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Salin Link Saja</span>
                 </Button>
 
                 {selectedGuestQr.qr_link && (
@@ -870,10 +904,10 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                     href={selectedGuestQr.qr_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50"
+                    className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50"
+                    title="Buka Link Undangan"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Tes Link</span>
                   </a>
                 )}
               </div>

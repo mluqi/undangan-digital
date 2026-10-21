@@ -13,9 +13,8 @@ import {
   Trees,
   Leaf,
   QrCode,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
+  Lock,
 } from "lucide-react";
 import { MusicVinylPlayer } from "../MusicVinylPlayer";
 import { InvitationFloatingControls } from "../InvitationFloatingControls";
@@ -60,9 +59,6 @@ const SIDE_PHOTO_ONLY_ALWAYS = false;
 const INTRO_SAFETY_MS = 15000;
 /** Mulai memudarkan cover sekian detik sebelum video selesai */
 const INTRO_FADE_LEAD_S = 0.9;
-
-/** Jumlah ucapan per halaman pada daftar RSVP */
-const WISHES_PER_PAGE = 5;
 
 /** Palet — tetap sama seperti tema hutan sebelumnya */
 const C = {
@@ -844,8 +840,6 @@ export const ForestTropicalTheme = (props) => {
   const [isOpeningTransition, setIsOpeningTransition] = useState(false);
   const [isCoverDismissed, setIsCoverDismissed] = useState(false);
   const [coverExited, setCoverExited] = useState(false);
-  const [showGift, setShowGift] = useState(false);
-  const [wishPage, setWishPage] = useState(0);
 
   // Koleksi foto untuk slide hero & cover
   const heroPhotos = useMemo(() => {
@@ -881,7 +875,7 @@ export const ForestTropicalTheme = (props) => {
     return () => clearInterval(timer);
   }, [heroPhotos]);
 
-  // Ucapan RSVP: statistik + paginasi
+  // Ucapan RSVP: statistik
   const wishes = Array.isArray(d.rsvp?.list) ? d.rsvp.list : [];
   const hadirCount = wishes.filter(
     (r) => r.attendance_status === "Hadir",
@@ -889,15 +883,6 @@ export const ForestTropicalTheme = (props) => {
   const tidakHadirCount = wishes.filter(
     (r) => r.attendance_status === "Tidak Hadir",
   ).length;
-  const totalWishPages = Math.max(
-    1,
-    Math.ceil(wishes.length / WISHES_PER_PAGE),
-  );
-  const safeWishPage = Math.min(wishPage, totalWishPages - 1);
-  const pagedWishes = wishes.slice(
-    safeWishPage * WISHES_PER_PAGE,
-    safeWishPage * WISHES_PER_PAGE + WISHES_PER_PAGE,
-  );
 
   /* ------------------------------------------------------------ */
   /* Video intro                                                   */
@@ -1023,6 +1008,10 @@ export const ForestTropicalTheme = (props) => {
         .ft-sway { transform-origin: 50% 100%; transform: rotate(var(--r, 0deg)); animation: ft-sway 7s ease-in-out infinite; }
         .ft-bush-sway-left { transform-origin: 0% 100%; animation: ft-bush-sway-left 7s ease-in-out infinite; }
         .ft-bush-sway-right { transform-origin: 100% 100%; animation: ft-bush-sway-right 7.5s ease-in-out infinite; }
+        .ft-wishes-scroll::-webkit-scrollbar { width: 4px; }
+        .ft-wishes-scroll::-webkit-scrollbar-track { background: rgba(4, 18, 11, 0.4); border-radius: 9999px; }
+        .ft-wishes-scroll::-webkit-scrollbar-thumb { background: rgba(166, 216, 84, 0.35); border-radius: 9999px; }
+        .ft-wishes-scroll::-webkit-scrollbar-thumb:hover { background: rgba(166, 216, 84, 0.6); }
         @media (prefers-reduced-motion: reduce) {
           .ft-mist, .ft-mist-slow, .ft-sway, .ft-bush-sway-left, .ft-bush-sway-right { animation: none; }
         }
@@ -1647,7 +1636,7 @@ export const ForestTropicalTheme = (props) => {
         )}
 
         {/* ============================================================ */}
-        {/* AMPLOP DIGITAL & KADO (dibuka lewat tombol)                   */}
+        {/* AMPLOP DIGITAL & KADO (Ditampilkan Langsung)                  */}
         {/* ============================================================ */}
         <section
           className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.mid}`}
@@ -1659,107 +1648,80 @@ export const ForestTropicalTheme = (props) => {
           />
 
           <Reveal delay={100}>
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setShowGift((v) => !v)}
-                aria-expanded={showGift}
-                aria-controls="ft-gift-panel"
-                className={primaryBtn}
-              >
-                <Gift className="h-4 w-4" />
-                <span>{showGift ? "Tutup" : "Klik di Sini"}</span>
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-500 ${showGift ? "rotate-180" : ""}`}
-                />
-              </button>
+            <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
+              {d.bankAccounts.map((acc, idx) => (
+                <div
+                  key={idx}
+                  className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
+                >
+                  <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
+
+                  <div className="relative mb-5 flex items-center justify-between">
+                    <span className="text-sm font-bold tracking-wide text-[#E8D27A]">
+                      {acc.bank}
+                    </span>
+                    <CreditCard className="h-5 w-5 text-[#A6D854]" />
+                  </div>
+
+                  <div className="relative font-mono text-lg font-bold tracking-widest text-white">
+                    {acc.nomor}
+                  </div>
+                  <div className="relative mb-4 mt-1 text-xs text-[#CFE3C2]">
+                    a.n. {acc.nama}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => d.copyBank(acc.nomor, idx)}
+                    className={`${ghostBtn} relative w-full`}
+                  >
+                    {d.copiedBankIndex === idx ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
+                        <span>Nomor Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
+                        <span>Salin No. Rekening</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
+
+              {d.giftAddress && (
+                <div
+                  className={`rounded-[1.75rem] p-5 text-center md:col-span-2 lg:col-span-1 ${glass}`}
+                >
+                  <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#E8D27A]">
+                    <Gift className="h-4 w-4 text-[#A6D854]" />
+                    <span>Kirim Kado Fisik</span>
+                  </div>
+                  <p className="mb-4 text-xs leading-relaxed text-[#CFE3C2]">
+                    {d.giftAddress}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={d.copyAddress}
+                    className={ghostBtn}
+                  >
+                    {d.copiedAddress ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
+                        <span>Alamat Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
+                        <span>Salin Alamat</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </Reveal>
-
-          <div
-            id="ft-gift-panel"
-            className={`grid transition-[grid-template-rows,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              showGift
-                ? "grid-rows-[1fr] opacity-100"
-                : "grid-rows-[0fr] opacity-0"
-            }`}
-          >
-            <div className="overflow-hidden">
-              <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
-                {d.bankAccounts.map((acc, idx) => (
-                  <div
-                    key={idx}
-                    className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
-                  >
-                    <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
-
-                    <div className="relative mb-5 flex items-center justify-between">
-                      <span className="text-sm font-bold tracking-wide text-[#E8D27A]">
-                        {acc.bank}
-                      </span>
-                      <CreditCard className="h-5 w-5 text-[#A6D854]" />
-                    </div>
-
-                    <div className="relative font-mono text-lg font-bold tracking-widest text-white">
-                      {acc.nomor}
-                    </div>
-                    <div className="relative mb-4 mt-1 text-xs text-[#CFE3C2]">
-                      a.n. {acc.nama}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => d.copyBank(acc.nomor, idx)}
-                      className={`${ghostBtn} relative w-full`}
-                    >
-                      {d.copiedBankIndex === idx ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
-                          <span>Nomor Tersalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
-                          <span>Salin No. Rekening</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                ))}
-
-                {d.giftAddress && (
-                  <div
-                    className={`rounded-[1.75rem] p-5 text-center md:col-span-2 lg:col-span-1 ${glass}`}
-                  >
-                    <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#E8D27A]">
-                      <Gift className="h-4 w-4 text-[#A6D854]" />
-                      <span>Kirim Kado Fisik</span>
-                    </div>
-                    <p className="mb-4 text-xs leading-relaxed text-[#CFE3C2]">
-                      {d.giftAddress}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={d.copyAddress}
-                      className={ghostBtn}
-                    >
-                      {d.copiedAddress ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
-                          <span>Alamat Tersalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
-                          <span>Salin Alamat</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* ============================================================ */}
@@ -1798,20 +1760,25 @@ export const ForestTropicalTheme = (props) => {
               className={`mx-auto mb-10 max-w-md space-y-4 rounded-[2rem] p-6 text-left ${glass}`}
             >
               <div>
-                <label
-                  htmlFor="ft-rsvp-name"
-                  className="mb-1.5 block text-xs font-medium text-[#CFE3C2]"
-                >
-                  Nama Lengkap
-                </label>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label
+                    htmlFor="ft-rsvp-name"
+                    className="block text-xs font-medium text-[#CFE3C2]"
+                  >
+                    Nama Lengkap
+                  </label>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                    <Lock className="h-2.5 w-2.5" />
+                    Terkunci sesuai undangan
+                  </span>
+                </div>
                 <input
                   id="ft-rsvp-name"
                   type="text"
-                  required
-                  value={d.rsvp.name}
-                  onChange={(e) => d.rsvp.setName(e.target.value)}
-                  placeholder="Nama Anda"
-                  className={inputCls}
+                  readOnly
+                  value={d.rsvp.name || d.guestName || "Tamu Undangan"}
+                  placeholder="Nama Tamu"
+                  className={`${inputCls} cursor-not-allowed bg-black/40 text-stone-200 border-emerald-500/20 select-none focus:ring-0 focus:border-emerald-500/20`}
                 />
               </div>
 
@@ -1825,9 +1792,10 @@ export const ForestTropicalTheme = (props) => {
                   </label>
                   <select
                     id="ft-rsvp-status"
+                    disabled={d.rsvp.hasSubmitted}
                     value={d.rsvp.status}
                     onChange={(e) => d.rsvp.setStatus(e.target.value)}
-                    className={inputCls}
+                    className={`${inputCls} ${d.rsvp.hasSubmitted ? "cursor-not-allowed opacity-60" : ""}`}
                   >
                     <option value="Hadir">Hadir</option>
                     <option value="Tidak Hadir">Tidak Hadir</option>
@@ -1844,9 +1812,10 @@ export const ForestTropicalTheme = (props) => {
                   </label>
                   <select
                     id="ft-rsvp-pax"
+                    disabled={d.rsvp.hasSubmitted}
                     value={d.rsvp.pax}
                     onChange={(e) => d.rsvp.setPax(e.target.value)}
-                    className={inputCls}
+                    className={`${inputCls} ${d.rsvp.hasSubmitted ? "cursor-not-allowed opacity-60" : ""}`}
                   >
                     <option value="1 Orang">1 Orang</option>
                     <option value="2 Orang">2 Orang</option>
@@ -1866,92 +1835,86 @@ export const ForestTropicalTheme = (props) => {
                   id="ft-rsvp-msg"
                   rows={3}
                   required
+                  disabled={d.rsvp.hasSubmitted}
                   value={d.rsvp.message}
                   onChange={(e) => d.rsvp.setMessage(e.target.value)}
-                  placeholder="Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
-                  className={inputCls}
+                  placeholder={
+                    d.rsvp.hasSubmitted
+                      ? "Terima kasih, Anda telah mengirimkan ucapan & doa restu."
+                      : "Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
+                  }
+                  className={`${inputCls} ${d.rsvp.hasSubmitted ? "cursor-not-allowed bg-black/40 text-stone-300 opacity-70" : ""}`}
                 />
               </div>
 
+              {d.rsvp.hasSubmitted && (
+                <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-950/50 p-3 text-[11px] text-emerald-300 leading-snug">
+                  <Check className="h-4 w-4 shrink-0 text-emerald-400" />
+                  <span>
+                    Anda telah mengirimkan ucapan doa restu untuk kedua mempelai. Terima kasih!
+                  </span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2F8A48] via-[#7CC04A] to-[#2F8A48] px-4 py-3 text-xs font-bold text-[#04120B] shadow-md transition-all hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                disabled={d.rsvp.hasSubmitted}
+                className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-xs font-bold transition-all focus-visible:outline-none ${
+                  d.rsvp.hasSubmitted
+                    ? "cursor-not-allowed bg-stone-800/80 text-emerald-400/90 border border-emerald-500/30 opacity-80 select-none"
+                    : "cursor-pointer bg-gradient-to-r from-[#2F8A48] via-[#7CC04A] to-[#2F8A48] text-[#04120B] shadow-md hover:brightness-110 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white"
+                }`}
               >
-                <Send className="h-3.5 w-3.5" />
-                <span>Kirim Ucapan & Konfirmasi</span>
+                {d.rsvp.hasSubmitted ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Ucapan Telah Terkirim</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    <span>Kirim Ucapan & Konfirmasi</span>
+                  </>
+                )}
               </button>
             </form>
           </Reveal>
 
-          {/* daftar ucapan (berpaginasi) */}
+          {/* daftar ucapan (3 card ditampilkan, sisanya discroll jika melebihi 3) */}
           <Reveal delay={160}>
             <div className="mx-auto max-w-md">
               {wishes.length > 0 ? (
-                <>
-                  <div className="space-y-3">
-                    {pagedWishes.map((r) => (
-                      <div
-                        key={r.id}
-                        className="space-y-1.5 rounded-2xl rounded-tl-md border border-[#E9F3C9]/15 bg-[#04120B]/70 p-4 text-left backdrop-blur-md"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-bold text-white">
-                            {r.guest_name}
-                          </h4>
-                          <span
-                            className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
-                              r.attendance_status === "Hadir"
-                                ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
-                                : r.attendance_status === "Tidak Hadir"
-                                  ? "border-rose-500/30 bg-rose-500/20 text-rose-300"
-                                  : "border-amber-500/30 bg-amber-500/20 text-amber-300"
-                            }`}
-                          >
-                            {r.attendance_status}
-                          </span>
-                        </div>
-                        <p className="text-xs leading-relaxed text-[#CFE3C2]">
-                          {r.message}
-                        </p>
-                        <span className="block text-[10px] text-stone-400">
-                          {formatRsvpDate(r.created_at)}
+                <div className="ft-wishes-scroll max-h-[345px] overflow-y-auto space-y-3 pr-1.5 scroll-smooth">
+                  {wishes.map((r) => (
+                    <div
+                      key={r.id}
+                      className="space-y-1.5 rounded-2xl rounded-tl-md border border-[#E9F3C9]/15 bg-[#04120B]/70 p-4 text-left backdrop-blur-md"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-xs font-bold text-white">
+                          {r.guest_name}
+                        </h4>
+                        <span
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
+                            r.attendance_status === "Hadir"
+                              ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                              : r.attendance_status === "Tidak Hadir"
+                                ? "border-rose-500/30 bg-rose-500/20 text-rose-300"
+                                : "border-amber-500/30 bg-amber-500/20 text-amber-300"
+                          }`}
+                        >
+                          {r.attendance_status}
                         </span>
                       </div>
-                    ))}
-                  </div>
-
-                  {totalWishPages > 1 && (
-                    <div className="mt-5 flex items-center justify-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setWishPage(Math.max(0, safeWishPage - 1))
-                        }
-                        disabled={safeWishPage === 0}
-                        aria-label="Halaman sebelumnya"
-                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#A6D854]/35 bg-[#0E3B28]/70 text-[#E8D27A] transition-colors hover:bg-[#3F9B58]/50 disabled:cursor-not-allowed disabled:opacity-35"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <span className="text-xs tabular-nums text-[#CFE3C2]">
-                        {safeWishPage + 1} / {totalWishPages}
+                      <p className="text-xs leading-relaxed text-[#CFE3C2]">
+                        {r.message}
+                      </p>
+                      <span className="block text-[10px] text-stone-400">
+                        {formatRsvpDate(r.created_at || r.createdAt)}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setWishPage(
-                            Math.min(totalWishPages - 1, safeWishPage + 1),
-                          )
-                        }
-                        disabled={safeWishPage >= totalWishPages - 1}
-                        aria-label="Halaman berikutnya"
-                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#A6D854]/35 bg-[#0E3B28]/70 text-[#E8D27A] transition-colors hover:bg-[#3F9B58]/50 disabled:cursor-not-allowed disabled:opacity-35"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
                     </div>
-                  )}
-                </>
+                  ))}
+                </div>
               ) : (
                 <p className="py-4 text-center text-xs italic text-[#B9D2B0]">
                   Belum ada ucapan doa. Jadilah yang pertama memberikan ucapan!

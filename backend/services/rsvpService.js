@@ -1,4 +1,5 @@
-const { Rsvp, Invitation } = require('../models');
+const { Rsvp, Invitation, Guest } = require('../models');
+const { Op } = require('sequelize');
 
 class RsvpService {
   /**
@@ -38,6 +39,38 @@ class RsvpService {
       const error = new Error('Masa aktif undangan ini telah berakhir.');
       error.statusCode = 400;
       throw error;
+    }
+
+    // Jika fitur lockGuestList aktif, pastikan nama tamu terdaftar dalam daftar tamu resmi
+    if (invitation.content_json?.lockGuestList && guest_name) {
+      const registeredGuest = await Guest.findOne({
+        where: {
+          invitation_id,
+          name: { [Op.like]: `%${guest_name.trim()}%` },
+        },
+      });
+
+      if (!registeredGuest) {
+        const error = new Error('Mohon maaf, hanya tamu yang terdaftar resmi yang dapat mengirimkan ucapan atau konfirmasi kehadiran.');
+        error.statusCode = 403;
+        throw error;
+      }
+    }
+
+    // Batasi pengiriman ucapan: maksimal 1 pesan per tamu
+    if (guest_name) {
+      const existingRsvp = await Rsvp.findOne({
+        where: {
+          invitation_id,
+          guest_name: guest_name.trim(),
+        },
+      });
+
+      if (existingRsvp) {
+        const error = new Error('Anda sudah mengirimkan ucapan atau konfirmasi kehadiran sebelumnya.');
+        error.statusCode = 400;
+        throw error;
+      }
     }
 
     const validStatuses = ['Hadir', 'Tidak Hadir', 'Ragu-ragu'];

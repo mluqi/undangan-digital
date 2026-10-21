@@ -237,12 +237,12 @@ export const INVITATION_EXCEL_FIELDS = [
     defaultValue: 'Siti Aminah',
   },
   {
-    category: '5. Amplop Digital & Kado (Opsional)',
-    key: 'alamat_kado',
-    label: 'Alamat Kirim Kado Fisik',
+    category: '6. Foto Prewedding',
+    key: 'foto_prewedding',
+    label: 'Foto Prewedding (Link Google Drive)',
     required: false,
-    hint: 'Contoh: Perumahan Graha Asri Blok C No. 12, Surabaya (0812-3456-7890)',
-    defaultValue: 'Perumahan Graha Asri Blok C No. 12, Surabaya (0812-3456-7890)',
+    hint: 'Contoh: https://drive.google.com/file/d/1234567890/view',
+    defaultValue: '',
   },
 ];
 

@@ -54,12 +54,19 @@ const invitationRoutes = require("./routes/invitationRoutes");
 const rsvpRoutes = require("./routes/rsvpRoutes");
 const userRoutes = require("./routes/userRoutes");
 const guestRoutes = require("./routes/guestRoutes");
+const invitationController = require("./controllers/invitationController");
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.status(200).send("OK");
 });
+
+// Public Open Graph & Social sharing preview routes (WhatsApp, FB, Twitter, Telegram, dll.)
+app.get(
+  ["/invitation/:slug", "/u/:slug", "/p/:slug", "/preview/:slug"],
+  invitationController.serveInvitationOg
+);
 
 // API Routes
 app.use("/api/auth", authRoutes);

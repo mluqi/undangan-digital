@@ -154,7 +154,7 @@ class InvitationService {
         {
           model: Rsvp,
           as: 'rsvps',
-          attributes: ['id', 'guest_name', 'attendance_status', 'message', 'created_at'],
+          attributes: ['id', 'guest_name', 'attendance_status', 'message', 'created_at', 'createdAt'],
           order: [['created_at', 'DESC']],
         },
       ],
@@ -299,10 +299,13 @@ class InvitationService {
       }
     }
 
+    const isLockedGuestList = Boolean(invitation.content_json?.lockGuestList);
+
     return {
       ...invitation.toJSON(),
       is_expired: isExpired,
       guest,
+      guest_locked: isLockedGuestList && !guest,
     };
   }
 

@@ -6,6 +6,7 @@ const upload = require('../middlewares/uploadMiddleware');
 
 // Public route: Tamu melihat undangan via slug
 router.get('/slug/:slug', invitationController.getInvitationBySlug);
+router.get('/og/:slug', invitationController.serveInvitationOg);
 
 // Protected routes (Admin / User yang login)
 router.get('/', verifyToken, invitationController.getAllInvitations);
