@@ -157,20 +157,96 @@
 .animate-petal {
   animation: petal-drift 9s ease-in-out infinite;
 }
-/* ---------- Scroll Reveal (memakai property `translate` agar tidak bentrok dengan transform elemen) ---------- */
+/* ---------- Creative Scroll Reveal Engine (Silky-Smooth & Varied) ---------- */
 .reveal {
   opacity: 0;
-  translate: 0 28px;
-  transition-property: opacity, translate !important;
-  transition-duration: 0.9s !important;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: opacity, transform, filter;
+  transition-property: opacity, transform, filter;
+  transition-duration: 1.05s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
-.reveal-in {
-  opacity: 1;
-  translate: 0 0;
+
+/* Variant: Fade Up (Default) */
+.reveal,
+.reveal-fade-up {
+  transform: translate3d(0, 36px, 0);
 }
+
+/* Variant: Fade Down */
+.reveal-fade-down {
+  transform: translate3d(0, -36px, 0);
+}
+
+/* Variant: Fade Left (masuk dari kanan) */
+.reveal-fade-left {
+  transform: translate3d(48px, 0, 0);
+}
+
+/* Variant: Fade Right (masuk dari kiri) */
+.reveal-fade-right {
+  transform: translate3d(-48px, 0, 0);
+}
+
+/* Variant: Zoom In (membesar lembut dengan soft blur) */
+.reveal-zoom-in {
+  transform: scale(0.9) translate3d(0, 18px, 0);
+  filter: blur(4px);
+}
+
+/* Variant: Zoom Out (mengecil lembut ke skala normal) */
+.reveal-zoom-out {
+  transform: scale(1.08);
+}
+
+/* Variant: Blur In (merekah dari kabut lembut menjadi jernih) */
+.reveal-blur-in {
+  transform: translate3d(0, 20px, 0);
+  filter: blur(12px);
+}
+
+/* Variant: Rotate In (sentuhan rotasi daun botanis) */
+.reveal-rotate-in {
+  transform: translate3d(0, 28px, 0) rotate(-4deg) scale(0.96);
+}
+
+/* Variant: Flip Up (tilt 3D elegan untuk kartu) */
+.reveal-flip-up {
+  transform: perspective(1000px) rotateX(15deg) translate3d(0, 32px, 0);
+}
+
+/* State: Aktif saat masuk viewport */
+.reveal-in,
+.reveal.reveal-in,
+.reveal-fade-up.reveal-in,
+.reveal-fade-down.reveal-in,
+.reveal-fade-left.reveal-in,
+.reveal-fade-right.reveal-in,
+.reveal-zoom-in.reveal-in,
+.reveal-zoom-out.reveal-in,
+.reveal-blur-in.reveal-in,
+.reveal-rotate-in.reveal-in,
+.reveal-flip-up.reveal-in {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(1) !important;
+  filter: blur(0px) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; translate: none; transition: none !important; }
+  .reveal,
+  .reveal-fade-up,
+  .reveal-fade-down,
+  .reveal-fade-left,
+  .reveal-fade-right,
+  .reveal-zoom-in,
+  .reveal-zoom-out,
+  .reveal-blur-in,
+  .reveal-rotate-in,
+  .reveal-flip-up {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
   .animate-sway, .animate-drift-slow, .animate-breathe, .animate-tick, .cover-stagger > * { animation: none !important; }
 }
 

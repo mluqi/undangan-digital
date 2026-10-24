@@ -516,16 +516,16 @@ const LeafDivider = () => (
 );
 
 /** Judul section — rata tengah */
-const SectionTitle = ({ title, desc }) => (
-  <Reveal className="mb-9 text-center">
-    <h2 className="font-serif-theme text-[2rem] font-bold leading-tight text-[#F4F9E4] drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+const SectionTitle = ({ title, desc, variant = "blur-in" }) => (
+  <Reveal variant={variant} className="mb-9 text-center">
+    <h2 className="font-serif-theme text-[2rem] sm:text-[2.25rem] font-extrabold leading-tight text-[#F4F9E4] drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] tracking-wide">
       {title}
     </h2>
     <div className="mt-3">
       <LeafDivider />
     </div>
     {desc && (
-      <p className="mx-auto mt-3 max-w-[19rem] text-[13px] leading-relaxed text-[#CFE3C2]">
+      <p className="mx-auto mt-3 max-w-[20rem] text-[13.5px] font-medium leading-relaxed text-[#D9EBCB]">
         {desc}
       </p>
     )}
@@ -786,25 +786,25 @@ const EventBlock = ({ title, icon: Icon, event }) => (
     <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/55 bg-[#0E3B28]/70 shadow-[0_0_24px_rgba(166,216,84,0.18)]">
       <Icon className="h-6 w-6 text-[#E8D27A]" />
     </span>
-    <h3 className="font-serif-theme text-2xl font-bold text-[#F4F9E4]">
+    <h3 className="font-serif-theme text-2xl sm:text-[1.75rem] font-extrabold text-[#F4F9E4] tracking-wide drop-shadow-md">
       {title}
     </h3>
 
-    <div className="mt-5 space-y-2 text-[13px] text-[#E2EFD2]">
+    <div className="mt-5 space-y-2.5 text-[13px] text-[#E2EFD2]">
       <p className="flex items-center justify-center gap-2">
         <Calendar className="h-4 w-4 shrink-0 text-[#A6D854]" />
-        <span>{event.tanggal}</span>
+        <span className="text-sm font-bold text-white tracking-wide">{event.tanggal}</span>
       </p>
       <p className="flex items-center justify-center gap-2">
         <Clock className="h-4 w-4 shrink-0 text-[#A6D854]" />
-        <span>{event.waktu}</span>
+        <span className="text-sm font-bold text-[#F4F9E4] tracking-wide">{event.waktu}</span>
       </p>
       <div className="pt-2">
-        <MapPin className="mx-auto mb-1 h-4 w-4 text-[#A6D854]" />
-        <strong className="block text-sm font-semibold text-white">
+        <MapPin className="mx-auto mb-1.5 h-4 w-4 text-[#A6D854]" />
+        <strong className="block text-base font-bold text-white tracking-wide drop-shadow-sm">
           {event.lokasi}
         </strong>
-        <p className="mx-auto mt-1 text-xs leading-relaxed text-[#B9D2B0]">
+        <p className="mx-auto mt-1.5 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
           {event.alamat}
         </p>
       </div>
@@ -815,7 +815,7 @@ const EventBlock = ({ title, icon: Icon, event }) => (
         href={event.mapUrl}
         target="_blank"
         rel="noreferrer"
-        className={`${ghostBtn} mt-6`}
+        className={`${ghostBtn} mt-6 font-bold`}
       >
         <MapPin className="h-3.5 w-3.5 text-[#E8D27A]" />
         <span>Buka Google Maps</span>
@@ -1382,7 +1382,7 @@ export const ForestTropicalTheme = (props) => {
         >
           <SideLeaves />
 
-          <Reveal delay={100}>
+          <Reveal variant="blur-in" delay={120}>
             <div className="relative mx-auto max-w-sm">
               <div
                 className="mx-auto mb-5 flex items-center justify-center gap-2.5"
@@ -1421,23 +1421,23 @@ export const ForestTropicalTheme = (props) => {
 
           <div className="mx-auto grid max-w-md grid-cols-1 gap-12 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
             {/* Pria */}
-            <Reveal delay={100}>
+            <Reveal variant="fade-right" delay={100}>
               <div className="text-center">
                 <GroomBotanicalFrame src={d.photoGroom} alt={d.groom} />
-                <p className="mt-8 text-xs font-medium text-[#A6D854]">
+                <p className="mt-8 text-xs font-bold uppercase tracking-wider text-[#A6D854]">
                   Mempelai Pria
                 </p>
-                <h3 className="font-serif-theme mt-1 text-2xl font-bold leading-snug text-white">
+                <h3 className="font-serif-theme mt-1.5 text-2xl sm:text-3xl font-extrabold leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                   {d.groom}
                 </h3>
-                <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
+                <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
                   Putra tercinta dari
                   <br />
-                  <strong className="font-semibold text-white">
+                  <strong className="font-bold text-white tracking-wide">
                     {d.groomFather}
                   </strong>
                   <br />&{" "}
-                  <strong className="font-semibold text-white">
+                  <strong className="font-bold text-white tracking-wide">
                     {d.groomMother}
                   </strong>
                 </p>
@@ -1445,7 +1445,7 @@ export const ForestTropicalTheme = (props) => {
             </Reveal>
 
             {/* Wanita */}
-            <Reveal delay={200}>
+            <Reveal variant="fade-left" delay={200}>
               <div className="text-center">
                 <BrideBotanicalFrame
                   src={d.photoBride}
@@ -1453,20 +1453,20 @@ export const ForestTropicalTheme = (props) => {
                   ringFrom={C.fern}
                   ringTo={C.gold}
                 />
-                <p className="mt-8 text-xs font-medium text-[#A6D854]">
+                <p className="mt-8 text-xs font-bold uppercase tracking-wider text-[#A6D854]">
                   Mempelai Wanita
                 </p>
-                <h3 className="font-serif-theme mt-1 text-2xl font-bold leading-snug text-white">
+                <h3 className="font-serif-theme mt-1.5 text-2xl sm:text-3xl font-extrabold leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                   {d.bride}
                 </h3>
-                <p className="mt-3 text-xs leading-relaxed text-[#CFE3C2]">
+                <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
                   Putri tercinta dari
                   <br />
-                  <strong className="font-semibold text-white">
+                  <strong className="font-bold text-white tracking-wide">
                     {d.brideFather}
                   </strong>
                   <br />&{" "}
-                  <strong className="font-semibold text-white">
+                  <strong className="font-bold text-white tracking-wide">
                     {d.brideMother}
                   </strong>
                 </p>
@@ -1487,7 +1487,7 @@ export const ForestTropicalTheme = (props) => {
           <CanopyEdge />
           <SectionTitle title="Save The Date" />
 
-          <Reveal delay={80}>
+          <Reveal variant="zoom-in" delay={100}>
             <div className="mx-auto max-w-sm">
               <div className="grid grid-cols-4 gap-2.5">
                 {[
@@ -1540,10 +1540,10 @@ export const ForestTropicalTheme = (props) => {
           </Reveal>
 
           <div className="mx-auto mt-14 grid max-w-md grid-cols-1 gap-12 md:max-w-3xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
-            <Reveal delay={100}>
+            <Reveal variant="fade-right" delay={120}>
               <EventBlock title="Akad Nikah" icon={Calendar} event={d.akad} />
             </Reveal>
-            <Reveal delay={200}>
+            <Reveal variant="fade-left" delay={220}>
               <EventBlock
                 title="Resepsi Pernikahan"
                 icon={Clock}
@@ -1568,18 +1568,23 @@ export const ForestTropicalTheme = (props) => {
 
             <div className="mx-auto flex max-w-md flex-col items-center md:max-w-xl">
               {d.loveStories.map((story, idx) => (
-                <Reveal key={idx} delay={idx * 120} className="w-full">
+                <Reveal
+                  key={idx}
+                  variant={idx % 2 === 0 ? "fade-right" : "fade-left"}
+                  delay={100}
+                  className="w-full"
+                >
                   <div className="flex flex-col items-center text-center">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#E8D27A] bg-[#04120B] text-[#E8D27A] shadow-[0_0_18px_rgba(232,210,122,0.3)]">
                       <Leaf className="h-4 w-4" />
                     </span>
-                    <span className="font-serif-theme mt-3 text-xl font-bold text-[#E8D27A]">
+                    <span className="font-serif-theme mt-3 text-2xl font-extrabold text-[#F3E5AB] tracking-wide">
                       {story.tahun}
                     </span>
-                    <h4 className="mt-1 text-base font-bold text-white">
+                    <h4 className="mt-1.5 text-lg font-bold text-white tracking-wide">
                       {story.judul}
                     </h4>
-                    <p className="mt-2 max-w-sm text-[13px] leading-[1.85] text-[#CFE3C2]">
+                    <p className="mt-2.5 max-w-sm text-[13.5px] font-medium leading-[1.85] text-[#E2EFD2]">
                       {story.cerita}
                     </p>
                     {idx < d.loveStories.length - 1 && (
@@ -1607,7 +1612,7 @@ export const ForestTropicalTheme = (props) => {
 
             <div className="mx-auto grid max-w-md grid-cols-2 gap-3 md:max-w-4xl md:grid-cols-4 lg:max-w-md lg:grid-cols-2">
               {d.gallery.map((photoUrl, idx) => (
-                <Reveal key={idx} delay={(idx % 2) * 120}>
+                <Reveal key={idx} variant="zoom-in" delay={(idx % 4) * 80}>
                   <button
                     type="button"
                     onClick={() => d.openLightbox(idx)}
@@ -1647,33 +1652,30 @@ export const ForestTropicalTheme = (props) => {
             desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless."
           />
 
-          <Reveal delay={100}>
-            <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
-              {d.bankAccounts.map((acc, idx) => (
-                <div
-                  key={idx}
-                  className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
-                >
+          <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
+            {d.bankAccounts.map((acc, idx) => (
+              <Reveal key={idx} variant="flip-up" delay={idx * 130}>
+                <div className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md">
                   <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
 
                   <div className="relative mb-5 flex items-center justify-between">
-                    <span className="text-sm font-bold tracking-wide text-[#E8D27A]">
+                    <span className="text-base font-extrabold tracking-wider text-[#F3E5AB]">
                       {acc.bank}
                     </span>
                     <CreditCard className="h-5 w-5 text-[#A6D854]" />
                   </div>
 
-                  <div className="relative font-mono text-lg font-bold tracking-widest text-white">
+                  <div className="relative font-mono text-xl sm:text-2xl font-black tracking-widest text-white drop-shadow-sm">
                     {acc.nomor}
                   </div>
-                  <div className="relative mb-4 mt-1 text-xs text-[#CFE3C2]">
+                  <div className="relative mb-4 mt-1.5 text-sm font-bold text-[#E2EFD2]">
                     a.n. {acc.nama}
                   </div>
 
                   <button
                     type="button"
                     onClick={() => d.copyBank(acc.nomor, idx)}
-                    className={`${ghostBtn} relative w-full`}
+                    className={`${ghostBtn} relative w-full font-bold tracking-wide`}
                   >
                     {d.copiedBankIndex === idx ? (
                       <>
@@ -1688,23 +1690,23 @@ export const ForestTropicalTheme = (props) => {
                     )}
                   </button>
                 </div>
-              ))}
+              </Reveal>
+            ))}
 
-              {d.giftAddress && (
-                <div
-                  className={`rounded-[1.75rem] p-5 text-center md:col-span-2 lg:col-span-1 ${glass}`}
-                >
-                  <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#E8D27A]">
+            {d.giftAddress && (
+              <Reveal variant="fade-up" delay={200} className="md:col-span-2 lg:col-span-1">
+                <div className={`rounded-[1.75rem] p-5 text-center ${glass}`}>
+                  <div className="mb-2 flex items-center justify-center gap-2 text-base font-bold text-[#F3E5AB]">
                     <Gift className="h-4 w-4 text-[#A6D854]" />
                     <span>Kirim Kado Fisik</span>
                   </div>
-                  <p className="mb-4 text-xs leading-relaxed text-[#CFE3C2]">
+                  <p className="mb-4 text-xs sm:text-sm font-semibold leading-relaxed text-[#E2EFD2]">
                     {d.giftAddress}
                   </p>
                   <button
                     type="button"
                     onClick={d.copyAddress}
-                    className={ghostBtn}
+                    className={`${ghostBtn} font-bold tracking-wide`}
                   >
                     {d.copiedAddress ? (
                       <>
@@ -1719,9 +1721,9 @@ export const ForestTropicalTheme = (props) => {
                     )}
                   </button>
                 </div>
-              )}
-            </div>
-          </Reveal>
+              </Reveal>
+            )}
+          </div>
         </section>
 
         {/* ============================================================ */}
@@ -1737,24 +1739,24 @@ export const ForestTropicalTheme = (props) => {
           />
 
           {/* statistik kehadiran */}
-          <Reveal delay={60}>
+          <Reveal variant="zoom-in" delay={80}>
             <div className="mx-auto mb-6 grid max-w-md grid-cols-2 gap-3">
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 py-3 text-center">
-                <span className="font-serif-theme block text-2xl font-bold tabular-nums text-emerald-300">
+                <span className="font-serif-theme block text-2xl font-extrabold tabular-nums text-emerald-300">
                   {hadirCount}
                 </span>
-                <span className="text-[11px] text-[#CFE3C2]">Hadir</span>
+                <span className="text-xs font-bold text-emerald-300">Hadir</span>
               </div>
               <div className="rounded-2xl border border-rose-400/30 bg-rose-500/10 py-3 text-center">
-                <span className="font-serif-theme block text-2xl font-bold tabular-nums text-rose-300">
+                <span className="font-serif-theme block text-2xl font-extrabold tabular-nums text-rose-300">
                   {tidakHadirCount}
                 </span>
-                <span className="text-[11px] text-[#CFE3C2]">Tidak Hadir</span>
+                <span className="text-xs font-bold text-rose-300">Tidak Hadir</span>
               </div>
             </div>
           </Reveal>
 
-          <Reveal delay={100}>
+          <Reveal variant="fade-up" delay={120}>
             <form
               onSubmit={d.rsvp.send}
               className={`mx-auto mb-10 max-w-md space-y-4 rounded-[2rem] p-6 text-left ${glass}`}
@@ -1763,11 +1765,11 @@ export const ForestTropicalTheme = (props) => {
                 <div className="mb-1.5 flex items-center justify-between">
                   <label
                     htmlFor="ft-rsvp-name"
-                    className="block text-xs font-medium text-[#CFE3C2]"
+                    className="block text-xs font-bold text-[#D9EBCB]"
                   >
                     Nama Lengkap
                   </label>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                     <Lock className="h-2.5 w-2.5" />
                     Terkunci sesuai undangan
                   </span>
@@ -1786,7 +1788,7 @@ export const ForestTropicalTheme = (props) => {
                 <div>
                   <label
                     htmlFor="ft-rsvp-status"
-                    className="mb-1.5 block text-xs font-medium text-[#CFE3C2]"
+                    className="mb-1.5 block text-xs font-bold text-[#D9EBCB]"
                   >
                     Konfirmasi Kehadiran
                   </label>
@@ -1806,7 +1808,7 @@ export const ForestTropicalTheme = (props) => {
                 <div>
                   <label
                     htmlFor="ft-rsvp-pax"
-                    className="mb-1.5 block text-xs font-medium text-[#CFE3C2]"
+                    className="mb-1.5 block text-xs font-bold text-[#D9EBCB]"
                   >
                     Jumlah Hadir
                   </label>
@@ -1827,7 +1829,7 @@ export const ForestTropicalTheme = (props) => {
               <div>
                 <label
                   htmlFor="ft-rsvp-msg"
-                  className="mb-1.5 block text-xs font-medium text-[#CFE3C2]"
+                  className="mb-1.5 block text-xs font-bold text-[#D9EBCB]"
                 >
                   Ucapan & Doa Restu
                 </label>
@@ -1881,7 +1883,7 @@ export const ForestTropicalTheme = (props) => {
           </Reveal>
 
           {/* daftar ucapan (3 card ditampilkan, sisanya discroll jika melebihi 3) */}
-          <Reveal delay={160}>
+          <Reveal variant="fade-up" delay={160}>
             <div className="mx-auto max-w-md">
               {wishes.length > 0 ? (
                 <div className="ft-wishes-scroll max-h-[345px] overflow-y-auto space-y-3 pr-1.5 scroll-smooth">
@@ -1891,11 +1893,11 @@ export const ForestTropicalTheme = (props) => {
                       className="space-y-1.5 rounded-2xl rounded-tl-md border border-[#E9F3C9]/15 bg-[#04120B]/70 p-4 text-left backdrop-blur-md"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-xs font-bold text-white">
+                        <h4 className="text-sm font-bold text-white tracking-wide">
                           {r.guest_name}
                         </h4>
                         <span
-                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold ${
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${
                             r.attendance_status === "Hadir"
                               ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
                               : r.attendance_status === "Tidak Hadir"
@@ -1906,10 +1908,10 @@ export const ForestTropicalTheme = (props) => {
                           {r.attendance_status}
                         </span>
                       </div>
-                      <p className="text-xs leading-relaxed text-[#CFE3C2]">
+                      <p className="text-xs sm:text-[13px] font-medium leading-relaxed text-[#E2EFD2]">
                         {r.message}
                       </p>
-                      <span className="block text-[10px] text-stone-400">
+                      <span className="block text-[11px] font-medium text-stone-300">
                         {formatRsvpDate(r.created_at || r.createdAt)}
                       </span>
                     </div>
@@ -1969,28 +1971,30 @@ export const ForestTropicalTheme = (props) => {
             />
           </Sway>
 
-          <Reveal delay={100}>
-            <div className="relative z-20">
+          <div className="relative z-20">
+            <Reveal variant="blur-in" delay={100}>
               <MonsteraLeafSVG className="mx-auto mb-4 h-8 w-8 text-[#E8D27A]" />
 
-              <p className="mx-auto mb-5 max-w-xs text-[13px] leading-relaxed text-[#D9EBCB]">
+              <p className="mx-auto mb-6 max-w-sm text-[13.5px] sm:text-sm font-medium leading-relaxed text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                 Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
                 Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
                 Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
               </p>
+            </Reveal>
 
-              <p className="font-serif-theme mb-1 text-sm font-semibold text-[#E8D27A]">
+            <Reveal variant="zoom-in" delay={220}>
+              <p className="font-serif-theme mb-2 text-sm sm:text-base font-bold tracking-wider uppercase text-[#F3E5AB] drop-shadow-md">
                 Kami yang berbahagia,
               </p>
-              <h3 className="font-serif-theme text-3xl font-bold text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.8)]">
+              <h3 className="font-serif-theme text-3xl sm:text-4xl font-extrabold text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] tracking-wide">
                 {d.groomShort} & {d.brideShort}
               </h3>
 
               <p className="mt-8 text-[10px] text-[#9DB890]">
                 Tamuva Digital Wedding Invitation
               </p>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </footer>
       </div>
 

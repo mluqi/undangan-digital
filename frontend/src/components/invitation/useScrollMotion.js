@@ -63,9 +63,21 @@ export const useScrollMotion = (rootRef, enabled = true) => {
     root.querySelectorAll('section').forEach((section) => {
       Array.from(section.children).forEach((child, i) => {
         const tag = child.tagName.toLowerCase();
-        if (tag === 'svg' || tag === 'style' || getComputedStyle(child).position === 'absolute') return;
+        if (
+          tag === 'svg' ||
+          tag === 'style' ||
+          getComputedStyle(child).position === 'absolute' ||
+          child.classList.contains('reveal') ||
+          child.querySelector('.reveal')
+        ) {
+          return;
+        }
         if (child.classList.contains('grid') && child.children.length > 1) {
-          Array.from(child.children).forEach((item, j) => targets.push([item, Math.min(j, 8) * 90]));
+          Array.from(child.children).forEach((item, j) => {
+            if (!item.classList.contains('reveal') && !item.querySelector('.reveal')) {
+              targets.push([item, Math.min(j, 8) * 90]);
+            }
+          });
         } else {
           targets.push([child, Math.min(i, 3) * 80]);
         }
