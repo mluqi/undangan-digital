@@ -956,12 +956,14 @@ export const CrimsonRoseTheme = (props) => {
         {/* SECTION 9: PENUTUP & KELUARGA BESAR */}
         <section className="py-16 px-6 text-center space-y-4 bg-white">
           <RoseBotanicalOrnament />
-          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed font-sans">
-            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.
+          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed font-sans whitespace-pre-line">
+            {d.closingText}
           </p>
-          <p className="text-xs font-sans uppercase tracking-widest text-[#8A151F] font-bold">
-            Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh
-          </p>
+          {d.closingGreeting && (
+            <p className="text-xs font-sans uppercase tracking-widest text-[#8A151F] font-bold">
+              {d.closingGreeting}
+            </p>
+          )}
 
           <div className="pt-4 space-y-1">
             <span className="text-[10px] font-sans text-stone-500 uppercase tracking-widest block">

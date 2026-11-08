@@ -114,12 +114,20 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
 
   const groom = content.mempelaiPria || 'Ahmad Fajar, S.T.';
   const bride = content.mempelaiWanita || 'Siti Aminah, S.Pd.';
+  const groomShort =
+    (content.panggilanPria && String(content.panggilanPria).trim()) ||
+    firstName(groom) ||
+    'Ahmad';
+  const brideShort =
+    (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
+    firstName(bride) ||
+    'Aminah';
 
   const data = {
     groom,
     bride,
-    groomShort: firstName(groom),
-    brideShort: firstName(bride),
+    groomShort,
+    brideShort,
     groomPlain: plainName(groom),
     bridePlain: plainName(bride),
     groomFather: content.ayahPria || 'Bpk. H. Abdurrahman',
@@ -141,6 +149,13 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
       mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
     },
     ayatQuote: content.ayat || 'QS. Ar-Rum: 21',
+    closingText:
+      content.teksPenutup ||
+      'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',
+    closingGreeting:
+      content.salamPenutup !== undefined
+        ? content.salamPenutup
+        : "Wassalamu'alaikum Warahmatullahi Wabarakatuh",
     photoCover: content.fotoCover || DEFAULT_PHOTOS.cover,
     photoGroom: content.fotoPria || DEFAULT_PHOTOS.groom,
     photoBride: content.fotoWanita || DEFAULT_PHOTOS.bride,

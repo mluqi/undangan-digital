@@ -79,9 +79,14 @@ export const DashboardPage = ({ onNavigate }) => {
       key: 'client_name',
       header: 'Nama Undangan / Client',
       render: (val, row) => (
-        <div>
-          <span className="font-semibold text-slate-900 block">{val}</span>
-          <span className="text-xs text-slate-400 font-mono">/{row.slug}</span>
+        <div
+          className="cursor-pointer group min-w-0"
+          onClick={() => onNavigate(`/invitations/${row.id}`)}
+        >
+          <span className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors block truncate">
+            {val || row.title || `${row.groom_nickname || ''} & ${row.bride_nickname || ''}`}
+          </span>
+          <span className="text-xs text-slate-400 font-mono truncate block">/{row.slug}</span>
         </div>
       ),
     },
@@ -116,7 +121,7 @@ export const DashboardPage = ({ onNavigate }) => {
           size="sm"
           variant="secondary"
           className="text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
-          onClick={() => onNavigate('/invitations')}
+          onClick={() => onNavigate(`/invitations/${row.id}`)}
         >
           Kelola Undangan
         </Button>
@@ -125,16 +130,16 @@ export const DashboardPage = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-600/15">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl shadow-indigo-600/15">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+          <div className="space-y-2 max-w-xl min-w-0">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-indigo-100">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Platform Undangan Pernikahan Digital v1.0</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="truncate">Platform Undangan Pernikahan Digital v1.0</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight break-words">
               Selamat datang kembali, {user?.name}!
             </h1>
             <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
@@ -142,10 +147,10 @@ export const DashboardPage = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <Button
               variant="secondary"
-              className="bg-white text-indigo-900 hover:bg-indigo-50 border-0 font-semibold shadow-md"
+              className="w-full sm:w-auto justify-center bg-white text-indigo-900 hover:bg-indigo-50 border-0 font-semibold shadow-md"
               leftIcon={Plus}
               onClick={() => onNavigate('/invitations')}
             >
@@ -156,54 +161,54 @@ export const DashboardPage = ({ onNavigate }) => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        <Card className="p-5 flex items-center gap-4 hover:border-indigo-200 transition-all cursor-pointer" onClick={() => onNavigate('/invitations')}>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-            <Mail className="w-6 h-6" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
+        <Card className="p-4 sm:p-5 flex items-center gap-4 hover:border-indigo-200 transition-all cursor-pointer min-w-0" onClick={() => onNavigate('/invitations')}>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+            <Mail className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Undangan</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900">{stats.invitationsCount}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Total Undangan</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-bold text-slate-900">{stats.invitationsCount}</span>
               <Badge variant="primary" size="sm">Aktif</Badge>
             </div>
           </div>
         </Card>
 
-        <Card className="p-5 flex items-center gap-4 hover:border-emerald-200 transition-all cursor-pointer" onClick={() => onNavigate('/invitations')}>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-            <MessageSquareHeart className="w-6 h-6" />
+        <Card className="p-4 sm:p-5 flex items-center gap-4 hover:border-emerald-200 transition-all cursor-pointer min-w-0" onClick={() => onNavigate('/invitations')}>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+            <MessageSquareHeart className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Konfirmasi RSVP</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900">{stats.rsvpsCount}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Konfirmasi RSVP</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-bold text-slate-900">{stats.rsvpsCount}</span>
               <Badge variant="success" size="sm">Hadir</Badge>
             </div>
           </div>
         </Card>
 
-        <Card className="p-5 flex items-center gap-4 hover:border-amber-200 transition-all cursor-pointer" onClick={() => onNavigate('/templates')}>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-            <Palette className="w-6 h-6" />
+        <Card className="p-4 sm:p-5 flex items-center gap-4 hover:border-amber-200 transition-all cursor-pointer min-w-0" onClick={() => onNavigate('/templates')}>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+            <Palette className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Master Templates</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900">{stats.templatesCount}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Master Templates</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-bold text-slate-900">{stats.templatesCount}</span>
               <Badge variant="warning" size="sm">Katalog</Badge>
             </div>
           </div>
         </Card>
 
-        <Card className="p-5 flex items-center gap-4 hover:border-purple-200 transition-all cursor-pointer" onClick={() => onNavigate(isAdmin ? '/users' : '/settings')}>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-            <Users className="w-6 h-6" />
+        <Card className="p-4 sm:p-5 flex items-center gap-4 hover:border-purple-200 transition-all cursor-pointer min-w-0" onClick={() => onNavigate(isAdmin ? '/users' : '/settings')}>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pengguna Sistem</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-2xl font-bold text-slate-900">{stats.usersCount}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">Pengguna Sistem</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-xl sm:text-2xl font-bold text-slate-900">{stats.usersCount}</span>
               <Badge variant="info" size="sm">Terdaftar</Badge>
             </div>
           </div>

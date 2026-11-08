@@ -113,7 +113,7 @@ export const DataTable = ({
     <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden ${className}`}>
       {/* Table Toolbar */}
       {(searchable || actions) && (
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
+        <div className="p-3.5 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
           {searchable ? (
             <div className="w-full sm:max-w-xs">
               <SearchBar
@@ -128,21 +128,31 @@ export const DataTable = ({
             <div />
           )}
 
-          {actions && <div className="flex items-center gap-2 self-end sm:self-auto">{actions}</div>}
+          {actions && (
+            <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+              {actions}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Table Container */}
-      <div className="overflow-x-auto min-h-[200px]">
+      {/* Table Container with @container query support & keyboard scroll accessibility */}
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label={searchPlaceholder || 'Tabel Data'}
+        className="responsive-table-wrapper overflow-x-auto min-h-[180px] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
+      >
         <table className="w-full text-left border-collapse text-xs sm:text-sm">
-          <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 font-semibold select-none">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200/80 text-slate-600 font-semibold select-none">
               {selectable && (
                 <th className="w-12 px-4 py-3.5 text-center">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={handleSelectAll}
+                    aria-label="Pilih semua baris"
                     className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
                   />
                 </th>
@@ -153,7 +163,7 @@ export const DataTable = ({
                   key={col.key}
                   style={{ width: col.width }}
                   onClick={() => col.sortable && handleSort(col.key)}
-                  className={`px-4 py-3.5 text-slate-700 tracking-wider text-xs uppercase font-semibold ${
+                  className={`px-4 py-3.5 text-slate-700 tracking-wider text-xs uppercase font-semibold whitespace-nowrap ${
                     col.align === 'right'
                       ? 'text-right'
                       : col.align === 'center'
@@ -175,12 +185,12 @@ export const DataTable = ({
                       <span className="text-slate-400">
                         {sortConfig.key === col.key ? (
                           sortConfig.direction === 'asc' ? (
-                            <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
+                            <ArrowUp className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />
                           ) : (
-                            <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+                            <ArrowDown className="w-3.5 h-3.5 text-indigo-600" aria-hidden="true" />
                           )
                         ) : (
-                          <ArrowUpDown className="w-3.5 h-3.5" />
+                          <ArrowUpDown className="w-3.5 h-3.5" aria-hidden="true" />
                         )}
                       </span>
                     )}
@@ -200,8 +210,14 @@ export const DataTable = ({
                       <Skeleton className="w-4 h-4 mx-auto" />
                     </td>
                   )}
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-4">
+                  {columns.map((col, colIdx) => (
+                    <td
+                      key={col.key}
+                      data-is-primary={colIdx === 0 ? 'true' : undefined}
+                      data-is-actions={col.key === 'actions' ? 'true' : undefined}
+                      style={{ '--col-label': `"${col.header}"` }}
+                      className="px-4 py-4"
+                    >
                       <Skeleton className="w-3/4 h-4" />
                     </td>
                   ))}
@@ -209,14 +225,14 @@ export const DataTable = ({
               ))
             ) : paginatedData.length === 0 ? (
               // Empty State
-              <tr>
+              <tr data-empty-row="true">
                 <td
                   colSpan={columns.length + (selectable ? 1 : 0)}
                   className="px-6 py-12 text-center text-slate-400"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
-                      <Inbox className="w-6 h-6" />
+                      <Inbox className="w-6 h-6" aria-hidden="true" />
                     </div>
                     <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
                     {searchTerm && (
@@ -240,30 +256,42 @@ export const DataTable = ({
                     }`}
                   >
                     {selectable && (
-                      <td className="w-12 px-4 py-3.5 text-center">
+                      <td className="w-12 px-4 py-3.5 text-center" data-is-select="true">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleSelectRow(row[keyField])}
+                          aria-label={`Pilih baris ${index + 1}`}
                           className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
                         />
                       </td>
                     )}
 
-                    {columns.map((col) => (
-                      <td
-                        key={col.key}
-                        className={`px-4 py-3.5 ${
-                          col.align === 'right'
-                            ? 'text-right'
-                            : col.align === 'center'
-                            ? 'text-center'
-                            : 'text-left'
-                        }`}
-                      >
-                        {col.render ? col.render(row[col.key], row, index) : row[col.key]}
-                      </td>
-                    ))}
+                    {columns.map((col, colIdx) => {
+                      const isPrimary = colIdx === 0;
+                      const isActions = col.key === 'actions';
+
+                      return (
+                        <td
+                          key={col.key}
+                          data-label={col.header}
+                          data-is-primary={isPrimary ? 'true' : undefined}
+                          data-is-actions={isActions ? 'true' : undefined}
+                          style={{ '--col-label': `"${col.header}"` }}
+                          className={`px-4 py-3.5 ${
+                            col.align === 'right'
+                              ? 'text-right'
+                              : col.align === 'center'
+                              ? 'text-center'
+                              : 'text-left'
+                          }`}
+                        >
+                          <div className="responsive-td-content min-w-0">
+                            {col.render ? col.render(row[col.key], row, index) : row[col.key]}
+                          </div>
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })
@@ -274,24 +302,27 @@ export const DataTable = ({
 
       {/* Pagination Footer */}
       {pagination && !isLoading && sortedData.length > 0 && (
-        <div className="px-4 py-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/40">
-          <div className="flex items-center gap-2">
-            <span>Baris per halaman:</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              {rowsPerPageOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-            <span className="hidden sm:inline">
+        <div className="px-3.5 sm:px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/40">
+          <div className="flex flex-wrap items-center justify-between sm:justify-start w-full sm:w-auto gap-2">
+            <div className="flex items-center gap-2">
+              <span>Baris:</span>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                aria-label="Jumlah baris per halaman"
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                {rowsPerPageOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="text-[11px] sm:text-xs">
               Menampilkan{' '}
               <strong className="text-slate-700">
                 {(currentPage - 1) * rowsPerPage + 1}-
@@ -301,27 +332,29 @@ export const DataTable = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-1.5">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </button>
 
             <span className="px-3 py-1 font-medium text-slate-700">
-              Halaman {currentPage} dari {totalPages}
+              Hal {currentPage} / {totalPages}
             </span>
 
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman berikutnya"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>

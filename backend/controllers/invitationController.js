@@ -101,8 +101,8 @@ const isSocialCrawler = (userAgent = '') =>
 
 const renderOpenGraphHtml = (invitation, req) => {
   const content = invitation?.content_json || {};
-  const groom = content.mempelaiPria || 'Ahmad';
-  const bride = content.mempelaiWanita || 'Aminah';
+  const groom = content.panggilanPria || content.mempelaiPria || 'Ahmad';
+  const bride = content.panggilanWanita || content.mempelaiWanita || 'Aminah';
   const to = req.query.to ? String(req.query.to).trim() : '';
 
   const title = to

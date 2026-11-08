@@ -20,7 +20,7 @@ export const Card = ({
 
 export const CardHeader = ({ children, className = '', ...props }) => (
   <div
-    className={`p-6 pb-4 border-b border-slate-100 flex items-center justify-between gap-4 ${className}`}
+    className={`p-4 sm:p-6 pb-3 sm:pb-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 sm:gap-4 ${className}`}
     {...props}
   >
     {children}
@@ -40,14 +40,14 @@ export const CardDescription = ({ children, className = '', ...props }) => (
 );
 
 export const CardContent = ({ children, className = '', ...props }) => (
-  <div className={`p-6 ${className}`} {...props}>
+  <div className={`p-4 sm:p-6 ${className}`} {...props}>
     {children}
   </div>
 );
 
 export const CardFooter = ({ children, className = '', ...props }) => (
   <div
-    className={`p-6 pt-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl flex items-center justify-between gap-4 ${className}`}
+    className={`p-4 sm:p-6 pt-3 sm:pt-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 sm:gap-4 ${className}`}
     {...props}
   >
     {children}

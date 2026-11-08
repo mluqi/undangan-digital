@@ -53,9 +53,11 @@ export const TemplatesPage = () => {
       client_name: `Demo: ${tmpl.name}`,
       content_json: {
         mempelaiPria: 'Arya Bimantara, S.T.',
+        panggilanPria: 'Arya',
         ayahPria: 'Bpk. H. Suryo Kusumo',
         ibuPria: 'Ibu Hj. Endang Rahayu',
         mempelaiWanita: 'Bella Maharani, S.Ds.',
+        panggilanWanita: 'Bella',
         ayahWanita: 'Bpk. H. Hendra Wijaya',
         ibuWanita: 'Ibu Hj. Ratna Juwita',
         ayat: 'QS. Ar-Rum: 21',

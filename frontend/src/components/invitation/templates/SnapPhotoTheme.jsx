@@ -63,6 +63,14 @@ export const SnapPhotoTheme = ({
 
   const groom = content.mempelaiPria || 'Ahmad Fajar, S.T.';
   const bride = content.mempelaiWanita || 'Siti Aminah, S.Pd.';
+  const groomShort =
+    (content.panggilanPria && String(content.panggilanPria).trim()) ||
+    (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') ||
+    'Ahmad';
+  const brideShort =
+    (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
+    (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
+    'Aminah';
   const groomFather = content.ayahPria || 'Bpk. H. Abdurrahman';
   const groomMother = content.ibuPria || 'Ibu Hj. Maryam';
   const brideFather = content.ayahWanita || 'Bpk. H. Ahmad Dahlan';
@@ -92,6 +100,13 @@ export const SnapPhotoTheme = ({
       : true;
 
   const ayatQuote = content.ayat || 'QS. Ar-Rum: 21';
+  const closingText =
+    content.teksPenutup ||
+    'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.';
+  const closingGreeting =
+    content.salamPenutup !== undefined
+      ? content.salamPenutup
+      : 'Wassalamu’alaikum Warahmatullahi Wabarakatuh';
   const photoCover =
     content.fotoCover ||
     'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&auto=format&fit=crop&q=80';
@@ -257,14 +272,14 @@ export const SnapPhotoTheme = ({
   };
 
   const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `The Wedding of ${groom.split(',')[0]} & ${bride.split(',')[0]}`
+    `The Wedding of ${groomShort} & ${brideShort}`
   )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
     'Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.'
   )}&location=${encodeURIComponent(akad.lokasi)}`;
 
   const sidePanelData = {
-    groomShort: (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') || 'Ahmad',
-    brideShort: (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') || 'Aminah',
+    groomShort,
+    brideShort,
     groom,
     bride,
     photoCover,
@@ -349,11 +364,11 @@ export const SnapPhotoTheme = ({
             {/* Couple Names */}
             <div className="text-center md:text-left space-y-3 md:w-1/2">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-cinzel font-normal tracking-wide text-white leading-tight">
-                {groom.split(',')[0].split(' ')[0]}
+                {groomShort}
                 <span className="block md:inline-block text-3xl sm:text-4xl md:text-5xl font-cursive text-amber-300 mx-2 my-1 md:my-0 font-normal">
                   &amp;
                 </span>
-                {bride.split(',')[0].split(' ')[0]}
+                {brideShort}
               </h1>
               <p className="text-xs md:text-sm font-montserrat tracking-[0.25em] text-zinc-300 uppercase">
                 Minggu, 15 November 2026
@@ -417,11 +432,11 @@ export const SnapPhotoTheme = ({
               WALIMATUL 'URS
             </span>
             <h2 className="text-4xl sm:text-5xl font-cinzel text-white leading-tight font-medium">
-              {groom.split(',')[0]}
+              {groomShort}
               <span className="block text-2xl font-cursive text-amber-300 my-1 font-normal">
                 &
               </span>
-              {bride.split(',')[0]}
+              {brideShort}
             </h2>
             <div className="inline-block py-1.5 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-zinc-200 font-montserrat tracking-widest uppercase">
               15 November 2026 • Surabaya, Jawa Timur
@@ -928,21 +943,22 @@ export const SnapPhotoTheme = ({
 
         {/* CLOSING & THANKS */}
         <section className="py-16 px-6 text-center space-y-4 border-t border-zinc-800 bg-[#0F1014]">
-          <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
-            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i
-            berkenan hadir untuk memberikan doa restu kepada kedua mempelai.
+          <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed whitespace-pre-line">
+            {closingText}
           </p>
 
-          <p className="text-xs font-montserrat uppercase tracking-wider text-amber-300 font-semibold">
-            Wassalamu’alaikum Warahmatullahi Wabarakatuh
-          </p>
+          {closingGreeting && (
+            <p className="text-xs font-montserrat uppercase tracking-wider text-amber-300 font-semibold">
+              {closingGreeting}
+            </p>
+          )}
 
           <div className="pt-4 space-y-1">
             <span className="text-[10px] font-montserrat text-zinc-500 uppercase tracking-widest block">
               KAMI YANG BERBAHAGIA,
             </span>
             <p className="text-2xl font-cinzel font-bold text-white">
-              {groom.split(',')[0]} & {bride.split(',')[0]}
+              {groomShort} & {brideShort}
             </p>
             <p className="text-xs text-zinc-400">Beserta Seluruh Keluarga Besar</p>
           </div>

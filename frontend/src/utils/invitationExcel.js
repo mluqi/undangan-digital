@@ -62,6 +62,14 @@ export const INVITATION_EXCEL_FIELDS = [
   },
   {
     category: '1. Data Mempelai Pria',
+    key: 'panggilan_pria',
+    label: 'Nama Panggilan / Singkat Pria',
+    required: false,
+    hint: 'Contoh: Fajar (Tampil di Cover & Judul)',
+    defaultValue: 'Fajar',
+  },
+  {
+    category: '1. Data Mempelai Pria',
     key: 'ayah_pria',
     label: 'Nama Ayah Mempelai Pria',
     required: true,
@@ -85,6 +93,14 @@ export const INVITATION_EXCEL_FIELDS = [
     required: true,
     hint: 'Contoh: Siti Aminah, S.Pd.',
     defaultValue: 'Siti Aminah, S.Pd.',
+  },
+  {
+    category: '2. Data Mempelai Wanita',
+    key: 'panggilan_wanita',
+    label: 'Nama Panggilan / Singkat Wanita',
+    required: false,
+    hint: 'Contoh: Aminah (Tampil di Cover & Judul)',
+    defaultValue: 'Aminah',
   },
   {
     category: '2. Data Mempelai Wanita',
@@ -242,6 +258,22 @@ export const INVITATION_EXCEL_FIELDS = [
     label: 'Foto Prewedding (Link Google Drive)',
     required: false,
     hint: 'Contoh: https://drive.google.com/file/d/1234567890/view',
+    defaultValue: '',
+  },
+  {
+    category: '7. Teks Penutup Undangan (Opsional)',
+    key: 'teks_penutup',
+    label: 'Teks Ucapan Penutup',
+    required: false,
+    hint: 'Contoh: Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.',
+    defaultValue: '',
+  },
+  {
+    category: '7. Teks Penutup Undangan (Opsional)',
+    key: 'salam_penutup',
+    label: 'Salam Penutup',
+    required: false,
+    hint: "Contoh: Wassalamu'alaikum Warahmatullahi Wabarakatuh",
     defaultValue: '',
   },
 ];
@@ -426,6 +458,18 @@ export const parseInvitationExcel = async (file) => {
           'pengantinpria',
         ], 'Ahmad Fajar, S.T.');
 
+        const groomShortVal = getVal(
+          [
+            'namapanggilansingkatpria',
+            'namapanggilanpria',
+            'panggilanpria',
+            'namadepanpria',
+            'groomnickname',
+            'groomshort',
+          ],
+          groomVal.split(',')[0].trim().split(' ')[0] || 'Ahmad'
+        );
+
         const brideVal = getVal([
           'namalengkapgelarwanita',
           'mempelaiwanita',
@@ -434,6 +478,18 @@ export const parseInvitationExcel = async (file) => {
           'bride',
           'pengantinwanita',
         ], 'Siti Aminah, S.Pd.');
+
+        const brideShortVal = getVal(
+          [
+            'namapanggilansingkatwanita',
+            'namapanggilanwanita',
+            'panggilanwanita',
+            'namadepanwanita',
+            'bridenickname',
+            'brideshort',
+          ],
+          brideVal.split(',')[0].trim().split(' ')[0] || 'Aminah'
+        );
 
         // Generate clientName dan slug otomatis jika dikosongkan
         const clientNameVal = getVal([
@@ -447,7 +503,7 @@ export const parseInvitationExcel = async (file) => {
         ]);
 
         const rawSlug = getVal(['tautanurlsingkatslug', 'slugurlundangan', 'slugurl', 'slug', 'urlslug']);
-        const slugVal = rawSlug ? rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') : generateSlugFromNames(groomVal, brideVal);
+        const slugVal = rawSlug ? rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') : generateSlugFromNames(groomShortVal || groomVal, brideShortVal || brideVal);
 
         const templateRaw = getVal([
           'pilihandesaintema',
@@ -461,7 +517,7 @@ export const parseInvitationExcel = async (file) => {
 
         // Buat objek form yang siap diserap oleh form state
         const parsedForm = {
-          clientName: clientNameVal || `The Wedding of ${groomVal.split(',')[0].trim().split(' ')[0]} & ${brideVal.split(',')[0].trim().split(' ')[0]}`,
+          clientName: clientNameVal || `The Wedding of ${groomShortVal} & ${brideShortVal}`,
           slug: slugVal,
           templateCode: templateCodeVal,
           showQrCheckin: getBool([
@@ -481,6 +537,7 @@ export const parseInvitationExcel = async (file) => {
 
           // Mempelai Pria
           mempelaiPria: groomVal,
+          panggilanPria: groomShortVal,
           ayahPria: getVal([
             'namaayahmempelaipria',
             'ayahpria',
@@ -498,6 +555,7 @@ export const parseInvitationExcel = async (file) => {
 
           // Mempelai Wanita
           mempelaiWanita: brideVal,
+          panggilanWanita: brideShortVal,
           ayahWanita: getVal([
             'namaayahmempelaiwanita',
             'ayahwanita',
@@ -513,7 +571,7 @@ export const parseInvitationExcel = async (file) => {
             'ibupengantinwanita',
           ], 'Ibu Hj. Fatimah'),
 
-          // Ayat
+          // Ayat & Penutup
           ayat: getVal([
             'kutipanayatsucidoa',
             'kutipanayatsuci',
@@ -522,6 +580,17 @@ export const parseInvitationExcel = async (file) => {
             'kutipan',
             'quote',
           ], 'QS. Ar-Rum: 21'),
+          teksPenutup: getVal([
+            'teksucapanpenutup',
+            'tekspenutup',
+            'ucapanpenutup',
+            'kalimatpenutup',
+            'closingtext',
+          ]),
+          salamPenutup: getVal([
+            'salampenutup',
+            'closinggreeting',
+          ]),
 
           // Akad
           akadTanggal: getVal([

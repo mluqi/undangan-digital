@@ -866,6 +866,7 @@ export const ForestTropicalTheme = (props) => {
   // Auto-slide foto
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!heroPhotos || heroPhotos.length <= 1) return;
@@ -1641,60 +1642,21 @@ export const ForestTropicalTheme = (props) => {
         )}
 
         {/* ============================================================ */}
-        {/* AMPLOP DIGITAL & KADO (Ditampilkan Langsung)                  */}
+        {/* AMPLOP DIGITAL & KADO                                         */}
         {/* ============================================================ */}
         <section
           className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.mid}`}
         >
           <CanopyEdge />
           <SectionTitle
-            title="Amplop Digital"
+            title={`Bekal Langkah Awal ${d.groomShort} & ${d.brideShort}`}
             desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless."
           />
 
-          <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-4 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
-            {d.bankAccounts.map((acc, idx) => (
-              <Reveal key={idx} variant="flip-up" delay={idx * 130}>
-                <div className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md">
-                  <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
-
-                  <div className="relative mb-5 flex items-center justify-between">
-                    <span className="text-base font-extrabold tracking-wider text-[#F3E5AB]">
-                      {acc.bank}
-                    </span>
-                    <CreditCard className="h-5 w-5 text-[#A6D854]" />
-                  </div>
-
-                  <div className="relative font-mono text-xl sm:text-2xl font-black tracking-widest text-white drop-shadow-sm">
-                    {acc.nomor}
-                  </div>
-                  <div className="relative mb-4 mt-1.5 text-sm font-bold text-[#E2EFD2]">
-                    a.n. {acc.nama}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => d.copyBank(acc.nomor, idx)}
-                    className={`${ghostBtn} relative w-full font-bold tracking-wide`}
-                  >
-                    {d.copiedBankIndex === idx ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
-                        <span>Nomor Tersalin!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
-                        <span>Salin No. Rekening</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </Reveal>
-            ))}
-
+          <div className="mx-auto mt-8 max-w-md space-y-4">
+            {/* 1. Kirim Kado Fisik (di atas) */}
             {d.giftAddress && (
-              <Reveal variant="fade-up" delay={200} className="md:col-span-2 lg:col-span-1">
+              <Reveal variant="fade-up" delay={100}>
                 <div className={`rounded-[1.75rem] p-5 text-center ${glass}`}>
                   <div className="mb-2 flex items-center justify-center gap-2 text-base font-bold text-[#F3E5AB]">
                     <Gift className="h-4 w-4 text-[#A6D854]" />
@@ -1720,6 +1682,86 @@ export const ForestTropicalTheme = (props) => {
                       </>
                     )}
                   </button>
+                </div>
+              </Reveal>
+            )}
+
+            {/* 2. Dropdown Card ATM / Nomor Rekening (di bawah Kado Fisik, default tertutup) */}
+            {d.bankAccounts && d.bankAccounts.length > 0 && (
+              <Reveal variant="fade-up" delay={180}>
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBankDropdownOpen((prev) => !prev)}
+                    aria-expanded={isBankDropdownOpen}
+                    className={`flex w-full items-center justify-between rounded-[1.5rem] px-5 py-4 text-left transition-all duration-300 cursor-pointer ${glass} hover:border-[#E8D27A]/60`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#A6D854]/40 bg-[#0F4A30]/70 text-[#E8D27A]">
+                        <CreditCard className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <span className="block text-sm sm:text-base font-bold text-[#F3E5AB]">
+                          Transfer Rekening / Amplop Digital
+                        </span>
+                        <span className="block text-[11px] text-[#B9D2B0]">
+                          {isBankDropdownOpen
+                            ? "Klik untuk menyembunyikan nomor rekening"
+                            : "Klik untuk melihat kartu ATM & nomor rekening"}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-[#E8D27A] transition-transform duration-300 ${
+                        isBankDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isBankDropdownOpen && (
+                    <div className="grid grid-cols-1 gap-4 pt-1 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                      {d.bankAccounts.map((acc, idx) => (
+                        <div
+                          key={idx}
+                          className="relative overflow-hidden rounded-[1.75rem] border border-[#A6D854]/30 bg-gradient-to-br from-[#0F4A30]/85 via-[#0A3322]/85 to-[#04120B]/90 p-5 text-left shadow-[0_10px_34px_rgba(0,0,0,0.5)] backdrop-blur-md"
+                        >
+                          <MonsteraLeafSVG className="pointer-events-none absolute -bottom-8 -right-6 h-32 w-32 text-[#A6D854]/15" />
+
+                          <div className="relative mb-5 flex items-center justify-between">
+                            <span className="text-base font-extrabold tracking-wider text-[#F3E5AB]">
+                              {acc.bank}
+                            </span>
+                            <CreditCard className="h-5 w-5 text-[#A6D854]" />
+                          </div>
+
+                          <div className="relative font-mono text-xl sm:text-2xl font-black tracking-widest text-white drop-shadow-sm">
+                            {acc.nomor}
+                          </div>
+                          <div className="relative mb-4 mt-1.5 text-sm font-bold text-[#E2EFD2]">
+                            a.n. {acc.nama}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => d.copyBank(acc.nomor, idx)}
+                            className={`${ghostBtn} relative w-full font-bold tracking-wide`}
+                          >
+                            {d.copiedBankIndex === idx ? (
+                              <>
+                                <Check className="h-3.5 w-3.5 text-[#B7E36B]" />
+                                <span>Nomor Tersalin!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3.5 w-3.5 text-[#E8D27A]" />
+                                <span>Salin No. Rekening</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Reveal>
             )}
@@ -1975,11 +2017,14 @@ export const ForestTropicalTheme = (props) => {
             <Reveal variant="blur-in" delay={100}>
               <MonsteraLeafSVG className="mx-auto mb-4 h-8 w-8 text-[#E8D27A]" />
 
-              <p className="mx-auto mb-6 max-w-sm text-[13.5px] sm:text-sm font-medium leading-relaxed text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
-                Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
-                Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.
+              <p className="mx-auto mb-6 max-w-sm text-[13.5px] sm:text-sm font-medium leading-relaxed text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] whitespace-pre-line">
+                {d.closingText}
               </p>
+              {d.closingGreeting && (
+                <p className="mx-auto mb-5 text-xs font-semibold uppercase tracking-widest text-[#E8D27A] drop-shadow-md">
+                  {d.closingGreeting}
+                </p>
+              )}
             </Reveal>
 
             <Reveal variant="zoom-in" delay={220}>

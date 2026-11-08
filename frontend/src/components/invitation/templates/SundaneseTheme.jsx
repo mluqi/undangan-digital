@@ -556,10 +556,12 @@ export const SundaneseTheme = (props) => {
         <div className="relative px-8 pt-6 pb-28 space-y-4">
           <Reveal>
             <p className="font-fraunces italic text-2xl" style={{ color: C.honey }}>Terima Kasih</p>
-            <p className="text-[15px] leading-relaxed mt-2" style={{ color: '#D7E7DB' }}>
-              Atas kehadiran dan doa restu Bapak/Ibu/Saudara/i, kami ucapkan terima kasih yang sebesar-besarnya. Semoga Allah SWT melimpahkan berkah kepada kita semua.
+            <p className="text-[15px] leading-relaxed mt-2 whitespace-pre-line" style={{ color: '#D7E7DB' }}>
+              {d.closingText}
             </p>
-            <p className="text-sm mt-3" style={{ color: '#BFD8C5' }}>Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh.</p>
+            {d.closingGreeting && (
+              <p className="text-sm mt-3" style={{ color: '#BFD8C5' }}>{d.closingGreeting}</p>
+            )}
             <div className="pt-6">
               <p className="text-[11px] tracking-[0.25em] uppercase" style={{ color: '#BFD8C5' }}>Kami yang berbahagia</p>
               <p className="font-fraunces text-4xl mt-1">

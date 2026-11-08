@@ -47,12 +47,20 @@ import {
 import { InvitationTemplateModal } from '../components/invitation/InvitationTemplateModal';
 import { InvitationDetailPage } from './InvitationDetailPage';
 
-export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
+export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInvitation }) => {
   const toast = useToast();
   const [invitations, setInvitations] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDetailId, setSelectedDetailId] = useState(initialSelectedId || null);
+
+  const openInvitationDetail = (id, tab) => {
+    if (onSelectInvitation) {
+      onSelectInvitation(id, tab);
+    } else {
+      setSelectedDetailId(id);
+    }
+  };
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,16 +83,24 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
 
   // Mempelai Pria & Orang Tua
   const [groomName, setGroomName] = useState('');
+  const [groomNickname, setGroomNickname] = useState('');
   const [groomFather, setGroomFather] = useState('');
   const [groomMother, setGroomMother] = useState('');
 
   // Mempelai Wanita & Orang Tua
   const [brideName, setBrideName] = useState('');
+  const [brideNickname, setBrideNickname] = useState('');
   const [brideFather, setBrideFather] = useState('');
   const [brideMother, setBrideMother] = useState('');
 
-  // Kutipan & Ayat
+  // Kutipan, Ayat & Penutup
   const [ayatQuote, setAyatQuote] = useState('QS. Ar-Rum: 21');
+  const [closingText, setClosingText] = useState(
+    'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.'
+  );
+  const [closingGreeting, setClosingGreeting] = useState(
+    "Wassalamu'alaikum Warahmatullahi Wabarakatuh"
+  );
 
   // Akad Nikah
   const [akadTanggal, setAkadTanggal] = useState('');
@@ -150,12 +166,16 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
       showQrCheckin: Boolean(showQrCheckin),
       showQr: Boolean(showQrCheckin),
       mempelaiPria: groomName,
+      panggilanPria: groomNickname,
       ayahPria: groomFather,
       ibuPria: groomMother,
       mempelaiWanita: brideName,
+      panggilanWanita: brideNickname,
       ayahWanita: brideFather,
       ibuWanita: brideMother,
       ayat: ayatQuote,
+      teksPenutup: closingText,
+      salamPenutup: closingGreeting,
       akad: {
         ...(existingExtraContent.akad || {}),
         tanggal: akadTanggal,
@@ -188,12 +208,16 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
           );
         }
         if (parsed.mempelaiPria !== undefined) setGroomName(parsed.mempelaiPria);
+        if (parsed.panggilanPria !== undefined) setGroomNickname(parsed.panggilanPria);
         if (parsed.ayahPria !== undefined) setGroomFather(parsed.ayahPria);
         if (parsed.ibuPria !== undefined) setGroomMother(parsed.ibuPria);
         if (parsed.mempelaiWanita !== undefined) setBrideName(parsed.mempelaiWanita);
+        if (parsed.panggilanWanita !== undefined) setBrideNickname(parsed.panggilanWanita);
         if (parsed.ayahWanita !== undefined) setBrideFather(parsed.ayahWanita);
         if (parsed.ibuWanita !== undefined) setBrideMother(parsed.ibuWanita);
         if (parsed.ayat !== undefined) setAyatQuote(parsed.ayat);
+        if (parsed.teksPenutup !== undefined) setClosingText(parsed.teksPenutup);
+        if (parsed.salamPenutup !== undefined) setClosingGreeting(parsed.salamPenutup);
 
         if (parsed.akad) {
           setAkadTanggal(parsed.akad.tanggal || '');
@@ -263,12 +287,18 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
 
     // Mempelai
     if (parsed.mempelaiPria) setGroomName(parsed.mempelaiPria);
+    if (parsed.panggilanPria) setGroomNickname(parsed.panggilanPria);
     if (parsed.ayahPria) setGroomFather(parsed.ayahPria);
     if (parsed.ibuPria) setGroomMother(parsed.ibuPria);
     if (parsed.mempelaiWanita) setBrideName(parsed.mempelaiWanita);
+    if (parsed.panggilanWanita) setBrideNickname(parsed.panggilanWanita);
     if (parsed.ayahWanita) setBrideFather(parsed.ayahWanita);
     if (parsed.ibuWanita) setBrideMother(parsed.ibuWanita);
     if (parsed.ayat) setAyatQuote(parsed.ayat);
+    if (parsed.teksPenutup) setClosingText(parsed.teksPenutup);
+    if (parsed.salamPenutup !== undefined && parsed.salamPenutup !== '') {
+      setClosingGreeting(parsed.salamPenutup);
+    }
 
     // Akad
     if (parsed.akadTanggal) setAkadTanggal(parsed.akadTanggal);
@@ -320,12 +350,16 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
         show_qr_checkin: showQrCheckin ? 'YA' : 'TIDAK',
         expired_at: expiredAt,
         mempelai_pria: groomName,
+        panggilan_pria: groomNickname,
         ayah_pria: groomFather,
         ibu_pria: groomMother,
         mempelai_wanita: brideName,
+        panggilan_wanita: brideNickname,
         ayah_wanita: brideFather,
         ibu_wanita: brideMother,
         ayat: ayatQuote,
+        teks_penutup: closingText,
+        salam_penutup: closingGreeting,
         akad_tanggal: akadTanggal,
         akad_waktu: akadWaktu,
         akad_lokasi: akadLokasi,
@@ -402,12 +436,18 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
     // Default values for standard new invitation
     setShowQrCheckin(true);
     setGroomName('Ahmad Fajar, S.T.');
+    setGroomNickname('Ahmad');
     setGroomFather('Bpk. H. Abdurrahman');
     setGroomMother('Ibu Hj. Maryam');
     setBrideName('Siti Aminah, S.Pd.');
+    setBrideNickname('Aminah');
     setBrideFather('Bpk. H. Ahmad Dahlan');
     setBrideMother('Ibu Hj. Fatimah');
     setAyatQuote('QS. Ar-Rum: 21');
+    setClosingText(
+      'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.'
+    );
+    setClosingGreeting("Wassalamu'alaikum Warahmatullahi Wabarakatuh");
 
     setAkadTanggal('Minggu, 15 November 2026');
     setAkadWaktu('08:00 - 10:00 WIB');
@@ -432,12 +472,17 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
       showQrCheckin: true,
       showQr: true,
       mempelaiPria: 'Ahmad Fajar, S.T.',
+      panggilanPria: 'Ahmad',
       ayahPria: 'Bpk. H. Abdurrahman',
       ibuPria: 'Ibu Hj. Maryam',
       mempelaiWanita: 'Siti Aminah, S.Pd.',
+      panggilanWanita: 'Aminah',
       ayahWanita: 'Bpk. H. Ahmad Dahlan',
       ibuWanita: 'Ibu Hj. Fatimah',
       ayat: 'QS. Ar-Rum: 21',
+      teksPenutup:
+        'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',
+      salamPenutup: "Wassalamu'alaikum Warahmatullahi Wabarakatuh",
       akad: {
         tanggal: 'Minggu, 15 November 2026',
         waktu: '08:00 - 10:00 WIB',
@@ -480,12 +525,27 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
       c.showQr !== undefined ? Boolean(c.showQr) : c.showQrCheckin !== undefined ? Boolean(c.showQrCheckin) : true
     );
     setGroomName(c.mempelaiPria || '');
+    setGroomNickname(
+      c.panggilanPria || (c.mempelaiPria ? c.mempelaiPria.split(',')[0].trim().split(' ')[0] : '')
+    );
     setGroomFather(c.ayahPria || '');
     setGroomMother(c.ibuPria || '');
     setBrideName(c.mempelaiWanita || '');
+    setBrideNickname(
+      c.panggilanWanita || (c.mempelaiWanita ? c.mempelaiWanita.split(',')[0].trim().split(' ')[0] : '')
+    );
     setBrideFather(c.ayahWanita || '');
     setBrideMother(c.ibuWanita || '');
     setAyatQuote(c.ayat || 'QS. Ar-Rum: 21');
+    setClosingText(
+      c.teksPenutup ||
+        'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.'
+    );
+    setClosingGreeting(
+      c.salamPenutup !== undefined
+        ? c.salamPenutup
+        : "Wassalamu'alaikum Warahmatullahi Wabarakatuh"
+    );
 
     setAkadTanggal(c.akad?.tanggal || '');
     setAkadWaktu(c.akad?.waktu || '');
@@ -1043,6 +1103,14 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
                         onChange={(e) => setGroomName(e.target.value)}
                       />
 
+                      <Input
+                        label="Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)"
+                        placeholder="Contoh: Fajar"
+                        value={groomNickname}
+                        onChange={(e) => setGroomNickname(e.target.value)}
+                        helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                      />
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <Input
                           label="Nama Ayah Pria"
@@ -1074,6 +1142,14 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
                         onChange={(e) => setBrideName(e.target.value)}
                       />
 
+                      <Input
+                        label="Nama Panggilan / Singkat Wanita (Tampil di Cover & Judul)"
+                        placeholder="Contoh: Aminah"
+                        value={brideNickname}
+                        onChange={(e) => setBrideNickname(e.target.value)}
+                        helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                      />
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <Input
                           label="Nama Ayah Wanita"
@@ -1091,14 +1167,33 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId }) => {
                     </div>
                   </div>
 
-                  {/* Ayat / Kutipan */}
-                  <Input
-                    label="Kutipan / Ayat Suci Pernikahan"
-                    placeholder="QS. Ar-Rum: 21 atau kutipan romantis"
-                    value={ayatQuote}
-                    onChange={(e) => setAyatQuote(e.target.value)}
-                    helperText="Akan ditampilkan pada bagian pembuka / quote dalam template"
-                  />
+                  {/* Ayat / Kutipan & Ucapan Penutup */}
+                  <div className="space-y-4 pt-2 border-t border-slate-100">
+                    <Input
+                      label="Kutipan / Ayat Suci Pernikahan"
+                      placeholder="QS. Ar-Rum: 21 atau kutipan romantis"
+                      value={ayatQuote}
+                      onChange={(e) => setAyatQuote(e.target.value)}
+                      helperText="Akan ditampilkan pada bagian pembuka / quote dalam template"
+                    />
+
+                    <Textarea
+                      label="Teks Ucapan Penutup (Bagian Paling Bawah Undangan)"
+                      rows={3}
+                      placeholder="Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu..."
+                      value={closingText}
+                      onChange={(e) => setClosingText(e.target.value)}
+                      helperText="Ditampilkan pada bagian penutup (closing) di bagian paling bawah undangan"
+                    />
+
+                    <Input
+                      label="Salam Penutup (Opsional)"
+                      placeholder="Wassalamu'alaikum Warahmatullahi Wabarakatuh"
+                      value={closingGreeting}
+                      onChange={(e) => setClosingGreeting(e.target.value)}
+                      helperText="Kosongkan jika tidak ingin menampilkan kalimat salam penutup"
+                    />
+                  </div>
                 </div>
               )}
 

@@ -280,6 +280,13 @@ export const TimelessSnapshotTheme = ({
       : true;
 
   const ayatQuote = content.ayat || "QS. Ar-Rum: 21";
+  const closingText =
+    content.teksPenutup ||
+    "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.";
+  const closingGreeting =
+    content.salamPenutup !== undefined
+      ? content.salamPenutup
+      : "Wassalamu’alaikum Warahmatullahi Wabarakatuh";
   const photoCover =
     content.fotoCover ||
     "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80";
@@ -449,17 +456,23 @@ export const TimelessSnapshotTheme = ({
     toast.success("Doa restu Anda berhasil dicatat di buku tamu!");
   };
 
-  const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `The Wedding of ${groom.split(",")[0]} & ${bride.split(",")[0]}`,
-  )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
-    "Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.",
-  )}&location=${encodeURIComponent(akad.lokasi)}`;
-
   // --- Turunan murni untuk tampilan (rumus sama dengan versi sebelumnya) ---
   const groomName = groom.split(",")[0];
   const brideName = bride.split(",")[0];
-  const groomFirst = groomName.split(" ")[0];
-  const brideFirst = brideName.split(" ")[0];
+  const groomFirst =
+    (content.panggilanPria && String(content.panggilanPria).trim()) ||
+    groomName.trim().split(" ")[0] ||
+    "Ahmad";
+  const brideFirst =
+    (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
+    brideName.trim().split(" ")[0] ||
+    "Aminah";
+
+  const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+    `The Wedding of ${groomFirst} & ${brideFirst}`,
+  )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
+    "Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.",
+  )}&location=${encodeURIComponent(akad.lokasi)}`;
 
   const countdownItems = [
     { label: "HARI", val: timeLeft.days },
@@ -469,8 +482,8 @@ export const TimelessSnapshotTheme = ({
   ];
 
   const sidePanelData = {
-    groomShort: groomFirst || (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') || 'Ahmad',
-    brideShort: brideFirst || (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') || 'Aminah',
+    groomShort: groomFirst,
+    brideShort: brideFirst,
     groom,
     bride,
     photoCover,
@@ -1053,15 +1066,15 @@ export const TimelessSnapshotTheme = ({
         {/* CLOSING */}
         <section className="bg-[#2C241D] text-[#F2EDE4]">
           <div className="px-6 pt-16 pb-14 text-center space-y-5">
-            <p className="text-xs text-[#C9BBA6] max-w-sm mx-auto leading-relaxed font-sans">
-              Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
-              Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu
-              kepada kedua mempelai.
+            <p className="text-xs text-[#C9BBA6] max-w-sm mx-auto leading-relaxed font-sans whitespace-pre-line">
+              {closingText}
             </p>
 
-            <p className="text-[11px] font-sans uppercase tracking-[0.2em] text-[#C9A24B] font-bold">
-              Wassalamu’alaikum Warahmatullahi Wabarakatuh
-            </p>
+            {closingGreeting && (
+              <p className="text-[11px] font-sans uppercase tracking-[0.2em] text-[#C9A24B] font-bold">
+                {closingGreeting}
+              </p>
+            )}
 
             <div
               className="flex items-center justify-center gap-3"
@@ -1077,7 +1090,7 @@ export const TimelessSnapshotTheme = ({
                 KAMI YANG BERBAHAGIA,
               </span>
               <p className="text-4xl sm:text-5xl font-cursive text-[#F9F6F0] leading-tight">
-                {groomName} & {brideName}
+                {groomFirst} & {brideFirst}
               </p>
               <p className="text-xs text-[#C9BBA6] font-sans">
                 Beserta Segenap Keluarga Besar

@@ -68,6 +68,112 @@
   background: #94a3b8;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ---------- Admin Panel Responsive Table -> Stacked Card Container Query ---------- */
+.responsive-table-wrapper {
+  container-type: inline-size;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@container (width < 640px) {
+  .responsive-table-wrapper .responsive-table thead {
+    display: none;
+  }
+
+  .responsive-table-wrapper .responsive-table,
+  .responsive-table-wrapper .responsive-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    margin: 0.625rem 0.75rem;
+    padding: 0.25rem 0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+    min-width: 0;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td[data-empty="true"] {
+    display: block;
+    text-align: center;
+    padding: 2.5rem 1rem;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td[data-is-primary="true"] {
+    justify-content: flex-start;
+    text-align: left;
+    background-color: #f8fafc;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td[data-is-primary="true"]::before {
+    display: none;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td[data-is-actions="true"] {
+    justify-content: flex-end;
+    background-color: #fcfcfd;
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td[data-is-actions="true"]::before {
+    content: var(--col-label);
+    margin-right: auto;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td:not([data-is-primary="true"]):not([data-is-actions="true"]):not([data-empty="true"])::before {
+    content: var(--col-label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .responsive-table-wrapper .responsive-table tbody td > .responsive-cell-content {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* Mildness Animations */
 @keyframes spin-slow {
   from {

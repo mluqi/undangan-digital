@@ -862,9 +862,14 @@ export const RoyalGoldTheme = (props) => {
         {/* ============================================================== */}
         <section data-reveal className="text-center space-y-4 pt-4 pb-8">
           <GoldFiligreeDivider />
-          <p className="text-xs font-sans text-neutral-400 max-w-sm mx-auto leading-relaxed italic">
-            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu kepada kami.
+          <p className="text-xs font-sans text-neutral-400 max-w-sm mx-auto leading-relaxed italic whitespace-pre-line">
+            {d.closingText}
           </p>
+          {d.closingGreeting && (
+            <p className="text-[11px] font-sans uppercase tracking-widest text-[#DFB76C] font-semibold">
+              {d.closingGreeting}
+            </p>
+          )}
 
           <div className="pt-4 space-y-1">
             <span className="text-[10px] font-sans text-[#DFB76C] uppercase tracking-widest block">

@@ -135,9 +135,11 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     showQrCheckin: true,
     lockGuestList: false,
     mempelaiPria: '',
+    panggilanPria: '',
     ayahPria: '',
     ibuPria: '',
     mempelaiWanita: '',
+    panggilanWanita: '',
     ayahWanita: '',
     ibuWanita: '',
     akadTanggal: '',
@@ -152,6 +154,8 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     resepsiMapUrl: '',
     alamatKado: '',
     ayat: '',
+    teksPenutup: '',
+    salamPenutup: '',
   });
 
   // Media & Assets States
@@ -305,9 +309,14 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             : true,
         lockGuestList: Boolean(c.lockGuestList),
         mempelaiPria: c.mempelaiPria || '',
+        panggilanPria:
+          c.panggilanPria || (c.mempelaiPria ? c.mempelaiPria.split(',')[0].trim().split(' ')[0] : ''),
         ayahPria: c.ayahPria || '',
         ibuPria: c.ibuPria || '',
         mempelaiWanita: c.mempelaiWanita || '',
+        panggilanWanita:
+          c.panggilanWanita ||
+          (c.mempelaiWanita ? c.mempelaiWanita.split(',')[0].trim().split(' ')[0] : ''),
         ayahWanita: c.ayahWanita || '',
         ibuWanita: c.ibuWanita || '',
         akadTanggal: c.akad?.tanggal || '',
@@ -322,6 +331,13 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
         resepsiMapUrl: c.resepsi?.mapUrl || '',
         alamatKado: c.alamatKado || '',
         ayat: c.ayat || 'QS. Ar-Rum: 21',
+        teksPenutup:
+          c.teksPenutup ||
+          'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',
+        salamPenutup:
+          c.salamPenutup !== undefined
+            ? c.salamPenutup
+            : "Wassalamu'alaikum Warahmatullahi Wabarakatuh",
       });
 
       // Populate love stories
@@ -661,12 +677,16 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
         show_qr_checkin: settingsForm.showQrCheckin ? 'YA' : 'TIDAK',
         expired_at: settingsForm.expired_at,
         mempelai_pria: settingsForm.mempelaiPria,
+        panggilan_pria: settingsForm.panggilanPria,
         ayah_pria: settingsForm.ayahPria,
         ibu_pria: settingsForm.ibuPria,
         mempelai_wanita: settingsForm.mempelaiWanita,
+        panggilan_wanita: settingsForm.panggilanWanita,
         ayah_wanita: settingsForm.ayahWanita,
         ibu_wanita: settingsForm.ibuWanita,
         ayat: settingsForm.ayat,
+        teks_penutup: settingsForm.teksPenutup,
+        salam_penutup: settingsForm.salamPenutup,
         akad_tanggal: settingsForm.akadTanggal,
         akad_waktu: settingsForm.akadWaktu,
         akad_lokasi: settingsForm.akadLokasi,
@@ -723,12 +743,18 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
         }
 
         if (parsed.mempelaiPria) next.mempelaiPria = parsed.mempelaiPria;
+        if (parsed.panggilanPria) next.panggilanPria = parsed.panggilanPria;
         if (parsed.ayahPria) next.ayahPria = parsed.ayahPria;
         if (parsed.ibuPria) next.ibuPria = parsed.ibuPria;
         if (parsed.mempelaiWanita) next.mempelaiWanita = parsed.mempelaiWanita;
+        if (parsed.panggilanWanita) next.panggilanWanita = parsed.panggilanWanita;
         if (parsed.ayahWanita) next.ayahWanita = parsed.ayahWanita;
         if (parsed.ibuWanita) next.ibuWanita = parsed.ibuWanita;
         if (parsed.ayat) next.ayat = parsed.ayat;
+        if (parsed.teksPenutup) next.teksPenutup = parsed.teksPenutup;
+        if (parsed.salamPenutup !== undefined && parsed.salamPenutup !== '') {
+          next.salamPenutup = parsed.salamPenutup;
+        }
         if (parsed.akadTanggal) next.akadTanggal = parsed.akadTanggal;
         if (parsed.akadWaktu) next.akadWaktu = parsed.akadWaktu;
         if (parsed.akadLokasi) next.akadLokasi = parsed.akadLokasi;
@@ -797,12 +823,16 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
           showQr: Boolean(settingsForm.showQrCheckin),
           lockGuestList: Boolean(settingsForm.lockGuestList),
           mempelaiPria: settingsForm.mempelaiPria,
+          panggilanPria: settingsForm.panggilanPria,
           ayahPria: settingsForm.ayahPria,
           ibuPria: settingsForm.ibuPria,
           mempelaiWanita: settingsForm.mempelaiWanita,
+          panggilanWanita: settingsForm.panggilanWanita,
           ayahWanita: settingsForm.ayahWanita,
           ibuWanita: settingsForm.ibuWanita,
           ayat: settingsForm.ayat,
+          teksPenutup: settingsForm.teksPenutup,
+          salamPenutup: settingsForm.salamPenutup,
           akad: {
             tanggal: settingsForm.akadTanggal,
             waktu: settingsForm.akadWaktu,
@@ -1518,6 +1548,13 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                   value={settingsForm.mempelaiPria}
                   onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiPria: e.target.value })}
                 />
+                <Input
+                  label="Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)"
+                  placeholder="Contoh: Fajar"
+                  value={settingsForm.panggilanPria}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, panggilanPria: e.target.value })}
+                  helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                />
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Nama Ayah"
@@ -1545,6 +1582,13 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                   value={settingsForm.mempelaiWanita}
                   onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiWanita: e.target.value })}
                 />
+                <Input
+                  label="Nama Panggilan / Singkat Wanita (Tampil di Cover & Judul)"
+                  placeholder="Contoh: Aminah"
+                  value={settingsForm.panggilanWanita}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, panggilanWanita: e.target.value })}
+                  helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                />
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Nama Ayah"
@@ -1562,11 +1606,30 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
               </div>
             </div>
 
-            <Input
-              label="Ayat Suci / Kutipan Pembuka"
-              value={settingsForm.ayat}
-              onChange={(e) => setSettingsForm({ ...settingsForm, ayat: e.target.value })}
-            />
+            <div className="space-y-4 pt-2 border-t border-slate-100">
+              <Input
+                label="Ayat Suci / Kutipan Pembuka"
+                value={settingsForm.ayat}
+                onChange={(e) => setSettingsForm({ ...settingsForm, ayat: e.target.value })}
+              />
+
+              <Textarea
+                label="Teks Ucapan Penutup (Bagian Paling Bawah Undangan)"
+                rows={3}
+                placeholder="Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu..."
+                value={settingsForm.teksPenutup}
+                onChange={(e) => setSettingsForm({ ...settingsForm, teksPenutup: e.target.value })}
+                helperText="Ditampilkan pada bagian penutup (closing) di bagian paling bawah undangan"
+              />
+
+              <Input
+                label="Salam Penutup (Opsional)"
+                placeholder="Wassalamu'alaikum Warahmatullahi Wabarakatuh"
+                value={settingsForm.salamPenutup}
+                onChange={(e) => setSettingsForm({ ...settingsForm, salamPenutup: e.target.value })}
+                helperText="Kosongkan jika tidak ingin menampilkan kalimat salam penutup"
+              />
+            </div>
           </Card>
 
           {/* Agenda Acara */}
@@ -2218,12 +2281,16 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                       content_json: {
                         ...(invitation?.content_json || {}),
                         mempelaiPria: settingsForm.mempelaiPria,
+                        panggilanPria: settingsForm.panggilanPria,
                         ayahPria: settingsForm.ayahPria,
                         ibuPria: settingsForm.ibuPria,
                         mempelaiWanita: settingsForm.mempelaiWanita,
+                        panggilanWanita: settingsForm.panggilanWanita,
                         ayahWanita: settingsForm.ayahWanita,
                         ibuWanita: settingsForm.ibuWanita,
                         ayat: settingsForm.ayat,
+                        teksPenutup: settingsForm.teksPenutup,
+                        salamPenutup: settingsForm.salamPenutup,
                         akad: {
                           tanggal: settingsForm.akadTanggal,
                           waktu: settingsForm.akadWaktu,

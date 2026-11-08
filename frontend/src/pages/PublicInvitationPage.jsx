@@ -25,8 +25,8 @@ export const PublicInvitationPage = ({ slug }) => {
     if (!invitation) return;
 
     const content = invitation.content_json || {};
-    const groom = content.mempelaiPria || 'Ahmad';
-    const bride = content.mempelaiWanita || 'Aminah';
+    const groom = content.panggilanPria || content.mempelaiPria || 'Ahmad';
+    const bride = content.panggilanWanita || content.mempelaiWanita || 'Aminah';
     const params = new URLSearchParams(window.location.search);
     const guestParam = params.get('to');
 
@@ -150,8 +150,14 @@ export const PublicInvitationPage = ({ slug }) => {
   }
 
   if (isGuestLocked && invitation) {
-    const groom = invitation.content_json?.mempelaiPria || 'Mempelai Pria';
-    const bride = invitation.content_json?.mempelaiWanita || 'Mempelai Wanita';
+    const groom =
+      invitation.content_json?.panggilanPria ||
+      invitation.content_json?.mempelaiPria ||
+      'Mempelai Pria';
+    const bride =
+      invitation.content_json?.panggilanWanita ||
+      invitation.content_json?.mempelaiWanita ||
+      'Mempelai Wanita';
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-stone-950 text-center text-white relative overflow-hidden select-none">

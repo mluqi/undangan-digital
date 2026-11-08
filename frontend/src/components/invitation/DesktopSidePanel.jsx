@@ -168,10 +168,12 @@ export const DesktopSidePanel = ({
   // Nama panggilan aman dari split error
   const safeGroomShort =
     groomShort ||
+    (data.panggilanPria && String(data.panggilanPria).trim()) ||
     (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') ||
     'Ahmad';
   const safeBrideShort =
     brideShort ||
+    (data.panggilanWanita && String(data.panggilanWanita).trim()) ||
     (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
     'Aminah';
 

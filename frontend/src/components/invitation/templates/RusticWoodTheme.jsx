@@ -994,15 +994,15 @@ export const RusticWoodTheme = (props) => {
         <section className="pt-16 pb-8 px-6 text-center space-y-6 border-t border-[#D8C3A5] bg-[#EADDCF]/40">
           <RusticDivider />
 
-          <p className="text-xs text-[#5A3821] max-w-sm mx-auto leading-relaxed font-sans">
-            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
-            Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada
-            kedua mempelai.
+          <p className="text-xs text-[#5A3821] max-w-sm mx-auto leading-relaxed font-sans whitespace-pre-line">
+            {d.closingText}
           </p>
 
-          <p className="text-xs font-sans uppercase tracking-wider text-[#8C6239] font-bold">
-            Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh
-          </p>
+          {d.closingGreeting && (
+            <p className="text-xs font-sans uppercase tracking-wider text-[#8C6239] font-bold">
+              {d.closingGreeting}
+            </p>
+          )}
 
           <div className="pt-2 space-y-3">
             <span className="text-[10px] font-sans text-[#6D4C2B] uppercase tracking-[0.3em] block">

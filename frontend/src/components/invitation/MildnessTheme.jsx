@@ -72,6 +72,14 @@ export const MildnessTheme = ({
   // Mempelai & Orang Tua
   const groom = content.mempelaiPria || 'Ahmad Fajar, S.T.';
   const bride = content.mempelaiWanita || 'Siti Aminah, S.Pd.';
+  const groomShort =
+    (content.panggilanPria && String(content.panggilanPria).trim()) ||
+    (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') ||
+    'Ahmad';
+  const brideShort =
+    (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
+    (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
+    'Aminah';
   const groomFather = content.ayahPria || 'Bpk. H. Abdurrahman';
   const groomMother = content.ibuPria || 'Ibu Hj. Maryam';
   const brideFather = content.ayahWanita || 'Bpk. H. Ahmad Dahlan';
@@ -104,6 +112,13 @@ export const MildnessTheme = ({
 
   // Ayat & Foto
   const ayatQuote = content.ayat || 'QS. Ar-Rum: 21';
+  const closingText =
+    content.teksPenutup ||
+    "Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan do'a restu kepada kami.\n\nAtas kehadiran dan do'a restunya kami ucapkan terima kasih yang sebesar-besarnya.";
+  const closingGreeting =
+    content.salamPenutup !== undefined
+      ? content.salamPenutup
+      : "Wassalamu'alaikum Warahmatullahi Wabarakatuh";
   const photoGroom =
     content.fotoPria ||
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80';
@@ -312,8 +327,8 @@ export const MildnessTheme = ({
   };
 
   const sidePanelData = {
-    groomShort: (groom ? String(groom).split(',')[0].trim().split(' ')[0] : '') || 'Ahmad',
-    brideShort: (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') || 'Aminah',
+    groomShort,
+    brideShort,
     groom,
     bride,
     photoCover,
@@ -422,7 +437,7 @@ export const MildnessTheme = ({
                 The Wedding Of
               </span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-cursive text-stone-800 leading-tight">
-                {groom.split(',')[0].split(' ')[0]} &amp; {bride.split(',')[0].split(' ')[0]}
+                {groomShort} &amp; {brideShort}
               </h1>
             </div>
 
@@ -487,7 +502,7 @@ export const MildnessTheme = ({
               Walimatul 'Urs
             </p>
             <h2 className="text-4xl md:text-5xl font-cursive text-stone-800">
-              {groom.split(',')[0].split(' ')[0]} & {bride.split(',')[0].split(' ')[0]}
+              {groomShort} & {brideShort}
             </h2>
           </div>
 
@@ -706,7 +721,7 @@ export const MildnessTheme = ({
 
                   <a
                     href={getGoogleCalendarUrl(
-                      `Akad Nikah ${groom.split(' ')[0]} & ${bride.split(' ')[0]}`,
+                      `Akad Nikah ${groomShort} & ${brideShort}`,
                       `Akad Nikah di ${akad.lokasi}`,
                       akad.lokasi,
                       '2026-11-15T08:00:00+07:00',
@@ -767,7 +782,7 @@ export const MildnessTheme = ({
 
                   <a
                     href={getGoogleCalendarUrl(
-                      `Resepsi Pernikahan ${groom.split(' ')[0]} & ${bride.split(' ')[0]}`,
+                      `Resepsi Pernikahan ${groomShort} & ${brideShort}`,
                       `Resepsi di ${resepsi.lokasi}`,
                       resepsi.lokasi,
                       '2026-11-15T11:00:00+07:00',
@@ -1109,22 +1124,20 @@ export const MildnessTheme = ({
         {/* SECTION 10: PENUTUP / CLOSING & SIGNATURE */}
         <section className="py-20 px-6 text-center space-y-8 bg-gradient-to-t from-stone-100 to-[#FAF8F5] border-t border-stone-200">
           <div className="max-w-sm mx-auto space-y-4">
-            <p className="text-xs text-stone-600 leading-relaxed font-light">
-              Merupakan suatu kehormatan dan kebahagiaan bagi kami sekeluarga, apabila
-              Bapak/Ibu/Saudara/i berkenan hadir dan memberikan do'a restu kepada kami.
+            <p className="text-xs text-stone-600 leading-relaxed font-light whitespace-pre-line">
+              {closingText}
             </p>
-            <p className="text-xs text-stone-600 leading-relaxed font-light">
-              Atas kehadiran dan do'a restunya kami ucapkan terima kasih yang sebesar-besarnya.
-            </p>
-            <p className="text-xs font-serif-theme font-medium text-stone-800">
-              Wassalamu'alaikum Warahmatullahi Wabarakatuh
-            </p>
+            {closingGreeting && (
+              <p className="text-xs font-serif-theme font-medium text-stone-800">
+                {closingGreeting}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2 pt-4">
             <p className="text-xs uppercase tracking-widest text-stone-400">Kami yang berbahagia,</p>
             <h2 className="text-4xl md:text-5xl font-cursive text-stone-900">
-              {groom.split(',')[0].split(' ')[0]} & {bride.split(',')[0].split(' ')[0]}
+              {groomShort} & {brideShort}
             </h2>
             <p className="text-xs text-stone-500 pt-1">
               Keluarga Besar {groomFather} & {brideFather}
@@ -1133,7 +1146,7 @@ export const MildnessTheme = ({
 
           <div className="pt-8 border-t border-stone-200/60 text-center space-y-1">
             <p className="font-serif-theme text-xs text-stone-500 italic">
-              The Wedding of {groom.split(',')[0].split(' ')[0]} & {bride.split(',')[0].split(' ')[0]}
+              The Wedding of {groomShort} & {brideShort}
             </p>
             <p className="text-[10px] text-stone-400">
               Terima kasih atas doa restu & kehadiran Anda

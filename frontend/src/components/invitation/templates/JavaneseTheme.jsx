@@ -621,10 +621,12 @@ export const JavaneseTheme = (props) => {
         <Reveal>
           <Gunungan className="mx-auto" size={64} />
           <h2 className="font-editorial text-4xl">Terima Kasih</h2>
-          <p className="text-[15px] leading-relaxed text-[#5A4333]">
-            Atas kehadiran dan doa restu Bapak/Ibu/Saudara/i, kami ucapkan terima kasih yang sebesar-besarnya.
+          <p className="text-[15px] leading-relaxed text-[#5A4333] whitespace-pre-line">
+            {d.closingText}
           </p>
-          <p className="font-cinzel text-xs tracking-[0.15em] uppercase">Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh</p>
+          {d.closingGreeting && (
+            <p className="font-cinzel text-xs tracking-[0.15em] uppercase">{d.closingGreeting}</p>
+          )}
           <Divider />
           <p className="text-xs tracking-[0.3em] uppercase font-cinzel" style={{ color: C.maroon }}>Kami yang berbahagia</p>
           <p className="font-editorial text-4xl">
