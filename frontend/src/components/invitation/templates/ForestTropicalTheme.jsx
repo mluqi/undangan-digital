@@ -1174,10 +1174,10 @@ export const ForestTropicalTheme = (props) => {
               <p className="mb-2 text-xs font-medium tracking-[0.25em] text-[#E8D27A]">
                 The Wedding of
               </p>
-              <h2 className="font-serif-theme text-[2.8rem] font-bold leading-[1.1] text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)]">
-                {d.groomShort}
-                <span className="font-cursive mx-2 text-[#E8D27A]">&</span>
-                {d.brideShort}
+              <h2 className="font-serif-theme text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)] max-w-full px-2 break-words">
+                <span className="inline-block max-w-full">{d.groomShort}</span>
+                <span className="font-cursive mx-2 sm:mx-3 text-[1.25em] text-[#E8D27A] align-middle">&</span>
+                <span className="inline-block max-w-full">{d.brideShort}</span>
               </h2>
             </div>
 
@@ -1327,12 +1327,12 @@ export const ForestTropicalTheme = (props) => {
               <p className="mb-2 text-xs font-semibold tracking-[0.25em] text-[#E8D27A] uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 The Wedding of
               </p>
-              <h1 className="font-serif-theme text-[3.2rem] sm:text-[4rem] font-bold leading-[1.05] text-[#F7FBE9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)]">
-                {d.groomShort}
-                <span className="font-cursive mx-2 text-[3.5rem] sm:text-[4.2rem] text-[#E8D27A] drop-shadow-[0_2px_14px_rgba(232,210,122,0.6)]">
+              <h1 className="font-serif-theme text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] text-[#F7FBE9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] max-w-full px-2 break-words">
+                <span className="inline-block max-w-full">{d.groomShort}</span>
+                <span className="font-cursive mx-2 sm:mx-3 text-[1.25em] text-[#E8D27A] drop-shadow-[0_2px_14px_rgba(232,210,122,0.6)] align-middle">
                   &
                 </span>
-                {d.brideShort}
+                <span className="inline-block max-w-full">{d.brideShort}</span>
               </h1>
 
               <div
