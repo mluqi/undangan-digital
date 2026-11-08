@@ -1,17 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/invitation/:slug",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|linkedinbot).*"
-        }
-      ],
-      "destination": "https://api-invitation.luckysdev.com/invitations/slug/:slug?format=html"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
