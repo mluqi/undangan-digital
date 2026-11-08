@@ -9,7 +9,7 @@
           "value": "(?i).*(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|linkedinbot).*"
         }
       ],
-      "destination": "https://api-invitation.luckysdev.com/api/invitations/slug/:slug?format=html"
+      "destination": "https://api-invitation.luckysdev.com/invitations/slug/:slug?format=html"
     },
     {
       "source": "/(.*)",
