@@ -1174,10 +1174,10 @@ export const ForestTropicalTheme = (props) => {
               <p className="mb-2 text-xs font-medium tracking-[0.25em] text-[#E8D27A]">
                 The Wedding of
               </p>
-              <h2 className="font-serif-theme text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)] max-w-full px-2 break-words">
-                <span className="inline-block max-w-full">{d.groomShort}</span>
-                <span className="font-cursive mx-2 sm:mx-3 text-[1.25em] text-[#E8D27A] align-middle">&</span>
-                <span className="inline-block max-w-full">{d.brideShort}</span>
+              <h2 className="font-serif-theme text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)] w-full px-2 break-words">
+                <span className="inline-block">{d.groomShort}</span>
+                <span className="font-cursive mx-1.5 sm:mx-2.5 text-[1.2em] text-[#E8D27A] align-middle">&</span>
+                <span className="inline-block">{d.brideShort}</span>
               </h2>
             </div>
 
