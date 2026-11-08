@@ -103,20 +103,27 @@ const renderOpenGraphHtml = (invitation, req) => {
   const content = invitation?.content_json || {};
   const groom = content.panggilanPria || content.mempelaiPria || 'Ahmad';
   const bride = content.panggilanWanita || content.mempelaiWanita || 'Aminah';
-  const to = req.query.to ? String(req.query.to).trim() : '';
 
-  const title = to
-    ? `Undangan Pernikahan ${groom} & ${bride} — Khusus untuk ${to}`
-    : `The Wedding of ${groom} & ${bride}`;
+  const title = `Undangan Pernikahan ${groom} dan ${bride}`;
 
-  const dateStr = content.akad?.tanggal || content.resepsi?.tanggal || '';
-  const locStr = content.akad?.lokasi || content.resepsi?.lokasi || '';
-  const desc = dateStr
-    ? `Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami pada ${dateStr} di ${locStr}.`
-    : 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu di hari bahagia kami.';
+  const akadDate = (content.akad?.tanggal || '').trim();
+  const resepsiDate = (content.resepsi?.tanggal || '').trim();
+  let desc = '';
+  if (akadDate && resepsiDate) {
+    desc =
+      akadDate === resepsiDate
+        ? `Akad & Resepsi: ${akadDate}`
+        : `Akad: ${akadDate} & Resepsi: ${resepsiDate}`;
+  } else if (akadDate) {
+    desc = `Akad: ${akadDate}`;
+  } else if (resepsiDate) {
+    desc = `Resepsi: ${resepsiDate}`;
+  } else {
+    desc = `Undangan Pernikahan ${groom} dan ${bride}`;
+  }
 
-  // Ambil foto cover yang digunakan di hero
-  let photoCover = content.fotoCover;
+  // Ambil foto share WhatsApp (custom) atau fallback ke foto cover yang digunakan di hero
+  let photoCover = content.fotoWhatsapp || content.fotoCover;
   if (!photoCover && Array.isArray(content.galeri) && content.galeri.length > 0) {
     photoCover = content.galeri[0];
   }
@@ -126,14 +133,27 @@ const renderOpenGraphHtml = (invitation, req) => {
   }
 
   // Pastikan URL foto absolut (WhatsApp WAJIB diawali http:// atau https://)
-  const host = req.get('host');
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
   const protocol =
-    req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https'
+    req.protocol === 'https' || forwardedProto === 'https'
       ? 'https'
       : 'http';
-  if (photoCover.startsWith('/')) {
+
+  const uploadsIndex = photoCover.indexOf('/uploads/');
+  if (uploadsIndex !== -1) {
+    const relativeUploadsPath = photoCover.substring(uploadsIndex);
+    photoCover = `${protocol}://${host}${relativeUploadsPath}`;
+  } else if (photoCover.startsWith('/')) {
     photoCover = `${protocol}://${host}${photoCover}`;
   }
+
+  const lowerCover = photoCover.toLowerCase();
+  const imageMimeType = lowerCover.endsWith('.png')
+    ? 'image/png'
+    : lowerCover.endsWith('.webp')
+    ? 'image/webp'
+    : 'image/jpeg';
 
   const frontendBase = (
     process.env.FRONTEND_URL || `${protocol}://${host}`
@@ -161,7 +181,7 @@ const renderOpenGraphHtml = (invitation, req) => {
   <meta property="og:image:secure_url" content="${escapeHtml(photoCover)}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:type" content="${imageMimeType}">
   <meta property="og:url" content="${escapeHtml(targetUrl)}">
 
   <!-- Twitter Card -->

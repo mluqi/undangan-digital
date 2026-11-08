@@ -224,6 +224,48 @@ class GuestService {
   }
 
   /**
+   * Menghapus beberapa data tamu sekaligus (bulk delete)
+   */
+  async deleteBulkGuests(invitationId, ids = []) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      const err = new Error('Pilih minimal satu data tamu untuk dihapus.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const where = { id: { [Op.in]: ids } };
+    if (invitationId) {
+      where.invitation_id = invitationId;
+    }
+
+    const deletedCount = await Guest.destroy({ where });
+    return {
+      deletedCount,
+      message: `${deletedCount} data tamu berhasil dihapus.`,
+    };
+  }
+
+  /**
+   * Menghapus seluruh data tamu pada suatu undangan
+   */
+  async deleteAllGuestsByInvitation(invitationId) {
+    if (!invitationId) {
+      const err = new Error('invitationId wajib disertakan.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const deletedCount = await Guest.destroy({
+      where: { invitation_id: invitationId },
+    });
+
+    return {
+      deletedCount,
+      message: `Seluruh data tamu (${deletedCount} tamu) berhasil dihapus.`,
+    };
+  }
+
+  /**
    * Check-in tamu via QR Code scan di meja resepsionis
    */
   async checkIn(qrCode) {

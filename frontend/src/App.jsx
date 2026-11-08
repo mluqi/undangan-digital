@@ -175,11 +175,12 @@ function DashboardLayout({ currentPath, onNavigate }) {
             onNavigate('/invitations');
           }}
           onInvitationLoaded={(inv) => {
-            if (inv?.title || (inv?.groom_nickname && inv?.bride_nickname)) {
+            if (inv?.client_name || inv?.title || (inv?.groom_nickname && inv?.bride_nickname)) {
               setActiveInvitationTitle(
-                inv.groom_nickname && inv.bride_nickname
-                  ? `${inv.groom_nickname} & ${inv.bride_nickname}`
-                  : inv.title
+                inv.client_name ||
+                  (inv.groom_nickname && inv.bride_nickname
+                    ? `${inv.groom_nickname} & ${inv.bride_nickname}`
+                    : inv.title)
               );
             }
           }}

@@ -164,6 +164,75 @@ class RsvpService {
   }
 
   /**
+   * Menghapus beberapa RSVP sekaligus (bulk delete)
+   */
+  async deleteBulkRsvps(invitationId, ids = [], adminId, role) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      const error = new Error('Pilih minimal satu ucapan RSVP untuk dihapus.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (invitationId) {
+      const invitation = await Invitation.findByPk(invitationId);
+      if (!invitation) {
+        const error = new Error('Undangan tidak ditemukan.');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (role !== 'admin' && invitation.admin_id !== adminId) {
+        const error = new Error('Anda tidak memiliki izin untuk menghapus RSVP pada undangan ini.');
+        error.statusCode = 403;
+        throw error;
+      }
+    }
+
+    const where = { id: { [Op.in]: ids } };
+    if (invitationId) {
+      where.invitation_id = invitationId;
+    }
+
+    const deletedCount = await Rsvp.destroy({ where });
+    return {
+      deletedCount,
+      message: `${deletedCount} ucapan RSVP berhasil dihapus.`,
+    };
+  }
+
+  /**
+   * Menghapus seluruh RSVP pada suatu undangan
+   */
+  async deleteAllRsvpsByInvitation(invitationId, adminId, role) {
+    if (!invitationId) {
+      const error = new Error('invitationId wajib disertakan.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const invitation = await Invitation.findByPk(invitationId);
+    if (!invitation) {
+      const error = new Error('Undangan tidak ditemukan.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (role !== 'admin' && invitation.admin_id !== adminId) {
+      const error = new Error('Anda tidak memiliki izin untuk menghapus RSVP pada undangan ini.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const deletedCount = await Rsvp.destroy({
+      where: { invitation_id: invitationId },
+    });
+
+    return {
+      deletedCount,
+      message: `Seluruh ucapan RSVP (${deletedCount} pesan) berhasil dihapus.`,
+    };
+  }
+
+  /**
    * Mengambil rekap statistik seluruh RSVP di sistem
    */
   async getTotalStats() {

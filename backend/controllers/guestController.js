@@ -60,6 +60,35 @@ const deleteGuest = async (req, res) => {
   }
 };
 
+const deleteBulkGuests = async (req, res) => {
+  try {
+    const { invitationId } = req.params;
+    const { ids } = req.body;
+    const result = await guestService.deleteBulkGuests(invitationId, ids);
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+};
+
+const deleteAllGuestsByInvitation = async (req, res) => {
+  try {
+    const { invitationId } = req.params;
+    const result = await guestService.deleteAllGuestsByInvitation(invitationId);
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ success: false, message: err.message });
+  }
+};
+
 const checkInGuest = async (req, res) => {
   try {
     const { qr_code } = req.body;
@@ -81,5 +110,7 @@ module.exports = {
   importGuests,
   updateGuest,
   deleteGuest,
+  deleteBulkGuests,
+  deleteAllGuestsByInvitation,
   checkInGuest,
 };

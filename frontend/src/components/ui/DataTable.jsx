@@ -90,7 +90,7 @@ export const DataTable = ({
   // Selection Handlers
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const allIds = paginatedData.map((row) => row[keyField]);
+      const allIds = sortedData.map((row) => row[keyField]);
       onSelectRows && onSelectRows(allIds);
     } else {
       onSelectRows && onSelectRows([]);
@@ -106,8 +106,8 @@ export const DataTable = ({
   };
 
   const isAllSelected =
-    paginatedData.length > 0 &&
-    paginatedData.every((row) => selectedRows.includes(row[keyField]));
+    sortedData.length > 0 &&
+    sortedData.every((row) => selectedRows.includes(row[keyField]));
 
   return (
     <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden ${className}`}>

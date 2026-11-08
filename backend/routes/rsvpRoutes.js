@@ -9,6 +9,8 @@ router.post('/', rsvpController.submitRsvp);
 router.get('/invitation/:invitationId', rsvpController.getRsvpsByInvitation);
 
 // Protected routes: Admin/pemilik undangan memoderasi/menghapus RSVP
+router.post('/invitation/:invitationId/bulk-delete', verifyToken, rsvpController.deleteBulkRsvps);
+router.delete('/invitation/:invitationId/all', verifyToken, rsvpController.deleteAllRsvpsByInvitation);
 router.delete('/:id', verifyToken, rsvpController.deleteRsvp);
 
 module.exports = router;

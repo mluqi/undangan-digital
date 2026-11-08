@@ -841,17 +841,16 @@ export const ForestTropicalTheme = (props) => {
   const [isCoverDismissed, setIsCoverDismissed] = useState(false);
   const [coverExited, setCoverExited] = useState(false);
 
-  // Koleksi foto untuk slide hero & cover
+  // Koleksi foto untuk slide hero & cover (tanpa foto solo mempelai di bagian Bride & Groom)
   const heroPhotos = useMemo(() => {
+    const soloPhotos = new Set([d.photoGroom, d.photoBride].filter(Boolean));
     const list = [];
-    if (d.photoCover) list.push(d.photoCover);
+    if (d.photoCover && !soloPhotos.has(d.photoCover)) list.push(d.photoCover);
     if (Array.isArray(d.gallery) && d.gallery.length > 0) {
       d.gallery.forEach((img) => {
-        if (img && !list.includes(img)) list.push(img);
+        if (img && !soloPhotos.has(img) && !list.includes(img)) list.push(img);
       });
     }
-    if (d.photoGroom && !list.includes(d.photoGroom)) list.push(d.photoGroom);
-    if (d.photoBride && !list.includes(d.photoBride)) list.push(d.photoBride);
 
     if (list.length === 0) {
       list.push(

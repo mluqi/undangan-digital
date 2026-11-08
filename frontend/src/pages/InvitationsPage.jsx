@@ -679,7 +679,7 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
         <div>
           <button
             type="button"
-            onClick={() => setSelectedDetailId(row.id)}
+            onClick={() => openInvitationDetail(row.id)}
             className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors block text-left"
           >
             {val}
@@ -743,7 +743,7 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
             size="sm"
             variant="secondary"
             className="text-xs gap-1.5 font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
-            onClick={() => setSelectedDetailId(row.id)}
+            onClick={() => openInvitationDetail(row.id)}
           >
             <Settings className="w-3.5 h-3.5" />
             <span>Kelola Undangan</span>

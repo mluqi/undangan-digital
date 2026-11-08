@@ -13,6 +13,8 @@ router.use(verifyToken);
 router.get('/invitation/:invitationId', guestController.getGuestsByInvitation);
 router.post('/invitation/:invitationId', guestController.createGuest);
 router.post('/invitation/:invitationId/import', guestController.importGuests);
+router.post('/invitation/:invitationId/bulk-delete', guestController.deleteBulkGuests);
+router.delete('/invitation/:invitationId/all', guestController.deleteAllGuestsByInvitation);
 
 // Single guest CRUD
 router.put('/:id', guestController.updateGuest);

@@ -29,6 +29,8 @@ export const RsvpsPage = () => {
   const [rsvps, setRsvps] = useState([]);
   const [stats, setStats] = useState({ total: 0, hadir: 0, tidakHadir: 0, raguRagu: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedRsvpIds, setSelectedRsvpIds] = useState([]);
+  const [isDeletingRsvps, setIsDeletingRsvps] = useState(false);
 
   // Simulate guest RSVP submission modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,6 +77,7 @@ export const RsvpsPage = () => {
       setStats(
         res?.data?.stats || { total: 0, hadir: 0, tidakHadir: 0, raguRagu: 0 }
       );
+      setSelectedRsvpIds([]);
     } catch (err) {
       console.error('Error load rsvps:', err);
       toast.error('Gagal memuat data RSVP.');
@@ -93,6 +96,54 @@ export const RsvpsPage = () => {
     } catch (err) {
       console.error('Error deleting RSVP:', err);
       toast.error(err.message || 'Gagal menghapus pesan RSVP.');
+    }
+  };
+
+  const handleBulkDeleteRsvps = async () => {
+    if (!selectedInvId || selectedRsvpIds.length === 0) return;
+    if (
+      !window.confirm(
+        `Yakin ingin menghapus ${selectedRsvpIds.length} ucapan buku tamu yang dipilih?`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingRsvps(true);
+    try {
+      const res = await rsvpService.bulkDelete(selectedInvId, selectedRsvpIds);
+      toast.success(res.message || `${selectedRsvpIds.length} ucapan berhasil dihapus.`);
+      setSelectedRsvpIds([]);
+      loadRsvps(selectedInvId);
+    } catch (err) {
+      console.error('Error bulk deleting RSVPs:', err);
+      toast.error(err.message || 'Gagal menghapus ucapan terpilih.');
+    } finally {
+      setIsDeletingRsvps(false);
+    }
+  };
+
+  const handleDeleteAllRsvps = async () => {
+    if (!selectedInvId || rsvps.length === 0) return;
+    if (
+      !window.confirm(
+        `PERINGATAN: Yakin ingin menghapus SELURUH (${stats.total || rsvps.length}) ucapan buku tamu & RSVP pada undangan ini? Tindakan ini tidak dapat dibatalkan.`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingRsvps(true);
+    try {
+      const res = await rsvpService.deleteAll(selectedInvId);
+      toast.success(res.message || 'Seluruh ucapan buku tamu berhasil dihapus.');
+      setSelectedRsvpIds([]);
+      loadRsvps(selectedInvId);
+    } catch (err) {
+      console.error('Error deleting all RSVPs:', err);
+      toast.error(err.message || 'Gagal menghapus seluruh ucapan.');
+    } finally {
+      setIsDeletingRsvps(false);
     }
   };
 
@@ -263,6 +314,49 @@ export const RsvpsPage = () => {
         columns={columns}
         data={rsvps}
         isLoading={isLoading}
+        selectable={true}
+        selectedRows={selectedRsvpIds}
+        onSelectRows={setSelectedRsvpIds}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedRsvpIds.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
+                <span className="text-xs font-semibold text-rose-700">
+                  {selectedRsvpIds.length} dipilih
+                </span>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leftIcon={Trash2}
+                  isLoading={isDeletingRsvps}
+                  onClick={handleBulkDeleteRsvps}
+                  className="text-xs py-1 px-2.5"
+                >
+                  Hapus Terpilih
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRsvpIds([])}
+                  className="text-xs text-slate-500 hover:text-slate-700 px-1"
+                >
+                  Batal
+                </button>
+              </div>
+            )}
+            {rsvps.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={Trash2}
+                isLoading={isDeletingRsvps}
+                onClick={handleDeleteAllRsvps}
+                className="text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                Hapus Semua ({stats.total || rsvps.length})
+              </Button>
+            )}
+          </div>
+        }
         searchPlaceholder="Cari nama tamu..."
         emptyMessage="Belum ada ucapan RSVP pada undangan yang dipilih."
       />

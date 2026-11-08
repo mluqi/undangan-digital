@@ -27,17 +27,13 @@ export const PublicInvitationPage = ({ slug }) => {
     const content = invitation.content_json || {};
     const groom = content.panggilanPria || content.mempelaiPria || 'Ahmad';
     const bride = content.panggilanWanita || content.mempelaiWanita || 'Aminah';
-    const params = new URLSearchParams(window.location.search);
-    const guestParam = params.get('to');
 
-    const pageTitle = guestParam
-      ? `Undangan Pernikahan ${groom} & ${bride} — Khusus untuk ${guestParam}`
-      : `The Wedding of ${groom} & ${bride}`;
+    const pageTitle = `Undangan Pernikahan ${groom} dan ${bride}`;
 
     document.title = pageTitle;
 
-    // Foto cover hero utama
-    let coverImage = content.fotoCover;
+    // Foto share WhatsApp (custom) atau fallback ke foto cover hero utama
+    let coverImage = content.fotoWhatsapp || content.fotoCover;
     if (!coverImage && Array.isArray(content.galeri) && content.galeri.length > 0) {
       coverImage = content.galeri[0];
     }
@@ -47,16 +43,41 @@ export const PublicInvitationPage = ({ slug }) => {
     }
 
     // Pastikan foto cover ber-URL absolut (protokol http/https) agar dapat diambil oleh scraper WhatsApp
+    const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
     if (coverImage.startsWith('/')) {
-      const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
       coverImage = `${apiBase || window.location.origin}${coverImage}`;
+    } else if (
+      coverImage.includes('/uploads/') &&
+      (coverImage.includes('localhost') || coverImage.includes('127.0.0.1')) &&
+      !window.location.hostname.includes('localhost') &&
+      !window.location.hostname.includes('127.0.0.1')
+    ) {
+      const relativeUpload = coverImage.substring(coverImage.indexOf('/uploads/'));
+      coverImage = `${apiBase || window.location.origin}${relativeUpload}`;
     }
 
-    const dateStr = content.akad?.tanggal || content.resepsi?.tanggal || '';
-    const locStr = content.akad?.lokasi || content.resepsi?.lokasi || '';
-    const desc = dateStr
-      ? `Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami pada ${dateStr} di ${locStr}.`
-      : 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu di hari bahagia kami.';
+    const lowerImg = coverImage.toLowerCase();
+    const imgMime = lowerImg.endsWith('.png')
+      ? 'image/png'
+      : lowerImg.endsWith('.webp')
+      ? 'image/webp'
+      : 'image/jpeg';
+
+    const akadDate = (content.akad?.tanggal || '').trim();
+    const resepsiDate = (content.resepsi?.tanggal || '').trim();
+    let desc = '';
+    if (akadDate && resepsiDate) {
+      desc =
+        akadDate === resepsiDate
+          ? `Akad & Resepsi: ${akadDate}`
+          : `Akad: ${akadDate} & Resepsi: ${resepsiDate}`;
+    } else if (akadDate) {
+      desc = `Akad: ${akadDate}`;
+    } else if (resepsiDate) {
+      desc = `Resepsi: ${resepsiDate}`;
+    } else {
+      desc = `Undangan Pernikahan ${groom} dan ${bride}`;
+    }
 
     const setMetaTag = (attr, key, val) => {
       if (!val) return;
@@ -76,7 +97,7 @@ export const PublicInvitationPage = ({ slug }) => {
     setMetaTag('property', 'og:image:secure_url', coverImage);
     setMetaTag('property', 'og:image:width', '1200');
     setMetaTag('property', 'og:image:height', '630');
-    setMetaTag('property', 'og:image:type', 'image/jpeg');
+    setMetaTag('property', 'og:image:type', imgMime);
     setMetaTag('property', 'og:type', 'website');
     setMetaTag('property', 'og:url', window.location.href);
 

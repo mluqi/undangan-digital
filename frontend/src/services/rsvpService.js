@@ -24,6 +24,17 @@ export const rsvpService = {
       method: 'DELETE',
     });
   },
+  async bulkDelete(invitationId, ids = []) {
+    return await request(`/rsvps/invitation/${invitationId}/bulk-delete`, {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    });
+  },
+  async deleteAll(invitationId) {
+    return await request(`/rsvps/invitation/${invitationId}/all`, {
+      method: 'DELETE',
+    });
+  },
   async getTotalStats() {
     return await request('/rsvps/stats/summary');
   },

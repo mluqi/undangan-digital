@@ -33,6 +33,19 @@ export const guestService = {
     });
   },
 
+  async bulkDelete(invitationId, ids = []) {
+    return await request(`/guests/invitation/${invitationId}/bulk-delete`, {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    });
+  },
+
+  async deleteAll(invitationId) {
+    return await request(`/guests/invitation/${invitationId}/all`, {
+      method: 'DELETE',
+    });
+  },
+
   async checkIn(qr_code) {
     return await request('/guests/check-in', {
       method: 'POST',

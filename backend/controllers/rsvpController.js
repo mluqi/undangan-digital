@@ -92,6 +92,60 @@ const deleteRsvp = async (req, res) => {
   }
 };
 
+// @desc    Bulk delete RSVPs
+// @route   POST /api/rsvps/invitation/:invitationId/bulk-delete
+// @access  Private
+const deleteBulkRsvps = async (req, res) => {
+  try {
+    const { invitationId } = req.params;
+    const { ids } = req.body;
+    const result = await rsvpService.deleteBulkRsvps(
+      invitationId,
+      ids,
+      req.user.id,
+      req.user.role
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('Error saat bulk delete RSVP:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Terjadi kesalahan pada server.',
+    });
+  }
+};
+
+// @desc    Delete all RSVPs for an invitation
+// @route   DELETE /api/rsvps/invitation/:invitationId/all
+// @access  Private
+const deleteAllRsvpsByInvitation = async (req, res) => {
+  try {
+    const { invitationId } = req.params;
+    const result = await rsvpService.deleteAllRsvpsByInvitation(
+      invitationId,
+      req.user.id,
+      req.user.role
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('Error saat menghapus seluruh RSVP:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Terjadi kesalahan pada server.',
+    });
+  }
+};
+
 // @desc    Get total RSVP statistics
 // @route   GET /api/rsvps/stats/summary
 // @access  Public
@@ -115,5 +169,7 @@ module.exports = {
   submitRsvp,
   getRsvpsByInvitation,
   deleteRsvp,
+  deleteBulkRsvps,
+  deleteAllRsvpsByInvitation,
   getTotalStats,
 };

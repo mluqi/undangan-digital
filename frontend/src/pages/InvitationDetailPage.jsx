@@ -82,7 +82,14 @@ export const MUSIC_PRESETS = [
   },
 ];
 
-export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplates }) => {
+export const InvitationDetailPage = ({
+  invitationId,
+  activeTab: activeTabProp,
+  onTabChange,
+  onBack,
+  onInvitationLoaded,
+  onNavigateToTemplates,
+}) => {
   const toast = useToast();
   const fileInputRef = useRef(null);
   const excelSettingsFileInputRef = useRef(null);
@@ -91,18 +98,35 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
   const [invitation, setInvitation] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('guests'); // 'guests' | 'rsvps' | 'settings' | 'preview'
+  const [activeTab, setActiveTab] = useState(activeTabProp || 'guests'); // 'guests' | 'rsvps' | 'settings' | 'preview'
+
+  useEffect(() => {
+    if (activeTabProp && activeTabProp !== activeTab) {
+      setActiveTab(activeTabProp);
+    }
+  }, [activeTabProp]);
+
+  const handleSwitchTab = (nextTab) => {
+    setActiveTab(nextTab);
+    if (onTabChange) {
+      onTabChange(nextTab);
+    }
+  };
 
   // Guests state
   const [guests, setGuests] = useState([]);
   const [guestStats, setGuestStats] = useState({ total: 0, vip: 0, reguler: 0, totalPax: 0 });
   const [isGuestsLoading, setIsGuestsLoading] = useState(false);
   const [filterGuestCategory, setFilterGuestCategory] = useState('');
+  const [selectedGuestIds, setSelectedGuestIds] = useState([]);
+  const [isDeletingGuests, setIsDeletingGuests] = useState(false);
 
   // RSVPs state
   const [rsvps, setRsvps] = useState([]);
   const [filterRsvpStatus, setFilterRsvpStatus] = useState('');
   const [isRsvpsLoading, setIsRsvpsLoading] = useState(false);
+  const [selectedRsvpIds, setSelectedRsvpIds] = useState([]);
+  const [isDeletingRsvps, setIsDeletingRsvps] = useState(false);
 
   // Modals
   const [selectedGuestQr, setSelectedGuestQr] = useState(null);
@@ -163,9 +187,11 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
   const [musicTitle, setMusicTitle] = useState('Acoustic Wedding - Romantic Bliss');
   const [isUploadingMusic, setIsUploadingMusic] = useState(false);
   const [fotoCover, setFotoCover] = useState('');
+  const [fotoWhatsapp, setFotoWhatsapp] = useState('');
   const [fotoPria, setFotoPria] = useState('');
   const [fotoWanita, setFotoWanita] = useState('');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingWhatsapp, setIsUploadingWhatsapp] = useState(false);
   const [isUploadingGroom, setIsUploadingGroom] = useState(false);
   const [isUploadingBride, setIsUploadingBride] = useState(false);
   const [galleryPhotos, setGalleryPhotos] = useState([]);
@@ -174,6 +200,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
   // File Input Refs
   const musicFileInputRef = useRef(null);
   const coverFileInputRef = useRef(null);
+  const whatsappFileInputRef = useRef(null);
   const groomFileInputRef = useRef(null);
   const brideFileInputRef = useRef(null);
   const galleryFileInputRef = useRef(null);
@@ -227,6 +254,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     const file = e.target.files?.[0];
     if (!file) return;
     if (type === 'cover') setIsUploadingCover(true);
+    if (type === 'whatsapp') setIsUploadingWhatsapp(true);
     if (type === 'groom') setIsUploadingGroom(true);
     if (type === 'bride') setIsUploadingBride(true);
 
@@ -234,6 +262,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
       const res = await invitationService.uploadPhoto(invitationId, file, type);
       if (res?.data?.url) {
         if (type === 'cover') setFotoCover(res.data.url);
+        if (type === 'whatsapp') setFotoWhatsapp(res.data.url);
         if (type === 'groom') setFotoPria(res.data.url);
         if (type === 'bride') setFotoWanita(res.data.url);
         toast.success(`Foto ${type} berhasil diupload ke /uploads/${invitation?.slug}/covers/`);
@@ -243,6 +272,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
       toast.error(err.message || 'Gagal mengupload foto.');
     } finally {
       if (type === 'cover') setIsUploadingCover(false);
+      if (type === 'whatsapp') setIsUploadingWhatsapp(false);
       if (type === 'groom') setIsUploadingGroom(false);
       if (type === 'bride') setIsUploadingBride(false);
       e.target.value = '';
@@ -292,6 +322,9 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
       const invData = invRes?.data;
       setInvitation(invData);
+      if (invData && onInvitationLoaded) {
+        onInvitationLoaded(invData);
+      }
       setTemplates(tmplRes?.data || []);
 
       // Populate settings form
@@ -370,6 +403,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
       setMusicUrl(c.musicUrl || 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=romantic-wedding-113063.mp3');
       setMusicTitle(c.musicTitle || 'Acoustic Wedding - Romantic Bliss');
       setFotoCover(c.fotoCover || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80');
+      setFotoWhatsapp(c.fotoWhatsapp && c.fotoWhatsapp !== c.fotoCover ? c.fotoWhatsapp : '');
       setFotoPria(c.fotoPria || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80');
       setFotoWanita(c.fotoWanita || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80');
       setGalleryPhotos(
@@ -402,6 +436,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
       });
       setGuests(res?.data?.guests || []);
       setGuestStats(res?.data?.stats || { total: 0, vip: 0, reguler: 0, totalPax: 0 });
+      setSelectedGuestIds([]);
     } catch (err) {
       console.error('Error load guests:', err);
     } finally {
@@ -414,10 +449,12 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     try {
       const res = await rsvpService.getAll({
         invitation_id: invitationId,
+        status: filterRsvpStatus,
         attendance_status: filterRsvpStatus,
         limit: 100,
       });
       setRsvps(res?.data?.rsvps || []);
+      setSelectedRsvpIds([]);
     } catch (err) {
       console.error('Error load rsvps:', err);
     } finally {
@@ -650,6 +687,102 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
     }
   };
 
+  const handleBulkDeleteGuests = async () => {
+    if (selectedGuestIds.length === 0) return;
+    if (
+      !window.confirm(
+        `Yakin ingin menghapus ${selectedGuestIds.length} data tamu yang dipilih?`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingGuests(true);
+    try {
+      const res = await guestService.bulkDelete(invitationId, selectedGuestIds);
+      toast.success(res.message || `${selectedGuestIds.length} tamu berhasil dihapus.`);
+      setSelectedGuestIds([]);
+      loadGuests();
+    } catch (err) {
+      console.error('Error bulk delete guests:', err);
+      toast.error(err.message || 'Gagal menghapus tamu terpilih.');
+    } finally {
+      setIsDeletingGuests(false);
+    }
+  };
+
+  const handleDeleteAllGuests = async () => {
+    if (guests.length === 0) return;
+    if (
+      !window.confirm(
+        `PERINGATAN: Yakin ingin menghapus SELURUH (${guestStats.total || guests.length}) daftar tamu pada undangan ini? Tindakan ini tidak dapat dibatalkan.`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingGuests(true);
+    try {
+      const res = await guestService.deleteAll(invitationId);
+      toast.success(res.message || 'Seluruh data tamu berhasil dihapus.');
+      setSelectedGuestIds([]);
+      loadGuests();
+    } catch (err) {
+      console.error('Error delete all guests:', err);
+      toast.error(err.message || 'Gagal menghapus seluruh tamu.');
+    } finally {
+      setIsDeletingGuests(false);
+    }
+  };
+
+  const handleBulkDeleteRsvps = async () => {
+    if (selectedRsvpIds.length === 0) return;
+    if (
+      !window.confirm(
+        `Yakin ingin menghapus ${selectedRsvpIds.length} ucapan buku tamu yang dipilih?`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingRsvps(true);
+    try {
+      const res = await rsvpService.bulkDelete(invitationId, selectedRsvpIds);
+      toast.success(res.message || `${selectedRsvpIds.length} ucapan berhasil dihapus.`);
+      setSelectedRsvpIds([]);
+      loadRsvps();
+    } catch (err) {
+      console.error('Error bulk delete rsvps:', err);
+      toast.error(err.message || 'Gagal menghapus ucapan terpilih.');
+    } finally {
+      setIsDeletingRsvps(false);
+    }
+  };
+
+  const handleDeleteAllRsvps = async () => {
+    if (rsvps.length === 0) return;
+    if (
+      !window.confirm(
+        `PERINGATAN: Yakin ingin menghapus SELURUH (${rsvps.length}) ucapan buku tamu & RSVP pada undangan ini? Tindakan ini tidak dapat dibatalkan.`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingRsvps(true);
+    try {
+      const res = await rsvpService.deleteAll(invitationId);
+      toast.success(res.message || 'Seluruh ucapan buku tamu berhasil dihapus.');
+      setSelectedRsvpIds([]);
+      loadRsvps();
+    } catch (err) {
+      console.error('Error delete all rsvps:', err);
+      toast.error(err.message || 'Gagal menghapus seluruh ucapan.');
+    } finally {
+      setIsDeletingRsvps(false);
+    }
+  };
+
   const handleCopyShareText = (guest) => {
     const publicUrl = `${window.location.origin}/invitation/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
     const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami:\n\n${publicUrl}`;
@@ -856,6 +989,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
           fotoPria: fotoPria || undefined,
           fotoWanita: fotoWanita || undefined,
           fotoCover: fotoCover || undefined,
+          fotoWhatsapp: fotoWhatsapp || fotoCover || undefined,
         },
       };
 
@@ -1074,7 +1208,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             size="sm"
             leftIcon={Sparkles}
             className="bg-amber-600 hover:bg-amber-700 text-white border-0"
-            onClick={() => setActiveTab('preview')}
+            onClick={() => handleSwitchTab('preview')}
           >
             Live Preview Undangan
           </Button>
@@ -1085,7 +1219,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
       <div className="flex border-b border-slate-200 overflow-x-auto gap-2">
         <button
           type="button"
-          onClick={() => setActiveTab('guests')}
+          onClick={() => handleSwitchTab('guests')}
           className={`flex items-center gap-2 px-4 py-3 font-medium text-xs sm:text-sm border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'guests'
               ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
@@ -1101,7 +1235,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
         <button
           type="button"
-          onClick={() => setActiveTab('rsvps')}
+          onClick={() => handleSwitchTab('rsvps')}
           className={`flex items-center gap-2 px-4 py-3 font-medium text-xs sm:text-sm border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'rsvps'
               ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
@@ -1117,7 +1251,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
         <button
           type="button"
-          onClick={() => setActiveTab('settings')}
+          onClick={() => handleSwitchTab('settings')}
           className={`flex items-center gap-2 px-4 py-3 font-medium text-xs sm:text-sm border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'settings'
               ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
@@ -1130,7 +1264,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
         <button
           type="button"
-          onClick={() => setActiveTab('preview')}
+          onClick={() => handleSwitchTab('preview')}
           className={`flex items-center gap-2 px-4 py-3 font-medium text-xs sm:text-sm border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'preview'
               ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
@@ -1172,7 +1306,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
 
           {/* Action Toolbar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Select
                 placeholder="Semua Kategori Tamu"
                 options={[
@@ -1184,9 +1318,47 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                 onChange={setFilterGuestCategory}
                 className="w-44"
               />
+
+              {selectedGuestIds.length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
+                  <span className="text-xs font-semibold text-rose-700">
+                    {selectedGuestIds.length} dipilih
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    leftIcon={Trash2}
+                    isLoading={isDeletingGuests}
+                    onClick={handleBulkDeleteGuests}
+                    className="text-xs py-1 px-2.5"
+                  >
+                    Hapus Terpilih
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedGuestIds([])}
+                    className="text-xs text-slate-500 hover:text-slate-700 px-1"
+                  >
+                    Batal
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {guests.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={Trash2}
+                  isLoading={isDeletingGuests}
+                  onClick={handleDeleteAllGuests}
+                  className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                >
+                  Hapus Semua ({guestStats.total || guests.length})
+                </Button>
+              )}
+
               {/* Download Excel Template */}
               <Button
                 variant="outline"
@@ -1231,6 +1403,9 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             columns={guestColumns}
             data={guests}
             isLoading={isGuestsLoading}
+            selectable={true}
+            selectedRows={selectedGuestIds}
+            onSelectRows={setSelectedGuestIds}
             searchPlaceholder="Cari nama tamu undangan..."
             emptyMessage="Belum ada data tamu pada undangan client ini. Silakan import dari file Excel atau tambah manual."
           />
@@ -1267,19 +1442,61 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             </Card>
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <Select
-              placeholder="Filter Status Kehadiran"
-              options={[
-                { value: '', label: 'Semua Status' },
-                { value: 'Hadir', label: 'Pasti Hadir' },
-                { value: 'Tidak Hadir', label: 'Berhalangan' },
-                { value: 'Ragu-ragu', label: 'Ragu-ragu' },
-              ]}
-              value={filterRsvpStatus}
-              onChange={setFilterRsvpStatus}
-              className="w-48"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                placeholder="Filter Status Kehadiran"
+                options={[
+                  { value: '', label: 'Semua Status' },
+                  { value: 'Hadir', label: 'Pasti Hadir' },
+                  { value: 'Tidak Hadir', label: 'Berhalangan' },
+                  { value: 'Ragu-ragu', label: 'Ragu-ragu' },
+                ]}
+                value={filterRsvpStatus}
+                onChange={setFilterRsvpStatus}
+                className="w-48"
+              />
+
+              {selectedRsvpIds.length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
+                  <span className="text-xs font-semibold text-rose-700">
+                    {selectedRsvpIds.length} ucapan dipilih
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    leftIcon={Trash2}
+                    isLoading={isDeletingRsvps}
+                    onClick={handleBulkDeleteRsvps}
+                    className="text-xs py-1 px-2.5"
+                  >
+                    Hapus Terpilih
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRsvpIds([])}
+                    className="text-xs text-slate-500 hover:text-slate-700 px-1"
+                  >
+                    Batal
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {rsvps.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={Trash2}
+                  isLoading={isDeletingRsvps}
+                  onClick={handleDeleteAllRsvps}
+                  className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                >
+                  Hapus Semua Ucapan ({rsvps.length})
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* RSVPs Table */}
@@ -1355,6 +1572,9 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             ]}
             data={rsvps}
             isLoading={isRsvpsLoading}
+            selectable={true}
+            selectedRows={selectedRsvpIds}
+            onSelectRows={setSelectedRsvpIds}
             searchPlaceholder="Cari nama tamu atau ucapan..."
             emptyMessage="Belum ada ucapan doa restu dari tamu untuk undangan ini."
           />
@@ -1928,10 +2148,10 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-rose-600" />
-                Foto Sampul & Foto Pasangan Mempelai
+                Foto Sampul, Share WhatsApp & Foto Pasangan Mempelai
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Upload foto cover pembuka serta foto individual mempelai pria dan wanita.
+                Upload foto cover pembuka, thumbnail khusus share WhatsApp (otomatis mengikuti Foto Cover jika tidak diupload terpisah), serta foto sendiri-sendiri mempelai pria dan wanita.
               </p>
             </div>
 
@@ -1941,6 +2161,13 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
               ref={coverFileInputRef}
               accept="image/*"
               onChange={(e) => handleUploadSinglePhoto(e, 'cover')}
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={whatsappFileInputRef}
+              accept="image/*"
+              onChange={(e) => handleUploadSinglePhoto(e, 'whatsapp')}
               className="hidden"
             />
             <input
@@ -1958,14 +2185,16 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
               className="hidden"
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Cover Photo */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-3">
                 <div>
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                     Foto Cover / Hero
                   </h4>
-                  <p className="text-[11px] text-slate-500 mb-3">Tampil di layar pembuka amplop dan header undangan.</p>
+                  <p className="text-[11px] text-slate-500 mb-3">
+                    Tampil di layar pembuka, slide hero atas, dan default share WhatsApp.
+                  </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
                       src={
@@ -2009,13 +2238,71 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                 </div>
               </div>
 
+              {/* WhatsApp Share Thumbnail Photo */}
+              <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-200/80 flex flex-col justify-between space-y-3">
+                <div>
+                  <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1">
+                    Foto Share WhatsApp
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mb-3">
+                    Thumbnail saat link dibagikan di WA (otomatis ambil dari Foto Cover atau custom).
+                  </p>
+                  <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
+                    <img
+                      src={
+                        fotoWhatsapp ||
+                        fotoCover ||
+                        'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'
+                      }
+                      alt="WhatsApp Thumbnail"
+                      className="w-full h-full object-cover"
+                    />
+                    <span
+                      className={`absolute top-2 left-2 px-2 py-0.5 text-white text-[10px] rounded-full font-medium ${
+                        fotoWhatsapp ? 'bg-emerald-600' : 'bg-slate-700/85'
+                      }`}
+                    >
+                      {fotoWhatsapp ? 'Custom WA' : 'Dari Foto Cover'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs"
+                    isLoading={isUploadingWhatsapp}
+                    leftIcon={Upload}
+                    onClick={() => whatsappFileInputRef.current?.click()}
+                  >
+                    {fotoWhatsapp ? 'Ganti Foto WA' : 'Custom Foto WA'}
+                  </Button>
+                  {fotoWhatsapp && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-emerald-700"
+                      onClick={() => setFotoWhatsapp('')}
+                      title="Gunakan Foto Cover untuk Share WhatsApp"
+                    >
+                      Pakai Cover
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               {/* Groom Photo */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-3">
                 <div>
                   <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1">
                     Foto Mempelai Pria
                   </h4>
-                  <p className="text-[11px] text-slate-500 mb-3">Tampil di profil mempelai pria.</p>
+                  <p className="text-[11px] text-slate-500 mb-3">
+                    Tampil khusus di bagian Bride & Groom (foto sendiri).
+                  </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
                       src={
@@ -2065,7 +2352,9 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                   <h4 className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-1">
                     Foto Mempelai Wanita
                   </h4>
-                  <p className="text-[11px] text-slate-500 mb-3">Tampil di profil mempelai wanita.</p>
+                  <p className="text-[11px] text-slate-500 mb-3">
+                    Tampil khusus di bagian Bride & Groom (foto sendiri).
+                  </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
                       src={
@@ -2306,6 +2595,7 @@ export const InvitationDetailPage = ({ invitationId, onBack, onNavigateToTemplat
                         musicUrl: musicUrl,
                         musicTitle: musicTitle,
                         fotoCover: fotoCover,
+                        fotoWhatsapp: fotoWhatsapp || fotoCover,
                         fotoPria: fotoPria,
                         fotoWanita: fotoWanita,
                       },

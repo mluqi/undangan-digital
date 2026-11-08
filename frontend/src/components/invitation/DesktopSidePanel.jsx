@@ -179,16 +179,17 @@ export const DesktopSidePanel = ({
 
   const safeTimeLeft = timeLeft || { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-  // Kumpulan foto prewedding untuk slider sisi kiri
+  // Kumpulan foto prewedding untuk slider sisi kiri (tanpa foto solo mempelai pria & wanita)
   const photos = React.useMemo(() => {
+    const soloPhotos = new Set([photoGroom, photoBride].filter(Boolean));
     const list = [];
-    if (photoCover && typeof photoCover === 'string') list.push(photoCover);
-    if (photoGroom && typeof photoGroom === 'string' && !list.includes(photoGroom)) list.push(photoGroom);
-    if (photoBride && typeof photoBride === 'string' && !list.includes(photoBride)) list.push(photoBride);
+    if (photoCover && typeof photoCover === 'string' && !soloPhotos.has(photoCover)) {
+      list.push(photoCover);
+    }
     if (Array.isArray(gallery) && gallery.length > 0) {
       gallery.forEach((p) => {
         const src = typeof p === 'string' ? p : p?.url || p?.src;
-        if (src && !list.includes(src)) list.push(src);
+        if (src && !soloPhotos.has(src) && !list.includes(src)) list.push(src);
       });
     }
     return list.length > 0

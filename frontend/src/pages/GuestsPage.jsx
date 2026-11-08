@@ -84,6 +84,10 @@ export const GuestsPage = ({ defaultInvitationId }) => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
 
+  // Bulk selection state
+  const [selectedGuestIds, setSelectedGuestIds] = useState([]);
+  const [isDeletingGuests, setIsDeletingGuests] = useState(false);
+
   useEffect(() => {
     loadInvitations();
   }, []);
@@ -132,6 +136,7 @@ export const GuestsPage = ({ defaultInvitationId }) => {
 
       setGuests(res?.data?.guests || []);
       setStats(res?.data?.stats || { total: 0, vip: 0, reguler: 0, checkedIn: 0, pending: 0 });
+      setSelectedGuestIds([]);
     } catch (err) {
       console.error('Error load guests:', err);
       toast.error('Gagal memuat daftar tamu.');
@@ -359,6 +364,54 @@ export const GuestsPage = ({ defaultInvitationId }) => {
     }
   };
 
+  const handleBulkDeleteGuests = async () => {
+    if (!selectedInvId || selectedGuestIds.length === 0) return;
+    if (
+      !window.confirm(
+        `Yakin ingin menghapus ${selectedGuestIds.length} data tamu yang dipilih?`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingGuests(true);
+    try {
+      const res = await guestService.bulkDelete(selectedInvId, selectedGuestIds);
+      toast.success(res.message || `${selectedGuestIds.length} tamu berhasil dihapus.`);
+      setSelectedGuestIds([]);
+      loadGuests(selectedInvId);
+    } catch (err) {
+      console.error('Error bulk deleting guests:', err);
+      toast.error(err.message || 'Gagal menghapus tamu terpilih.');
+    } finally {
+      setIsDeletingGuests(false);
+    }
+  };
+
+  const handleDeleteAllGuests = async () => {
+    if (!selectedInvId || guests.length === 0) return;
+    if (
+      !window.confirm(
+        `PERINGATAN: Yakin ingin menghapus SELURUH (${stats.total || guests.length}) daftar tamu pada undangan ini? Tindakan ini tidak dapat dibatalkan.`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingGuests(true);
+    try {
+      const res = await guestService.deleteAll(selectedInvId);
+      toast.success(res.message || 'Seluruh data tamu berhasil dihapus.');
+      setSelectedGuestIds([]);
+      loadGuests(selectedInvId);
+    } catch (err) {
+      console.error('Error deleting all guests:', err);
+      toast.error(err.message || 'Gagal menghapus seluruh tamu.');
+    } finally {
+      setIsDeletingGuests(false);
+    }
+  };
+
   // --- CHECK-IN SCANNER SIMULATION ---
   const handlePerformCheckIn = async (codeToScan) => {
     const code = codeToScan || scanCodeInput.trim();
@@ -388,20 +441,14 @@ export const GuestsPage = ({ defaultInvitationId }) => {
   };
 
   const handleCopyShareText = (guest) => {
-    const inviteUrl =
-      guest.qr_link && !guest.qr_link.includes('/api/invitations')
-        ? guest.qr_link
-        : `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
+    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
     const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami:\n\n${inviteUrl}`;
     navigator.clipboard.writeText(text);
     toast.success('Teks undangan personal disalin untuk dibagikan via WhatsApp!');
   };
 
   const handleCopyOnlyLink = (guest) => {
-    const inviteUrl =
-      guest.qr_link && !guest.qr_link.includes('/api/invitations')
-        ? guest.qr_link
-        : `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
+    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
     navigator.clipboard.writeText(inviteUrl);
     toast.success(`Link undangan untuk ${guest.name} berhasil disalin!`);
   };
@@ -719,6 +766,49 @@ export const GuestsPage = ({ defaultInvitationId }) => {
         columns={columns}
         data={guests}
         isLoading={isLoading}
+        selectable={true}
+        selectedRows={selectedGuestIds}
+        onSelectRows={setSelectedGuestIds}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedGuestIds.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200">
+                <span className="text-xs font-semibold text-rose-700">
+                  {selectedGuestIds.length} dipilih
+                </span>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leftIcon={Trash2}
+                  isLoading={isDeletingGuests}
+                  onClick={handleBulkDeleteGuests}
+                  className="text-xs py-1 px-2.5"
+                >
+                  Hapus Terpilih
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedGuestIds([])}
+                  className="text-xs text-slate-500 hover:text-slate-700 px-1"
+                >
+                  Batal
+                </button>
+              </div>
+            )}
+            {guests.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={Trash2}
+                isLoading={isDeletingGuests}
+                onClick={handleDeleteAllGuests}
+                className="text-rose-600 border-rose-200 hover:bg-rose-50"
+              >
+                Hapus Semua ({stats.total || guests.length})
+              </Button>
+            )}
+          </div>
+        }
         searchPlaceholder="Cari nama tamu undangan..."
         emptyMessage="Belum ada data tamu pada undangan ini. Anda dapat mengimpor dari file Excel atau menambah manual."
       />
