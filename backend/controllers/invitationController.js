@@ -140,12 +140,18 @@ const renderOpenGraphHtml = (invitation, req) => {
       ? 'https'
       : 'http';
 
+  const backendPublicOrigin = (
+    process.env.BACKEND_PUBLIC_URL ||
+    process.env.API_BASE_URL ||
+    `${protocol}://${host}`
+  ).replace(/\/+$/, '');
+
   const uploadsIndex = photoCover.indexOf('/uploads/');
   if (uploadsIndex !== -1) {
     const relativeUploadsPath = photoCover.substring(uploadsIndex);
-    photoCover = `${protocol}://${host}${relativeUploadsPath}`;
+    photoCover = `${backendPublicOrigin}${relativeUploadsPath}`;
   } else if (photoCover.startsWith('/')) {
-    photoCover = `${protocol}://${host}${photoCover}`;
+    photoCover = `${backendPublicOrigin}${photoCover}`;
   }
 
   const lowerCover = photoCover.toLowerCase();
