@@ -158,6 +158,8 @@ export const InvitationDetailPage = ({
     expired_at: '',
     showQrCheckin: true,
     lockGuestList: false,
+    showDonation: true,
+    showGift: true,
     mempelaiPria: '',
     panggilanPria: '',
     ayahPria: '',
@@ -204,6 +206,23 @@ export const InvitationDetailPage = ({
   const groomFileInputRef = useRef(null);
   const brideFileInputRef = useRef(null);
   const galleryFileInputRef = useRef(null);
+
+  // Bank Accounts / Rekening state
+  const [bankAccounts, setBankAccounts] = useState([]);
+
+  const handleAddBankAccount = () => {
+    setBankAccounts([...bankAccounts, { bank: '', nomor: '', nama: '' }]);
+  };
+
+  const handleBankAccountChange = (index, field, value) => {
+    const updated = [...bankAccounts];
+    updated[index] = { ...updated[index], [field]: value };
+    setBankAccounts(updated);
+  };
+
+  const handleRemoveBankAccount = (index) => {
+    setBankAccounts(bankAccounts.filter((_, i) => i !== index));
+  };
 
   // Love stories / kisah state
   const [loveStories, setLoveStories] = useState([]);
@@ -341,6 +360,8 @@ export const InvitationDetailPage = ({
             ? Boolean(c.showQrCheckin)
             : true,
         lockGuestList: Boolean(c.lockGuestList),
+        showDonation: c.showDonation !== undefined ? Boolean(c.showDonation) : true,
+        showGift: c.showGift !== undefined ? Boolean(c.showGift) : true,
         mempelaiPria: c.mempelaiPria || '',
         panggilanPria:
           c.panggilanPria || (c.mempelaiPria ? c.mempelaiPria.split(',')[0].trim().split(' ')[0] : ''),
@@ -372,6 +393,16 @@ export const InvitationDetailPage = ({
             ? c.salamPenutup
             : "Wassalamu'alaikum Warahmatullahi Wabarakatuh",
       });
+
+      // Populate bank accounts
+      if (c.rekening && Array.isArray(c.rekening) && c.rekening.length > 0) {
+        setBankAccounts(c.rekening);
+      } else {
+        setBankAccounts([
+          { bank: 'BCA', nomor: '0182938192', nama: c.mempelaiPria ? c.mempelaiPria.split(',')[0].trim() : 'Ahmad' },
+          { bank: 'BSI', nomor: '7192830192', nama: c.mempelaiWanita ? c.mempelaiWanita.split(',')[0].trim() : 'Aminah' },
+        ]);
+      }
 
       // Populate love stories
       if (c.kisah && Array.isArray(c.kisah) && c.kisah.length > 0) {
@@ -432,7 +463,7 @@ export const InvitationDetailPage = ({
     try {
       const res = await guestService.getByInvitation(invitationId, {
         category: filterGuestCategory,
-        limit: 100,
+        limit: 'all',
       });
       setGuests(res?.data?.guests || []);
       setGuestStats(res?.data?.stats || { total: 0, vip: 0, reguler: 0, totalPax: 0 });
@@ -955,6 +986,8 @@ export const InvitationDetailPage = ({
           showQrCheckin: Boolean(settingsForm.showQrCheckin),
           showQr: Boolean(settingsForm.showQrCheckin),
           lockGuestList: Boolean(settingsForm.lockGuestList),
+          showDonation: Boolean(settingsForm.showDonation),
+          showGift: Boolean(settingsForm.showGift),
           mempelaiPria: settingsForm.mempelaiPria,
           panggilanPria: settingsForm.panggilanPria,
           ayahPria: settingsForm.ayahPria,
@@ -984,8 +1017,8 @@ export const InvitationDetailPage = ({
           galeri: galleryPhotos,
           musicUrl: musicUrl,
           musicTitle: musicTitle,
-          rekening: invitation?.content_json?.rekening || undefined,
-          alamatKado: settingsForm.alamatKado || invitation?.content_json?.alamatKado || undefined,
+          rekening: bankAccounts.filter((b) => b.bank?.trim() || b.nomor?.trim() || b.nama?.trim()),
+          alamatKado: settingsForm.alamatKado || undefined,
           fotoPria: fotoPria || undefined,
           fotoWanita: fotoWanita || undefined,
           fotoCover: fotoCover || undefined,
@@ -1747,6 +1780,64 @@ export const InvitationDetailPage = ({
                   />
                 </div>
               </div>
+
+              {/* Tampilkan Section Amplop Digital / Transfer Rekening */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-blue-50/30 to-slate-50 border border-indigo-200/70">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-700 border border-indigo-500/25 mt-0.5 shrink-0">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900">
+                        Section Amplop Digital / Transfer Rekening
+                      </h4>
+                      <Badge variant={settingsForm.showDonation ? 'success' : 'neutral'} size="sm" dot>
+                        {settingsForm.showDonation ? 'Ditampilkan' : 'Disembunyikan'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
+                      Aktifkan untuk menampilkan bagian transfer rekening bank (amplop digital) bagi tamu yang ingin memberi kado secara cashless.
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 pt-1 sm:pt-0 pl-11 sm:pl-0">
+                  <Switch
+                    checked={settingsForm.showDonation}
+                    onChange={(val) => setSettingsForm({ ...settingsForm, showDonation: val })}
+                    label={settingsForm.showDonation ? 'Tampil' : 'Sembunyi'}
+                  />
+                </div>
+              </div>
+
+              {/* Tampilkan Section Kirim Kado Fisik */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-rose-50/80 via-pink-50/30 to-slate-50 border border-rose-200/70">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-700 border border-rose-500/25 mt-0.5 shrink-0">
+                    <Gift className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900">
+                        Section Pengiriman Kado Fisik
+                      </h4>
+                      <Badge variant={settingsForm.showGift ? 'success' : 'neutral'} size="sm" dot>
+                        {settingsForm.showGift ? 'Ditampilkan' : 'Disembunyikan'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
+                      Aktifkan untuk menampilkan alamat rumah / tujuan kirim kado fisik beserta tombol salin alamat untuk tamu undangan.
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0 pt-1 sm:pt-0 pl-11 sm:pl-0">
+                  <Switch
+                    checked={settingsForm.showGift}
+                    onChange={(val) => setSettingsForm({ ...settingsForm, showGift: val })}
+                    label={settingsForm.showGift ? 'Tampil' : 'Sembunyi'}
+                  />
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -1934,6 +2025,120 @@ export const InvitationDetailPage = ({
                   onChange={(e) => setSettingsForm({ ...settingsForm, resepsiMapUrl: e.target.value })}
                 />
               </div>
+            </div>
+          </Card>
+
+          {/* Pengaturan Amplop Digital & Kado Fisik */}
+          <Card className="p-6 border-slate-200 space-y-6">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Gift className="w-4 h-4 text-emerald-600" />
+                Amplop Digital & Pengiriman Kado Fisik
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Kelola nomor rekening bank untuk amplop digital serta alamat rumah untuk pengiriman kado fisik dari tamu undangan.
+              </p>
+            </div>
+
+            {/* Amplop Digital (Rekening Bank) */}
+            <div className="p-4.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-200 gap-2">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-indigo-600" />
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Daftar Rekening Bank (Amplop Digital)
+                  </span>
+                  <Badge variant={settingsForm.showDonation ? 'success' : 'neutral'} size="sm" dot>
+                    {settingsForm.showDonation ? 'Section Aktif' : 'Disembunyikan'}
+                  </Badge>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  leftIcon={Plus}
+                  onClick={handleAddBankAccount}
+                  className="text-xs self-start sm:self-auto"
+                >
+                  Tambah Rekening
+                </Button>
+              </div>
+
+              {bankAccounts.length === 0 ? (
+                <p className="text-xs text-slate-400 italic py-2">
+                  Belum ada rekening bank yang ditambahkan.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {bankAccounts.map((account, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col sm:flex-row items-center gap-2 p-3 bg-white rounded-xl border border-slate-200"
+                    >
+                      <div className="w-full sm:w-1/4">
+                        <Input
+                          placeholder="Bank (BCA/BSI/Mandiri)"
+                          value={account.bank || ''}
+                          onChange={(e) =>
+                            handleBankAccountChange(index, 'bank', e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="w-full sm:w-2/5">
+                        <Input
+                          placeholder="Nomor Rekening"
+                          value={account.nomor || ''}
+                          onChange={(e) =>
+                            handleBankAccountChange(index, 'nomor', e.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="w-full sm:w-2/5">
+                        <Input
+                          placeholder="Atas Nama Pemilik"
+                          value={account.nama || ''}
+                          onChange={(e) =>
+                            handleBankAccountChange(index, 'nama', e.target.value)
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBankAccount(index)}
+                        className="p-2 text-slate-400 hover:text-rose-600 transition-colors rounded-lg self-end sm:self-center"
+                        title="Hapus baris rekening ini"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Alamat Pengiriman Kado Fisik */}
+            <div className="p-4.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-rose-500" />
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Alamat Kirim Kado Fisik
+                  </span>
+                  <Badge variant={settingsForm.showGift ? 'success' : 'neutral'} size="sm" dot>
+                    {settingsForm.showGift ? 'Section Aktif' : 'Disembunyikan'}
+                  </Badge>
+                </div>
+              </div>
+
+              <Textarea
+                rows={3}
+                placeholder="Contoh: Perumahan Graha Asri Blok C No. 12, Jambangan, Surabaya (Penerima: Fajar / 081234567890)"
+                value={settingsForm.alamatKado || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, alamatKado: e.target.value })
+                }
+                helperText="Alamat ini akan ditampilkan di section kado fisik template agar tamu dapat mengirim hadiah langsung ke lokasi pengantin."
+              />
             </div>
           </Card>
 

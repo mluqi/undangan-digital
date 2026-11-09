@@ -132,6 +132,7 @@ export const GuestsPage = ({ defaultInvitationId }) => {
       const res = await guestService.getByInvitation(invId, {
         category: filterCategory,
         isCheckedIn: filterCheckIn,
+        limit: 'all',
       });
 
       setGuests(res?.data?.guests || []);

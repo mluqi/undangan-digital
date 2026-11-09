@@ -25,15 +25,24 @@ class GuestService {
       where.name = { [Op.like]: `%${search}%` };
     }
 
-    const { count, rows } = await Guest.findAndCountAll({
+    const isUnlimited = limit === 'all' || limit === '0' || limit === 0 || limit === -1;
+    const parsedLimit = isUnlimited ? null : parseInt(limit, 10);
+    const parsedOffset = isUnlimited ? null : parseInt(offset, 10);
+
+    const queryOptions = {
       where,
       order: [
         ['category', 'ASC'], // VIP first
         ['name', 'ASC'],
       ],
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
-    });
+    };
+
+    if (!isUnlimited && !isNaN(parsedLimit) && parsedLimit > 0) {
+      queryOptions.limit = parsedLimit;
+      queryOptions.offset = !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0;
+    }
+
+    const { count, rows } = await Guest.findAndCountAll(queryOptions);
 
     // Statistik tamu & kategori
     const total = await Guest.count({ where: { invitation_id: invitationId } });

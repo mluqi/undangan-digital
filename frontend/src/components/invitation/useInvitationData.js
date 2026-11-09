@@ -44,11 +44,11 @@ const plainName = (full = '') => full.split(',')[0].trim();
  * beserta state & handler (musik, countdown, copy, RSVP) sehingga komponen
  * template cukup fokus pada tampilan.
  */
-export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp }) => {
+export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp, defaultOpened = false }) => {
   const toast = useToast();
   const content = invitation?.content_json || {};
 
-  const [isOpened, setIsOpened] = useState(false);
+  const [isOpened, setIsOpened] = useState(Boolean(defaultOpened));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [copiedBankIndex, setCopiedBankIndex] = useState(null);
   const [copiedAddress, setCopiedAddress] = useState(false);
@@ -165,13 +165,20 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp 
       content.musicUrl ||
       'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=romantic-wedding-113063.mp3',
     musicTitle: content.musicTitle || 'Acoustic Wedding - Romantic Bliss',
-    bankAccounts: content.rekening || [
-      { bank: 'BCA', nomor: '0182938192', nama: plainName(groom) },
-      { bank: 'BSI', nomor: '7192830192', nama: plainName(bride) },
-    ],
+    bankAccounts:
+      content.showDonation === false
+        ? []
+        : content.rekening || [
+            { bank: 'BCA', nomor: '0182938192', nama: plainName(groom) },
+            { bank: 'BSI', nomor: '7192830192', nama: plainName(bride) },
+          ],
     giftAddress:
-      content.alamatKado ||
-      'Perumahan Graha Asri Blok C No. 12, Jambangan, Surabaya (0812-3456-7890)',
+      content.showGift === false
+        ? ''
+        : content.alamatKado ||
+          'Perumahan Graha Asri Blok C No. 12, Jambangan, Surabaya (0812-3456-7890)',
+    showDonation: content.showDonation !== undefined ? Boolean(content.showDonation) : true,
+    showGift: content.showGift !== undefined ? Boolean(content.showGift) : true,
     guestName: guest?.name || 'Tamu Undangan',
     isVip: guest?.category === 'VIP',
     guestCategory: guest?.category || 'Reguler',
