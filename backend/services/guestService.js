@@ -113,7 +113,27 @@ class GuestService {
       throw err;
     }
 
-    const preparedGuests = guestList.map((item, index) => {
+    // Ambil semua tamu yang sudah ada di undangan ini untuk deteksi duplikasi
+    const existingGuests = await Guest.findAll({
+      where: { invitation_id: invitationId },
+      attributes: ['id', 'name', 'qr_code', 'phone_number'],
+    });
+
+    const existingNamesSet = new Set(
+      existingGuests.map((g) => (g.name || '').trim().toLowerCase())
+    );
+    const existingQrSet = new Set(
+      existingGuests
+        .map((g) => (g.qr_code || '').trim().toLowerCase())
+        .filter(Boolean)
+    );
+
+    const preparedGuests = [];
+    let skippedCount = 0;
+    const skippedNames = [];
+    const seenInCurrentBatch = new Set();
+
+    guestList.forEach((item, index) => {
       // 1. Ekstraksi nama tamu
       const rawName =
         item['Nama Tamu'] ||
@@ -124,6 +144,9 @@ class GuestService {
         item.NAMA ||
         item['Guest Name'] ||
         `Tamu ${index + 1}`;
+
+      const cleanName = String(rawName).trim();
+      const lowerName = cleanName.toLowerCase();
 
       // 2. Ekstraksi kategori (VIP / Reguler)
       const rawCat = (
@@ -167,28 +190,57 @@ class GuestService {
         extractedGuestId ||
         `CHK-${invitation.slug.toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${index + 1}`;
 
+      const lowerCode = String(uniqueCode).trim().toLowerCase();
+
+      // Deteksi duplikasi: cek apakah sudah ada di DB atau ganda dalam batch Excel saat ini
+      const isAlreadyInDb =
+        existingNamesSet.has(lowerName) || (lowerCode && existingQrSet.has(lowerCode));
+      const isDuplicateInBatch = seenInCurrentBatch.has(lowerName);
+
+      if (isAlreadyInDb || isDuplicateInBatch) {
+        skippedCount++;
+        skippedNames.push(cleanName);
+        return;
+      }
+
+      seenInCurrentBatch.add(lowerName);
+
       // Link QR: Gunakan link eksternal jika ada, jika tidak generate link default
       const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
       const finalLink =
         rawLink ||
-        `${frontendBase}/invitation/${invitation.slug}?to=${encodeURIComponent(rawName)}&code=${uniqueCode}`;
+        `${frontendBase}/invitation/${invitation.slug}?to=${encodeURIComponent(cleanName)}&code=${uniqueCode}`;
 
-      return {
+      preparedGuests.push({
         invitation_id: invitationId,
-        name: String(rawName).trim(),
+        name: cleanName,
         category,
         qr_code: String(uniqueCode),
         qr_link: String(finalLink),
         pax: item.pax ? parseInt(item.pax, 10) : 1,
         phone_number: item.phone_number || item['No WA'] || item['No HP'] || item['Telepon'] || null,
         is_checked_in: false,
-      };
+      });
     });
 
+    if (preparedGuests.length === 0) {
+      return {
+        message: `Semua ${skippedCount} tamu dalam file Excel sudah ada di daftar. Tidak ada data baru yang ditambahkan.`,
+        count: 0,
+        skippedCount,
+        skippedNames,
+        guests: [],
+      };
+    }
+
     const created = await Guest.bulkCreate(preparedGuests);
+    const skippedMsg = skippedCount > 0 ? ` (${skippedCount} tamu dilewati karena sudah ada)` : '';
+
     return {
-      message: `Berhasil mengimpor ${created.length} tamu undangan ke database.`,
+      message: `Berhasil mengimpor ${created.length} tamu baru${skippedMsg}.`,
       count: created.length,
+      skippedCount,
+      skippedNames,
       guests: created,
     };
   }

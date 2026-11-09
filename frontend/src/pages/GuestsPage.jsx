@@ -834,59 +834,122 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
-                <span>File: <strong>{importFileName}</strong></span>
-                <span className="font-semibold text-indigo-700">{importedPreview.length} Tamu Ditemukan</span>
-              </div>
+              {(() => {
+                const existingNames = new Set(
+                  guests.map((g) => (g.name || '').trim().toLowerCase())
+                );
+                const duplicateCount = importedPreview.filter((item) =>
+                  existingNames.has((item.name || '').trim().toLowerCase())
+                ).length;
+                const newCount = importedPreview.length - duplicateCount;
 
-              {/* Preview Table */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden max-h-64 overflow-y-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0">
-                    <tr>
-                      <th className="p-2.5">No</th>
-                      <th className="p-2.5">Nama Tamu</th>
-                      <th className="p-2.5">Kategori</th>
-                      <th className="p-2.5">Link / Kode QR</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {importedPreview.map((item, i) => (
-                      <tr key={i} className="hover:bg-slate-50">
-                        <td className="p-2.5 text-slate-400">{i + 1}</td>
-                        <td className="p-2.5 font-medium text-slate-900">{item.name}</td>
-                        <td className="p-2.5">
-                          <Badge variant={item.category === 'VIP' ? 'primary' : 'default'} size="sm">
-                            {item.category}
-                          </Badge>
-                        </td>
-                        <td className="p-2.5 font-mono text-[11px] text-slate-500 truncate max-w-xs">
-                          {item.qr_code}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                return (
+                  <>
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        File: <strong>{importFileName}</strong>
+                        <div className="mt-0.5 text-[11px] text-slate-500">
+                          Total di Excel: <strong>{importedPreview.length}</strong> tamu
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2 py-0.5 rounded-md font-semibold bg-emerald-100 text-emerald-800">
+                          +{newCount} Tamu Baru
+                        </span>
+                        {duplicateCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-md font-semibold bg-amber-100 text-amber-800">
+                            {duplicateCount} Sudah Ada (Akan Di-skip)
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsImportModalOpen(false)}
-                  disabled={isImporting}
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  isLoading={isImporting}
-                  onClick={handleConfirmImport}
-                >
-                  Simpan {importedPreview.length} Tamu ke Database
-                </Button>
-              </div>
+                    {duplicateCount > 0 && (
+                      <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 flex items-start gap-2">
+                        <span className="text-amber-500 font-bold">ℹ</span>
+                        <span>
+                          Sistem mendeteksi <strong>{duplicateCount} tamu</strong> yang sudah terdaftar sebelumnya. Tamu yang sudah ada akan <strong>otomatis dilewati (skip)</strong> agar tidak terjadi duplikasi data.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Preview Table */}
+                    <div className="border border-slate-200 rounded-xl overflow-hidden max-h-64 overflow-y-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0">
+                          <tr>
+                            <th className="p-2.5">No</th>
+                            <th className="p-2.5">Nama Tamu</th>
+                            <th className="p-2.5">Kategori</th>
+                            <th className="p-2.5">Status Impor</th>
+                            <th className="p-2.5">Link / Kode QR</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {importedPreview.map((item, i) => {
+                            const isExisting = existingNames.has(
+                              (item.name || '').trim().toLowerCase()
+                            );
+                            return (
+                              <tr
+                                key={i}
+                                className={isExisting ? 'bg-amber-50/40 opacity-70' : 'hover:bg-slate-50'}
+                              >
+                                <td className="p-2.5 text-slate-400">{i + 1}</td>
+                                <td className="p-2.5 font-medium text-slate-900">{item.name}</td>
+                                <td className="p-2.5">
+                                  <Badge
+                                    variant={item.category === 'VIP' ? 'primary' : 'default'}
+                                    size="sm"
+                                  >
+                                    {item.category}
+                                  </Badge>
+                                </td>
+                                <td className="p-2.5">
+                                  {isExisting ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                      Sudah Ada (Skip)
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                      Baru (Akan Diimpor)
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-2.5 font-mono text-[11px] text-slate-500 truncate max-w-xs">
+                                  {item.qr_code}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setIsImportModalOpen(false)}
+                        disabled={isImporting}
+                      >
+                        Batal
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        isLoading={isImporting}
+                        onClick={handleConfirmImport}
+                        disabled={newCount === 0}
+                      >
+                        {newCount > 0
+                          ? `Simpan ${newCount} Tamu Baru ke Database`
+                          : 'Semua Tamu Sudah Ada (Tidak Ada Data Baru)'}
+                      </Button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
