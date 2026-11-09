@@ -793,11 +793,15 @@ const EventBlock = ({ title, icon: Icon, event }) => (
     <div className="mt-5 space-y-2.5 text-[13px] text-[#E2EFD2]">
       <p className="flex items-center justify-center gap-2">
         <Calendar className="h-4 w-4 shrink-0 text-[#A6D854]" />
-        <span className="text-sm font-bold text-white tracking-wide">{event.tanggal}</span>
+        <span className="text-sm font-bold text-white tracking-wide">
+          {event.tanggal}
+        </span>
       </p>
       <p className="flex items-center justify-center gap-2">
         <Clock className="h-4 w-4 shrink-0 text-[#A6D854]" />
-        <span className="text-sm font-bold text-[#F4F9E4] tracking-wide">{event.waktu}</span>
+        <span className="text-sm font-bold text-[#F4F9E4] tracking-wide">
+          {event.waktu}
+        </span>
       </p>
       <div className="pt-2">
         <MapPin className="mx-auto mb-1.5 h-4 w-4 text-[#A6D854]" />
@@ -977,9 +981,7 @@ export const ForestTropicalTheme = (props) => {
     <div
       ref={motionRef}
       className={`bg-forest-tropical relative ${
-        d.isOpened
-          ? "min-h-screen"
-          : "h-screen max-h-screen overflow-hidden"
+        d.isOpened ? "min-h-screen" : "h-screen max-h-screen overflow-hidden"
       } w-full max-w-lg md:max-w-none md:w-full lg:max-w-none lg:w-[480px] xl:w-[520px] lg:ml-auto lg:mr-0 border-x border-[#0E3B28]/60 bg-[#04120B] font-sans text-[#EAF4DA] shadow-2xl selection:bg-[#A6D854] selection:text-black scroll-smooth`}
     >
       {/* Panel Showcase Sisi Kiri untuk Layar Desktop (selalu aktif di layar desktop) */}
@@ -1176,7 +1178,9 @@ export const ForestTropicalTheme = (props) => {
               </p>
               <h2 className="font-serif-theme text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)] w-full px-2 break-words">
                 <span className="inline-block">{d.groomShort}</span>
-                <span className="font-cursive mx-1.5 sm:mx-2.5 text-[1.2em] text-[#E8D27A] align-middle">&</span>
+                <span className="font-cursive mx-1.5 sm:mx-2.5 text-[1.2em] text-[#E8D27A] align-middle">
+                  &
+                </span>
                 <span className="inline-block">{d.brideShort}</span>
               </h2>
             </div>
@@ -1649,7 +1653,7 @@ export const ForestTropicalTheme = (props) => {
           <CanopyEdge />
           <SectionTitle
             title={`Bekal Langkah Awal ${d.groomShort} & ${d.brideShort}`}
-            desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara cashless."
+            desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami."
           />
 
           <div className="mx-auto mt-8 max-w-md space-y-4">
@@ -1786,13 +1790,17 @@ export const ForestTropicalTheme = (props) => {
                 <span className="font-serif-theme block text-2xl font-extrabold tabular-nums text-emerald-300">
                   {hadirCount}
                 </span>
-                <span className="text-xs font-bold text-emerald-300">Hadir</span>
+                <span className="text-xs font-bold text-emerald-300">
+                  Hadir
+                </span>
               </div>
               <div className="rounded-2xl border border-rose-400/30 bg-rose-500/10 py-3 text-center">
                 <span className="font-serif-theme block text-2xl font-extrabold tabular-nums text-rose-300">
                   {tidakHadirCount}
                 </span>
-                <span className="text-xs font-bold text-rose-300">Tidak Hadir</span>
+                <span className="text-xs font-bold text-rose-300">
+                  Tidak Hadir
+                </span>
               </div>
             </div>
           </Reveal>
@@ -1894,7 +1902,8 @@ export const ForestTropicalTheme = (props) => {
                 <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-950/50 p-3 text-[11px] text-emerald-300 leading-snug">
                   <Check className="h-4 w-4 shrink-0 text-emerald-400" />
                   <span>
-                    Anda telah mengirimkan ucapan doa restu untuk kedua mempelai. Terima kasih!
+                    Anda telah mengirimkan ucapan doa restu untuk kedua
+                    mempelai. Terima kasih!
                   </span>
                 </div>
               )}
