@@ -37,6 +37,8 @@ import {
   Disc,
   FolderArchive,
   CheckCircle2,
+  CreditCard,
+  Gift,
 } from 'lucide-react';
 import {
   DataTable,
