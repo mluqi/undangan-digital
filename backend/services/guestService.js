@@ -9,7 +9,6 @@ class GuestService {
    */
   async getGuestsByInvitation(invitationId, options = {}) {
     const { page = 1, limit = 50, category, isCheckedIn, search } = options;
-    const offset = (page - 1) * limit;
 
     const where = { invitation_id: invitationId };
 
@@ -25,9 +24,13 @@ class GuestService {
       where.name = { [Op.like]: `%${search}%` };
     }
 
-    const isUnlimited = limit === 'all' || limit === '0' || limit === 0 || limit === -1;
-    const parsedLimit = isUnlimited ? null : parseInt(limit, 10);
-    const parsedOffset = isUnlimited ? null : parseInt(offset, 10);
+    const isUnlimited =
+      limit === 'all' ||
+      limit === 'unlimited' ||
+      limit === '0' ||
+      limit === 0 ||
+      limit === -1 ||
+      limit === '-1';
 
     const queryOptions = {
       where,
@@ -37,9 +40,18 @@ class GuestService {
       ],
     };
 
-    if (!isUnlimited && !isNaN(parsedLimit) && parsedLimit > 0) {
-      queryOptions.limit = parsedLimit;
-      queryOptions.offset = !isNaN(parsedOffset) && parsedOffset >= 0 ? parsedOffset : 0;
+    let parsedLimit = null;
+    let parsedPage = parseInt(page, 10);
+    if (isNaN(parsedPage) || parsedPage < 1) parsedPage = 1;
+
+    if (!isUnlimited) {
+      const numLimit = parseInt(limit, 10);
+      if (!isNaN(numLimit) && numLimit > 0) {
+        parsedLimit = numLimit;
+        const parsedOffset = (parsedPage - 1) * parsedLimit;
+        queryOptions.limit = parsedLimit;
+        queryOptions.offset = parsedOffset;
+      }
     }
 
     const { count, rows } = await Guest.findAndCountAll(queryOptions);
@@ -56,8 +68,8 @@ class GuestService {
 
     return {
       total: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page, 10),
+      totalPages: parsedLimit ? Math.ceil(count / parsedLimit) : 1,
+      currentPage: parsedPage,
       stats: {
         total,
         vip: vipCount,
