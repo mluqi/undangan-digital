@@ -275,29 +275,49 @@ class InvitationService {
     let guest = null;
     const { to, code, guestId } = guestQuery;
     if (to || code || guestId) {
-      const whereConditions = [];
+      const cleanTo = to ? to.trim() : '';
+      const cleanCode = code ? code.trim() : '';
+      const cleanGuestId = guestId ? guestId.trim() : '';
 
-      if (code) {
-        whereConditions.push({ qr_code: code.trim() });
-        whereConditions.push({ qr_link: { [Op.like]: `%${code.trim()}%` } });
-      }
+      // 1. Prioritaskan pencarian lewat Kode Unik / QR Code / Guest ID jika ada
+      if (cleanCode || cleanGuestId) {
+        const qrConditions = [];
+        if (cleanCode) {
+          qrConditions.push({ qr_code: cleanCode });
+          qrConditions.push({ qr_link: { [Op.like]: `%${cleanCode}%` } });
+        }
+        if (cleanGuestId) {
+          qrConditions.push({ qr_code: cleanGuestId });
+          qrConditions.push({ qr_link: { [Op.like]: `%${cleanGuestId}%` } });
+        }
 
-      if (to) {
-        whereConditions.push({ name: { [Op.like]: `%${to.trim()}%` } });
-      }
-
-      if (guestId) {
-        whereConditions.push({ qr_code: guestId.trim() });
-        whereConditions.push({ qr_link: { [Op.like]: `%${guestId.trim()}%` } });
-      }
-
-      if (whereConditions.length > 0) {
         guest = await Guest.findOne({
           where: {
             invitation_id: invitation.id,
-            [Op.or]: whereConditions,
+            [Op.or]: qrConditions,
           },
         });
+      }
+
+      // 2. Jika belum ditemukan dan ada parameter nama (?to=...), cari berdasarkan nama
+      if (!guest && cleanTo) {
+        // 2a. Utamakan EXACT MATCH (misal: "Ivan" persis sama, bukan "Farah Ivanka")
+        guest = await Guest.findOne({
+          where: {
+            invitation_id: invitation.id,
+            name: cleanTo,
+          },
+        });
+
+        // 2b. Fallback: jika tidak ada yang persis sama, cari dengan LIKE case-insensitive
+        if (!guest) {
+          guest = await Guest.findOne({
+            where: {
+              invitation_id: invitation.id,
+              name: { [Op.like]: `%${cleanTo}%` },
+            },
+          });
+        }
       }
     }
 
