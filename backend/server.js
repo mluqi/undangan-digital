@@ -41,12 +41,13 @@ app.use(
 app.use(cookieParser());
 app.use(
   bodyParser.json({
+    limit: "50mb",
     verify: (req, res, buf) => {
       req.rawBody = buf.toString();
     },
-  })
+  }),
 );
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 const { sequelize } = require("./models");
 const authRoutes = require("./routes/authRoutes");
@@ -66,7 +67,7 @@ app.get("/", (req, res) => {
 // Public Open Graph & Social sharing preview routes (WhatsApp, FB, Twitter, Telegram, dll.)
 app.get(
   ["/invitation/:slug", "/u/:slug", "/p/:slug", "/preview/:slug"],
-  invitationController.serveInvitationOg
+  invitationController.serveInvitationOg,
 );
 
 // API Routes
@@ -95,4 +96,3 @@ const startServer = async () => {
 };
 
 startServer();
-
