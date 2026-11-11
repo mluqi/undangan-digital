@@ -255,7 +255,6 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             if (m) guestId = m[1];
           }
 
-          const hasExplicitQr = Boolean(guestId || row['qr_code'] || link);
           const qrCode =
             guestId ||
             row['qr_code'] ||
@@ -265,7 +264,6 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             name: String(name).trim(),
             category,
             qr_code: qrCode,
-            has_explicit_qr: hasExplicitQr,
             qr_link: link || `${window.location.origin}/invitation/${currentInvitation?.slug}?to=${encodeURIComponent(name)}&code=${qrCode}`,
           };
         });
@@ -444,16 +442,14 @@ export const GuestsPage = ({ defaultInvitationId }) => {
   };
 
   const handleCopyShareText = (guest) => {
-    const codeParam = guest.qr_code ? `&code=${encodeURIComponent(guest.qr_code)}` : '';
-    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}${codeParam}`;
+    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
     const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami:\n\n${inviteUrl}`;
     navigator.clipboard.writeText(text);
     toast.success('Teks undangan personal disalin untuk dibagikan via WhatsApp!');
   };
 
   const handleCopyOnlyLink = (guest) => {
-    const codeParam = guest.qr_code ? `&code=${encodeURIComponent(guest.qr_code)}` : '';
-    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}${codeParam}`;
+    const inviteUrl = `${window.location.origin}/invitation/${currentInvitation?.slug || ''}?to=${encodeURIComponent(guest.name)}`;
     navigator.clipboard.writeText(inviteUrl);
     toast.success(`Link undangan untuk ${guest.name} berhasil disalin!`);
   };
@@ -843,38 +839,18 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                 const existingNames = new Set(
                   guests.map((g) => (g.name || '').trim().toLowerCase())
                 );
-                const existingQrs = new Set(
-                  guests
-                    .map((g) => (g.qr_code || '').trim().toLowerCase())
-                    .filter(Boolean)
-                );
-                const seenInModalQr = new Set();
-                const seenInModalNames = new Set();
+                const seenInModal = new Set();
                 let duplicateCount = 0;
                 let duplicateInternalCount = 0;
 
                 importedPreview.forEach((item) => {
-                  const lowerName = (item.name || '').trim().toLowerCase();
-                  const lowerQr = (item.qr_code || '').trim().toLowerCase();
-                  const hasExplicit = item.has_explicit_qr !== undefined
-                    ? item.has_explicit_qr
-                    : Boolean(item.qr_code);
-
-                  const isAlreadyInDb = hasExplicit
-                    ? Boolean(lowerQr && existingQrs.has(lowerQr))
-                    : existingNames.has(lowerName);
-
-                  const isDupeInFile = hasExplicit
-                    ? seenInModalQr.has(lowerQr)
-                    : seenInModalNames.has(lowerName);
-
-                  if (isAlreadyInDb) {
+                  const lower = (item.name || '').trim().toLowerCase();
+                  if (existingNames.has(lower)) {
                     duplicateCount++;
-                  } else if (isDupeInFile) {
+                  } else if (seenInModal.has(lower)) {
                     duplicateInternalCount++;
                   } else {
-                    if (lowerQr) seenInModalQr.add(lowerQr);
-                    seenInModalNames.add(lowerName);
+                    seenInModal.add(lower);
                   }
                 });
 
@@ -906,7 +882,7 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                       <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 flex items-start gap-2">
                         <span className="text-amber-500 font-bold">ℹ</span>
                         <span>
-                          Sistem mendeteksi <strong>{totalSkipped} data</strong> yang duplikat ({duplicateCount > 0 ? `${duplicateCount} sudah ada di database, ` : ''}{duplicateInternalCount > 0 ? `${duplicateInternalCount} duplikat di dalam file Excel` : ''}). Data ganda otomatis <strong>dilewati (skip)</strong> agar kode QR tetap unik.
+                          Sistem mendeteksi <strong>{totalSkipped} tamu</strong> yang duplikat ({duplicateCount > 0 ? `${duplicateCount} sudah ada di database, ` : ''}{duplicateInternalCount > 0 ? `${duplicateInternalCount} nama ganda di dalam file Excel` : ''}). Tamu ganda otomatis <strong>dilewati (skip)</strong> agar data tetap unik dan tidak dobel.
                         </span>
                       </div>
                     )}
@@ -925,27 +901,12 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {(() => {
-                            const seenRowsQr = new Set();
-                            const seenRowsNames = new Set();
+                            const seenRows = new Set();
                             return importedPreview.map((item, i) => {
-                              const lowerName = (item.name || '').trim().toLowerCase();
-                              const lowerQr = (item.qr_code || '').trim().toLowerCase();
-                              const hasExplicit = item.has_explicit_qr !== undefined
-                                ? item.has_explicit_qr
-                                : Boolean(item.qr_code);
-
-                              const isAlreadyInDb = hasExplicit
-                                ? Boolean(lowerQr && existingQrs.has(lowerQr))
-                                : existingNames.has(lowerName);
-
-                              const isDupeInFile = !isAlreadyInDb && (
-                                hasExplicit
-                                  ? seenRowsQr.has(lowerQr)
-                                  : seenRowsNames.has(lowerName)
-                              );
-
-                              if (lowerQr) seenRowsQr.add(lowerQr);
-                              seenRowsNames.add(lowerName);
+                              const lower = (item.name || '').trim().toLowerCase();
+                              const isAlreadyInDb = existingNames.has(lower);
+                              const isDupeInFile = !isAlreadyInDb && seenRows.has(lower);
+                              seenRows.add(lower);
 
                               const isSkipped = isAlreadyInDb || isDupeInFile;
 
