@@ -140,19 +140,28 @@ class GuestService {
       attributes: ['id', 'name', 'qr_code', 'phone_number'],
     });
 
-    const existingNamesSet = new Set(
-      existingGuests.map((g) => (g.name || '').trim().toLowerCase())
-    );
-    const existingQrSet = new Set(
-      existingGuests
-        .map((g) => (g.qr_code || '').trim().toLowerCase())
-        .filter(Boolean)
-    );
+    // Map untuk mencatat tamu yang sudah ada di DB: nama -> Set(qr_code)
+    const existingGuestsByName = new Map();
+    const existingQrSet = new Set();
+
+    existingGuests.forEach((g) => {
+      const lowerName = (g.name || '').trim().toLowerCase();
+      const lowerQr = (g.qr_code || '').trim().toLowerCase();
+
+      if (!existingGuestsByName.has(lowerName)) {
+        existingGuestsByName.set(lowerName, new Set());
+      }
+      if (lowerQr) {
+        existingGuestsByName.get(lowerName).add(lowerQr);
+        existingQrSet.add(lowerQr);
+      }
+    });
 
     const preparedGuests = [];
     let skippedCount = 0;
     const skippedNames = [];
-    const seenInCurrentBatch = new Set();
+    const seenInBatchByName = new Map();
+    const seenInBatchQr = new Set();
 
     guestList.forEach((item, index) => {
       // 1. Ekstraksi nama tamu
@@ -205,6 +214,10 @@ class GuestService {
         }
       }
 
+      // Cek apakah data Excel memiliki QR Code / guestId eksplisit
+      const explicitQr = item.qr_code || extractedGuestId || rawLink;
+      const hasExplicitQr = Boolean(explicitQr);
+
       // Kode unik check-in
       const uniqueCode =
         item.qr_code ||
@@ -213,18 +226,49 @@ class GuestService {
 
       const lowerCode = String(uniqueCode).trim().toLowerCase();
 
-      // Deteksi duplikasi: cek apakah sudah ada di DB atau ganda dalam batch Excel saat ini
-      const isAlreadyInDb =
-        existingNamesSet.has(lowerName) || (lowerCode && existingQrSet.has(lowerCode));
-      const isDuplicateInBatch = seenInCurrentBatch.has(lowerName);
+      // Cek duplikasi:
+      // 1. Cek apakah QR code sudah pernah dipakai tamu lain secara global
+      const isQrAlreadyUsed = hasExplicitQr && (existingQrSet.has(lowerCode) || seenInBatchQr.has(lowerCode));
 
-      if (isAlreadyInDb || isDuplicateInBatch) {
+      // 2. Cek apakah nama sama di DB atau di batch saat ini
+      const isNameInDb = existingGuestsByName.has(lowerName);
+      const isNameInBatch = seenInBatchByName.has(lowerName);
+
+      let isDuplicate = false;
+      if (isQrAlreadyUsed) {
+        isDuplicate = true;
+      } else if (isNameInDb || isNameInBatch) {
+        // Sesudah cek nama sama: cek apakah QR Code-nya sama atau tidak
+        if (hasExplicitQr) {
+          const prevQrsInDb = existingGuestsByName.get(lowerName) || new Set();
+          const prevQrsInBatch = seenInBatchByName.get(lowerName) || new Set();
+          const isSameQrAsPrev = prevQrsInDb.has(lowerCode) || prevQrsInBatch.has(lowerCode);
+
+          if (isSameQrAsPrev) {
+            isDuplicate = true;
+          } else {
+            // Nama sama tetapi QR code berbeda -> diperbolehkan (bukan duplikat)
+            isDuplicate = false;
+          }
+        } else {
+          // Nama sama tanpa QR code pembeda -> duplikat
+          isDuplicate = true;
+        }
+      }
+
+      if (isDuplicate) {
         skippedCount++;
         skippedNames.push(cleanName);
         return;
       }
 
-      seenInCurrentBatch.add(lowerName);
+      if (!seenInBatchByName.has(lowerName)) {
+        seenInBatchByName.set(lowerName, new Set());
+      }
+      if (lowerCode) {
+        seenInBatchByName.get(lowerName).add(lowerCode);
+        if (hasExplicitQr) seenInBatchQr.add(lowerCode);
+      }
 
       // Link QR: Gunakan link eksternal jika ada, jika tidak generate link default
       const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');

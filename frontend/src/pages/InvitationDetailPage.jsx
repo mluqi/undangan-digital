@@ -610,6 +610,7 @@ export const InvitationDetailPage = ({
             if (m) guestId = m[1];
           }
 
+          const hasExplicitQr = Boolean(guestId || row['qr_code'] || link);
           const qrCode =
             guestId ||
             row['qr_code'] ||
@@ -619,6 +620,7 @@ export const InvitationDetailPage = ({
             name: String(name).trim(),
             category,
             qr_code: qrCode,
+            has_explicit_qr: hasExplicitQr,
             qr_link: link || `${window.location.origin}/invitation/${invitation?.slug}?to=${encodeURIComponent(name)}&code=${qrCode}`,
           };
         });
@@ -2942,21 +2944,72 @@ export const InvitationDetailPage = ({
 
             <div className="p-6 space-y-4">
               {(() => {
-                const existingNames = new Set(
-                  guests.map((g) => (g.name || '').trim().toLowerCase())
-                );
-                const seenInModal = new Set();
+                // Map tamu yang sudah ada di DB: nama -> Set(qr_code)
+                const existingGuestsByName = new Map();
+                const existingQrSet = new Set();
+                guests.forEach((g) => {
+                  const lowerName = (g.name || '').trim().toLowerCase();
+                  const lowerQr = (g.qr_code || '').trim().toLowerCase();
+                  if (!existingGuestsByName.has(lowerName)) {
+                    existingGuestsByName.set(lowerName, new Set());
+                  }
+                  if (lowerQr) {
+                    existingGuestsByName.get(lowerName).add(lowerQr);
+                    existingQrSet.add(lowerQr);
+                  }
+                });
+
+                const seenInModalByName = new Map();
+                const seenInModalQr = new Set();
                 let duplicateCount = 0;
                 let duplicateInternalCount = 0;
 
                 importedPreview.forEach((item) => {
-                  const lower = (item.name || '').trim().toLowerCase();
-                  if (existingNames.has(lower)) {
+                  const lowerName = (item.name || '').trim().toLowerCase();
+                  const lowerQr = (item.qr_code || '').trim().toLowerCase();
+                  const hasExplicit = Boolean(item.has_explicit_qr);
+
+                  const isQrAlreadyInDb = hasExplicit && Boolean(lowerQr && existingQrSet.has(lowerQr));
+                  const isQrAlreadyInBatch = hasExplicit && Boolean(lowerQr && seenInModalQr.has(lowerQr));
+
+                  const isNameInDb = existingGuestsByName.has(lowerName);
+                  const isNameInBatch = seenInModalByName.has(lowerName);
+
+                  let isDupeDb = false;
+                  let isDupeBatch = false;
+
+                  if (isQrAlreadyInDb) {
+                    isDupeDb = true;
+                  } else if (isQrAlreadyInBatch) {
+                    isDupeBatch = true;
+                  } else if (isNameInDb || isNameInBatch) {
+                    // Sesudah cek nama sama: cek apakah QR Code-nya sama atau tidak
+                    if (hasExplicit) {
+                      const prevQrsInDb = existingGuestsByName.get(lowerName) || new Set();
+                      const prevQrsInBatch = seenInModalByName.get(lowerName) || new Set();
+                      if (prevQrsInDb.has(lowerQr)) {
+                        isDupeDb = true;
+                      } else if (prevQrsInBatch.has(lowerQr)) {
+                        isDupeBatch = true;
+                      }
+                    } else {
+                      if (isNameInDb) isDupeDb = true;
+                      else if (isNameInBatch) isDupeBatch = true;
+                    }
+                  }
+
+                  if (isDupeDb) {
                     duplicateCount++;
-                  } else if (seenInModal.has(lower)) {
+                  } else if (isDupeBatch) {
                     duplicateInternalCount++;
                   } else {
-                    seenInModal.add(lower);
+                    if (!seenInModalByName.has(lowerName)) {
+                      seenInModalByName.set(lowerName, new Set());
+                    }
+                    if (lowerQr) {
+                      seenInModalByName.get(lowerName).add(lowerQr);
+                      if (hasExplicit) seenInModalQr.add(lowerQr);
+                    }
                   }
                 });
 
@@ -2988,7 +3041,7 @@ export const InvitationDetailPage = ({
                       <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 flex items-start gap-2">
                         <span className="text-amber-500 font-bold">ℹ</span>
                         <span>
-                          Sistem mendeteksi <strong>{totalSkipped} tamu</strong> yang duplikat ({duplicateCount > 0 ? `${duplicateCount} sudah ada di database, ` : ''}{duplicateInternalCount > 0 ? `${duplicateInternalCount} nama ganda di dalam file Excel` : ''}). Tamu ganda otomatis <strong>dilewati (skip)</strong> agar data tetap unik dan tidak dobel.
+                          Sistem mendeteksi <strong>{totalSkipped} tamu</strong> yang duplikat ({duplicateCount > 0 ? `${duplicateCount} sudah ada di database, ` : ''}{duplicateInternalCount > 0 ? `${duplicateInternalCount} nama & QR code sama di dalam file Excel` : ''}). Tamu ganda otomatis <strong>dilewati (skip)</strong> agar data tetap unik.
                         </span>
                       </div>
                     )}
@@ -3006,12 +3059,51 @@ export const InvitationDetailPage = ({
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {(() => {
-                            const seenRows = new Set();
+                            const seenRowsByName = new Map();
+                            const seenRowsQr = new Set();
                             return importedPreview.map((item, i) => {
-                              const lower = (item.name || '').trim().toLowerCase();
-                              const isAlreadyInDb = existingNames.has(lower);
-                              const isDupeInFile = !isAlreadyInDb && seenRows.has(lower);
-                              seenRows.add(lower);
+                              const lowerName = (item.name || '').trim().toLowerCase();
+                              const lowerQr = (item.qr_code || '').trim().toLowerCase();
+                              const hasExplicit = Boolean(item.has_explicit_qr);
+
+                              const isQrAlreadyInDb = hasExplicit && Boolean(lowerQr && existingQrSet.has(lowerQr));
+                              const isQrAlreadyInBatch = hasExplicit && Boolean(lowerQr && seenRowsQr.has(lowerQr));
+
+                              const isNameInDb = existingGuestsByName.has(lowerName);
+                              const isNameInBatch = seenRowsByName.has(lowerName);
+
+                              let isAlreadyInDb = false;
+                              let isDupeInFile = false;
+
+                              if (isQrAlreadyInDb) {
+                                isAlreadyInDb = true;
+                              } else if (isQrAlreadyInBatch) {
+                                isDupeInFile = true;
+                              } else if (isNameInDb || isNameInBatch) {
+                                // Sesudah cek nama sama: cek kondisi QR Code
+                                if (hasExplicit) {
+                                  const prevQrsInDb = existingGuestsByName.get(lowerName) || new Set();
+                                  const prevQrsInBatch = seenRowsByName.get(lowerName) || new Set();
+                                  if (prevQrsInDb.has(lowerQr)) {
+                                    isAlreadyInDb = true;
+                                  } else if (prevQrsInBatch.has(lowerQr)) {
+                                    isDupeInFile = true;
+                                  }
+                                } else {
+                                  if (isNameInDb) isAlreadyInDb = true;
+                                  else if (isNameInBatch) isDupeInFile = true;
+                                }
+                              }
+
+                              if (!isAlreadyInDb && !isDupeInFile) {
+                                if (!seenRowsByName.has(lowerName)) {
+                                  seenRowsByName.set(lowerName, new Set());
+                                }
+                                if (lowerQr) {
+                                  seenRowsByName.get(lowerName).add(lowerQr);
+                                  if (hasExplicit) seenRowsQr.add(lowerQr);
+                                }
+                              }
 
                               const isSkipped = isAlreadyInDb || isDupeInFile;
 
