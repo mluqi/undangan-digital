@@ -839,10 +839,23 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                 const existingNames = new Set(
                   guests.map((g) => (g.name || '').trim().toLowerCase())
                 );
-                const duplicateCount = importedPreview.filter((item) =>
-                  existingNames.has((item.name || '').trim().toLowerCase())
-                ).length;
-                const newCount = importedPreview.length - duplicateCount;
+                const seenInModal = new Set();
+                let duplicateCount = 0;
+                let duplicateInternalCount = 0;
+
+                importedPreview.forEach((item) => {
+                  const lower = (item.name || '').trim().toLowerCase();
+                  if (existingNames.has(lower)) {
+                    duplicateCount++;
+                  } else if (seenInModal.has(lower)) {
+                    duplicateInternalCount++;
+                  } else {
+                    seenInModal.add(lower);
+                  }
+                });
+
+                const totalSkipped = duplicateCount + duplicateInternalCount;
+                const newCount = importedPreview.length - totalSkipped;
 
                 return (
                   <>
@@ -850,26 +863,26 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                       <div>
                         File: <strong>{importFileName}</strong>
                         <div className="mt-0.5 text-[11px] text-slate-500">
-                          Total di Excel: <strong>{importedPreview.length}</strong> tamu
+                          Total di Excel: <strong>{importedPreview.length}</strong> baris tamu
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs">
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="px-2 py-0.5 rounded-md font-semibold bg-emerald-100 text-emerald-800">
-                          +{newCount} Tamu Baru
+                          +{newCount} Tamu Unik (Akan Masuk)
                         </span>
-                        {duplicateCount > 0 && (
+                        {totalSkipped > 0 && (
                           <span className="px-2 py-0.5 rounded-md font-semibold bg-amber-100 text-amber-800">
-                            {duplicateCount} Sudah Ada (Akan Di-skip)
+                            {totalSkipped} Dilewati ({duplicateCount} sudah di DB, {duplicateInternalCount} duplikat di Excel)
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {duplicateCount > 0 && (
+                    {totalSkipped > 0 && (
                       <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 flex items-start gap-2">
                         <span className="text-amber-500 font-bold">ℹ</span>
                         <span>
-                          Sistem mendeteksi <strong>{duplicateCount} tamu</strong> yang sudah terdaftar sebelumnya. Tamu yang sudah ada akan <strong>otomatis dilewati (skip)</strong> agar tidak terjadi duplikasi data.
+                          Sistem mendeteksi <strong>{totalSkipped} tamu</strong> yang duplikat ({duplicateCount > 0 ? `${duplicateCount} sudah ada di database, ` : ''}{duplicateInternalCount > 0 ? `${duplicateInternalCount} nama ganda di dalam file Excel` : ''}). Tamu ganda otomatis <strong>dilewati (skip)</strong> agar data tetap unik dan tidak dobel.
                         </span>
                       </div>
                     )}
@@ -887,42 +900,53 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {importedPreview.map((item, i) => {
-                            const isExisting = existingNames.has(
-                              (item.name || '').trim().toLowerCase()
-                            );
-                            return (
-                              <tr
-                                key={i}
-                                className={isExisting ? 'bg-amber-50/40 opacity-70' : 'hover:bg-slate-50'}
-                              >
-                                <td className="p-2.5 text-slate-400">{i + 1}</td>
-                                <td className="p-2.5 font-medium text-slate-900">{item.name}</td>
-                                <td className="p-2.5">
-                                  <Badge
-                                    variant={item.category === 'VIP' ? 'primary' : 'default'}
-                                    size="sm"
-                                  >
-                                    {item.category}
-                                  </Badge>
-                                </td>
-                                <td className="p-2.5">
-                                  {isExisting ? (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                                      Sudah Ada (Skip)
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                      Baru (Akan Diimpor)
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="p-2.5 font-mono text-[11px] text-slate-500 truncate max-w-xs">
-                                  {item.qr_code}
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {(() => {
+                            const seenRows = new Set();
+                            return importedPreview.map((item, i) => {
+                              const lower = (item.name || '').trim().toLowerCase();
+                              const isAlreadyInDb = existingNames.has(lower);
+                              const isDupeInFile = !isAlreadyInDb && seenRows.has(lower);
+                              seenRows.add(lower);
+
+                              const isSkipped = isAlreadyInDb || isDupeInFile;
+
+                              return (
+                                <tr
+                                  key={i}
+                                  className={isSkipped ? 'bg-amber-50/40 opacity-70' : 'hover:bg-slate-50'}
+                                >
+                                  <td className="p-2.5 text-slate-400">{i + 1}</td>
+                                  <td className="p-2.5 font-medium text-slate-900">{item.name}</td>
+                                  <td className="p-2.5">
+                                    <Badge
+                                      variant={item.category === 'VIP' ? 'primary' : 'default'}
+                                      size="sm"
+                                    >
+                                      {item.category}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-2.5">
+                                    {isAlreadyInDb ? (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Sudah Ada di DB (Skip)
+                                      </span>
+                                    ) : isDupeInFile ? (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-200">
+                                        Duplikat di Excel (Skip)
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        Baru (Akan Diimpor)
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-2.5 font-mono text-[11px] text-slate-500 truncate max-w-xs">
+                                    {item.qr_code}
+                                  </td>
+                                </tr>
+                              );
+                            });
+                          })()}
                         </tbody>
                       </table>
                     </div>
