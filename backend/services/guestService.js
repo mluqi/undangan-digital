@@ -152,7 +152,8 @@ class GuestService {
     const preparedGuests = [];
     let skippedCount = 0;
     const skippedNames = [];
-    const seenInCurrentBatch = new Set();
+    const seenInCurrentBatchNames = new Set();
+    const seenInCurrentBatchQr = new Set();
 
     guestList.forEach((item, index) => {
       // 1. Ekstraksi nama tamu
@@ -205,6 +206,10 @@ class GuestService {
         }
       }
 
+      // Cek apakah data Excel memiliki QR Code / guestId unik
+      const explicitQr = item.qr_code || extractedGuestId || rawLink;
+      const hasExplicitQr = Boolean(explicitQr);
+
       // Kode unik check-in
       const uniqueCode =
         item.qr_code ||
@@ -213,18 +218,26 @@ class GuestService {
 
       const lowerCode = String(uniqueCode).trim().toLowerCase();
 
-      // Deteksi duplikasi: cek apakah sudah ada di DB atau ganda dalam batch Excel saat ini
-      const isAlreadyInDb =
-        existingNamesSet.has(lowerName) || (lowerCode && existingQrSet.has(lowerCode));
-      const isDuplicateInBatch = seenInCurrentBatch.has(lowerName);
+      // Deteksi duplikasi:
+      // Jika data memiliki kode/link QR unik eksternal (misal QR Tamuva), jadikan QR Code sebagai penentu keunikan (bukan nama).
+      // Tamu dengan nama sama tetapi memiliki QR code berbeda tetap diizinkan masuk.
+      // Jika tidak ada QR code (hanya nama saja), gunakan nama sebagai penentu keunikan.
+      const isAlreadyInDb = hasExplicitQr
+        ? Boolean(lowerCode && existingQrSet.has(lowerCode))
+        : existingNamesSet.has(lowerName);
+
+      const isDuplicateInBatch = hasExplicitQr
+        ? Boolean(lowerCode && seenInCurrentBatchQr.has(lowerCode))
+        : seenInCurrentBatchNames.has(lowerName);
 
       if (isAlreadyInDb || isDuplicateInBatch) {
         skippedCount++;
-        skippedNames.push(cleanName);
+        skippedNames.push(cleanName + (hasExplicitQr ? ` [QR: ${uniqueCode}]` : ''));
         return;
       }
 
-      seenInCurrentBatch.add(lowerName);
+      if (lowerCode) seenInCurrentBatchQr.add(lowerCode);
+      seenInCurrentBatchNames.add(lowerName);
 
       // Link QR: Gunakan link eksternal jika ada, jika tidak generate link default
       const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
