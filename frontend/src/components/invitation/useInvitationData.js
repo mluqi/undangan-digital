@@ -180,7 +180,7 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
     showDonation: content.showDonation !== undefined ? Boolean(content.showDonation) : true,
     showGift: content.showGift !== undefined ? Boolean(content.showGift) : true,
     guestName: guest?.name || 'Tamu Undangan',
-    isVip: guest?.category === 'VIP',
+    isVip: guest?.category === 'VIP' || guest?.category === 'VVIP',
     guestCategory: guest?.category || 'Reguler',
     guestPax: guest?.pax || 2,
     qrValue:
@@ -188,7 +188,9 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
       guest?.qr_code ||
       'https://app.tamuva.com/events/bb8213df-5f1a-4711-810f-3197e7b00143/checkin',
     showQr:
-      content.showQr !== undefined
+      (guest?.category || '').trim().toLowerCase() === 'grup'
+        ? false
+        : content.showQr !== undefined
         ? Boolean(content.showQr)
         : content.showQrCheckin !== undefined
         ? Boolean(content.showQrCheckin)

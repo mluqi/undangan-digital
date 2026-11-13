@@ -1,6 +1,17 @@
 const { Guest, Invitation } = require('../models');
 const { Op } = require('sequelize');
 
+/**
+ * Normalisasi kategori tamu menjadi 'VIP', 'VVIP', 'Grup', atau 'Reguler'.
+ */
+function normalizeGuestCategory(val = '') {
+  const upper = String(val).trim().toUpperCase();
+  if (upper.includes('VVIP')) return 'VVIP';
+  if (upper.includes('VIP')) return 'VIP';
+  if (upper.includes('GRUP') || upper.includes('GROUP')) return 'Grup';
+  return 'Reguler';
+}
+
 class GuestService {
   /**
    * Mengambil daftar tamu untuk suatu undangan beserta statistik
@@ -61,8 +72,14 @@ class GuestService {
     const vipCount = await Guest.count({
       where: { invitation_id: invitationId, category: 'VIP' },
     });
+    const vvipCount = await Guest.count({
+      where: { invitation_id: invitationId, category: 'VVIP' },
+    });
     const regulerCount = await Guest.count({
       where: { invitation_id: invitationId, category: 'Reguler' },
+    });
+    const grupCount = await Guest.count({
+      where: { invitation_id: invitationId, category: 'Grup' },
     });
     const totalPax = (await Guest.sum('pax', { where: { invitation_id: invitationId } })) || total;
 
@@ -73,7 +90,9 @@ class GuestService {
       stats: {
         total,
         vip: vipCount,
+        vvip: vvipCount,
         reguler: regulerCount,
+        grup: grupCount,
         totalPax,
       },
       guests: rows,
@@ -107,7 +126,7 @@ class GuestService {
     return await Guest.create({
       invitation_id: invitationId,
       name,
-      category: category === 'VIP' ? 'VIP' : 'Reguler',
+      category: normalizeGuestCategory(category),
       qr_code: uniqueCode,
       qr_link: link,
       pax: pax ? parseInt(pax, 10) : 1,
@@ -178,16 +197,16 @@ class GuestService {
       const cleanName = String(rawName).trim();
       const lowerName = cleanName.toLowerCase();
 
-      // 2. Ekstraksi kategori (VIP / Reguler)
-      const rawCat = (
+      // 2. Ekstraksi kategori (VIP / Reguler / Grup)
+      const rawCat =
         item.Kategori ||
         item.kategori ||
         item['kategori(vip/reguler)'] ||
         item['Kategori (VIP/Reguler)'] ||
+        item['Kategori (VIP/Reguler/Grup)'] ||
         item.category ||
-        ''
-      ).toUpperCase();
-      const category = rawCat.includes('VIP') ? 'VIP' : 'Reguler';
+        '';
+      const category = normalizeGuestCategory(rawCat);
 
       // 3. Ekstraksi link QR code check-in eksternal (misal: Tamuva)
       const rawLink = (
@@ -321,7 +340,12 @@ class GuestService {
       throw err;
     }
 
-    await guest.update(data);
+    const payload = { ...data };
+    if (payload.category !== undefined) {
+      payload.category = normalizeGuestCategory(payload.category);
+    }
+
+    await guest.update(payload);
     return guest;
   }
 

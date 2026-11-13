@@ -349,7 +349,7 @@ export const TimelessSnapshotTheme = ({
     "Perumahan Taman Vintage Blok C-12, Pagesangan, Surabaya (Penerima: Fajar & Aminah - 081234567890)";
 
   const guestName = guest?.name || "Tamu Undangan";
-  const isVip = guest?.category === "VIP";
+  const isVip = guest?.category === "VIP" || guest?.category === "VVIP";
   const qrValue =
     guest?.qr_link ||
     guest?.qr_code ||

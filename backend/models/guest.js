@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       category: {
-        type: DataTypes.ENUM('VIP', 'Reguler'),
+        type: DataTypes.ENUM('VIP', 'VVIP', 'Reguler', 'Grup'),
         allowNull: false,
         defaultValue: 'Reguler',
       },

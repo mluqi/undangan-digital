@@ -187,7 +187,7 @@ export const MildnessTheme = ({
 
   // Tamu Data
   const guestName = guest?.name || 'Tamu Undangan';
-  const isVip = guest?.category === 'VIP';
+  const isVip = guest?.category === 'VIP' || guest?.category === 'VVIP';
   const qrValue =
     guest?.qr_link ||
     guest?.qr_code ||

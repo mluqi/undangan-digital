@@ -227,10 +227,17 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             row['kategori'] ||
             row['kategori(vip/reguler)'] ||
             row['Kategori (VIP/Reguler)'] ||
+            row['Kategori (VIP/Reguler/Grup)'] ||
             row['category'] ||
             ''
           ).toUpperCase();
-          const category = rawCat.includes('VIP') ? 'VIP' : 'Reguler';
+          const category = rawCat.includes('VVIP')
+            ? 'VVIP'
+            : rawCat.includes('VIP')
+            ? 'VIP'
+            : rawCat.includes('GRUP') || rawCat.includes('GROUP')
+            ? 'Grup'
+            : 'Reguler';
 
           // Cari link qr code check-in eksternal (misal: Tamuva)
           const link = (
@@ -703,9 +710,11 @@ export const GuestsPage = ({ defaultInvitationId }) => {
             <Select
               label="Filter Kategori"
               options={[
-                { value: '', label: 'Semua Kategori (VIP & Reguler)' },
+                { value: '', label: 'Semua Kategori (VIP, VVIP, Reguler & Grup)' },
+                { value: 'VVIP', label: 'Hanya Tamu VVIP' },
                 { value: 'VIP', label: 'Hanya Tamu VIP' },
                 { value: 'Reguler', label: 'Hanya Tamu Reguler' },
+                { value: 'Grup', label: 'Hanya Tamu Grup' },
               ]}
               value={filterCategory}
               onChange={setFilterCategory}
@@ -1298,18 +1307,26 @@ export const GuestsPage = ({ defaultInvitationId }) => {
                 options={[
                   { value: 'Reguler', label: 'Tamu Reguler' },
                   { value: 'VIP', label: 'Tamu VIP (Prioritas)' },
+                  { value: 'VVIP', label: 'Tamu VVIP (Utama)' },
+                  { value: 'Grup', label: 'Tamu Grup (Tanpa QR Check-In)' },
                 ]}
                 value={formData.category}
                 onChange={(cat) => setFormData({ ...formData, category: cat })}
               />
 
-              <Input
-                label="Link QR Code Check-In (Eksternal / Tamuva)"
-                placeholder="https://app.tamuva.com/events/.../checkin?guestId=..."
-                value={formData.qr_link}
-                onChange={(e) => setFormData({ ...formData, qr_link: e.target.value })}
-                helperText="Link check-in eksternal yang akan disematkan ke dalam QR Code dan discan di meja resepsionis"
-              />
+              {formData.category === 'Grup' ? (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                  Untuk kategori <strong>Grup</strong>, QR Code Check-In tidak akan ditampilkan pada halaman undangan tamu.
+                </div>
+              ) : (
+                <Input
+                  label="Link QR Code Check-In (Eksternal / Tamuva)"
+                  placeholder="https://app.tamuva.com/events/.../checkin?guestId=..."
+                  value={formData.qr_link}
+                  onChange={(e) => setFormData({ ...formData, qr_link: e.target.value })}
+                  helperText="Link check-in eksternal yang akan disematkan ke dalam QR Code dan discan di meja resepsionis"
+                />
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <Input

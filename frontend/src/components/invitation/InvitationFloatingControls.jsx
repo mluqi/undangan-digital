@@ -91,7 +91,10 @@ export const InvitationFloatingControls = ({
 
   if (!isOpened) return null;
 
-  const isVip = (guestCategory || '').toUpperCase() === 'VIP';
+  const isVvip = (guestCategory || '').trim().toUpperCase() === 'VVIP';
+  const isVip = isVvip || (guestCategory || '').trim().toUpperCase() === 'VIP';
+  const isGrup = (guestCategory || '').trim().toLowerCase() === 'grup';
+  const canShowQr = showQr && !isGrup;
 
   // Tema styling terpadu untuk Floater dan Modal QR Code
   const getThemeStyles = () => {
@@ -201,7 +204,7 @@ export const InvitationFloatingControls = ({
       {/* ============================================================== */}
       {/* 1. FLOATER QR CODE TAMU VERTIKAL (MUNCUL BERSAMAAN SCROLL TOP) */}
       {/* ============================================================== */}
-      {showQr && showQrFloater && theme !== 'forest' && showScrollTop && (
+      {canShowQr && showQrFloater && theme !== 'forest' && showScrollTop && (
         <div className="fixed bottom-[8rem] right-4 sm:bottom-[8.25rem] sm:right-6 z-40 select-none animate-in fade-in-0 zoom-in-95 duration-300">
           <div className="relative group">
             {/* Subtle glowing halo on floater */}
@@ -271,7 +274,7 @@ export const InvitationFloatingControls = ({
       {/* ============================================================== */}
       {/* 3. MODAL INFORMASI QR CODE TAMU (POPUP KARTU VIP CHECK-IN)     */}
       {/* ============================================================== */}
-      {isQrModalOpen && (
+      {canShowQr && isQrModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in-0 duration-200"
           onClick={() => setIsQrModalOpen(false)}
@@ -300,7 +303,7 @@ export const InvitationFloatingControls = ({
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-sans font-semibold uppercase tracking-widest mt-1 mb-3 ${style.modalBadgeBg}`}
             >
               <Crown className="w-3.5 h-3.5" />
-              <span>{isVip ? 'VIP Guest Pass' : 'Kartu Akses Tamu'}</span>
+              <span>{isVvip ? 'VVIP Guest Pass' : isVip ? 'VIP Guest Pass' : 'Kartu Akses Tamu'}</span>
             </div>
 
             <h3 className="text-xl font-bold font-serif-theme text-white mb-1">
