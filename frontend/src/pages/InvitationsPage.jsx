@@ -79,6 +79,8 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
   const [expiredAt, setExpiredAt] = useState('');
 
   // Structured Content Form states
+  const [eventType, setEventType] = useState('wedding');
+  const [showSecondEvent, setShowSecondEvent] = useState(true);
   const [showQrCheckin, setShowQrCheckin] = useState(true);
 
   // Mempelai Pria & Orang Tua
@@ -144,12 +146,21 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
 
       setInvitations(invRes?.data?.invitations || []);
       setTemplates(
-        (tmplRes?.data || []).map((t) => ({
-          value: t.id.toString(),
-          label: `${t.name} (${t.template_code})`,
-          template_code: t.template_code,
-          name: t.name,
-        }))
+        (tmplRes?.data || []).map((t) => {
+          const tmplCat = (
+            t.default_content_json?.templateEventType ||
+            t.default_content_json?.eventType ||
+            'wedding'
+          ).toLowerCase();
+          return {
+            value: t.id.toString(),
+            label: `${t.name} (${t.template_code})`,
+            template_code: t.template_code,
+            name: t.name,
+            templateEventType: tmplCat,
+            default_content_json: t.default_content_json || {},
+          };
+        })
       );
     } catch (err) {
       console.error('Error load invitations:', err);
@@ -161,18 +172,21 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
 
   // Compile current form fields into a unified object
   const buildContentObject = () => {
+    const isCouple = eventType === 'wedding' || eventType === 'engagement';
     return {
       ...existingExtraContent,
+      eventType,
+      showSecondEvent: Boolean(showSecondEvent),
       showQrCheckin: Boolean(showQrCheckin),
       showQr: Boolean(showQrCheckin),
       mempelaiPria: groomName,
       panggilanPria: groomNickname,
       ayahPria: groomFather,
       ibuPria: groomMother,
-      mempelaiWanita: brideName,
-      panggilanWanita: brideNickname,
-      ayahWanita: brideFather,
-      ibuWanita: brideMother,
+      mempelaiWanita: isCouple ? brideName : '',
+      panggilanWanita: isCouple ? brideNickname : '',
+      ayahWanita: isCouple ? brideFather : '',
+      ibuWanita: isCouple ? brideMother : '',
       ayat: ayatQuote,
       teksPenutup: closingText,
       salamPenutup: closingGreeting,
@@ -202,6 +216,17 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
     try {
       const parsed = JSON.parse(jsonStr);
       if (typeof parsed === 'object' && parsed !== null) {
+        const parsedEventType = parsed.eventType || 'wedding';
+        if (parsed.eventType !== undefined) setEventType(parsedEventType);
+        if (parsed.showSecondEvent !== undefined) {
+          setShowSecondEvent(
+            parsed.showSecondEvent !== false &&
+              parsed.showSecondEvent !== 'false' &&
+              parsed.showSecondEvent !== 0
+          );
+        } else if (parsed.eventType !== undefined) {
+          setShowSecondEvent(parsedEventType === 'wedding');
+        }
         if (parsed.showQr !== undefined || parsed.showQrCheckin !== undefined) {
           setShowQrCheckin(
             parsed.showQr !== undefined ? Boolean(parsed.showQr) : Boolean(parsed.showQrCheckin)
@@ -428,12 +453,18 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
     setIsEditing(false);
     setEditId(null);
     setClientName('');
-    setTemplateId(templates[0]?.value || '1');
+    const firstWeddingTemplate =
+      templates.find(
+        (t) => t.templateEventType === 'wedding' || t.templateEventType === 'all'
+      ) || templates[0];
+    setTemplateId(firstWeddingTemplate?.value || '1');
     setSlug('');
     setExpiredAt('');
     setActiveModalTab('basic');
 
     // Default values for standard new invitation
+    setEventType('wedding');
+    setShowSecondEvent(true);
     setShowQrCheckin(true);
     setGroomName('Ahmad Fajar, S.T.');
     setGroomNickname('Ahmad');
@@ -520,7 +551,17 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
     const c =
       typeof inv.content_json === 'object' && inv.content_json !== null ? inv.content_json : {};
 
+    const resolvedEventType = c.eventType || 'wedding';
+    const resolvedShowSecondEvent =
+      c.showSecondEvent !== undefined
+        ? c.showSecondEvent !== false &&
+          c.showSecondEvent !== 'false' &&
+          c.showSecondEvent !== 0
+        : resolvedEventType === 'wedding';
+
     setExistingExtraContent(c);
+    setEventType(resolvedEventType);
+    setShowSecondEvent(resolvedShowSecondEvent);
     setShowQrCheckin(
       c.showQr !== undefined ? Boolean(c.showQr) : c.showQrCheckin !== undefined ? Boolean(c.showQrCheckin) : true
     );
@@ -1061,13 +1102,79 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                     />
 
                     <Select
-                      label="Pilihan Master Template"
+                      label="Jenis Acara Undangan"
                       required
-                      options={templates}
-                      value={templateId}
-                      onChange={setTemplateId}
-                      placeholder="Pilih template..."
+                      options={[
+                        { value: 'wedding', label: 'Pernikahan (Wedding)' },
+                        { value: 'engagement', label: 'Lamaran / Tunangan (Engagement)' },
+                        { value: 'birthday', label: 'Ulang Tahun (Birthday)' },
+                        { value: 'event', label: 'Acara Umum (Gathering / Aqiqah / Wisuda / Dll)' },
+                      ]}
+                      value={eventType}
+                      onChange={(val) => {
+                        setEventType(val);
+                        setShowSecondEvent(val === 'wedding');
+                        if (!isEditing) {
+                          const nextMatches = templates.filter(
+                            (t) =>
+                              t.templateEventType === val ||
+                              t.templateEventType === 'all'
+                          );
+                          if (nextMatches.length > 0) {
+                            const currentMatches = nextMatches.some(
+                              (t) => t.value === templateId
+                            );
+                            if (!currentMatches) {
+                              setTemplateId(nextMatches[0].value);
+                            }
+                          }
+                        }
+                      }}
                     />
+
+                    {(() => {
+                      const catLabels = {
+                        wedding: 'Wedding',
+                        engagement: 'Lamaran',
+                        birthday: 'Ulang Tahun',
+                        event: 'Acara Umum',
+                        all: 'Multi-Acara',
+                      };
+                      const matching = templates.filter(
+                        (t) =>
+                          t.templateEventType === eventType ||
+                          t.templateEventType === 'all'
+                      );
+                      const hasDedicated = matching.length > 0;
+                      const optionsPool = hasDedicated
+                        ? templates.filter(
+                            (t) =>
+                              t.templateEventType === eventType ||
+                              t.templateEventType === 'all' ||
+                              t.value === templateId
+                          )
+                        : templates;
+                      const formattedOptions = optionsPool.map((t) => ({
+                        ...t,
+                        label: `[${catLabels[t.templateEventType] || 'Wedding'}] ${t.label}`,
+                      }));
+
+                      return (
+                        <Select
+                          label="Pilihan Master Template"
+                          required
+                          options={formattedOptions}
+                          value={templateId}
+                          onChange={setTemplateId}
+                          placeholder="Pilih template..."
+                          helperText={
+                            hasDedicated
+                              ? `Menampilkan template untuk kategori ${catLabels[eventType] || eventType} & Multi-Acara`
+                              : `Belum ada template khusus kategori ${catLabels[eventType] || eventType} — menampilkan semua template yang tersedia`
+                          }
+                        />
+                      );
+                    })()}
 
                     <div className="md:col-span-2">
                       <Input
@@ -1083,29 +1190,64 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
               )}
 
               {/* ============================================================== */}
-              {/* TAB 2: DATA PASANGAN MEMPELAI & ORANG TUA                     */}
+              {/* TAB 2: DATA PASANGAN MEMPELAI / TOKOH & ORANG TUA             */}
               {/* ============================================================== */}
-              {activeModalTab === 'couple' && (
+              {activeModalTab === 'couple' && (() => {
+                const isCouple = eventType === 'wedding' || eventType === 'engagement';
+                const card1Title =
+                  eventType === 'birthday'
+                    ? 'Profil Utama (Yang Berulang Tahun)'
+                    : eventType === 'event'
+                      ? 'Judul & Tuan Rumah Acara'
+                      : eventType === 'engagement'
+                        ? 'Calon Mempelai Pria'
+                        : 'Mempelai Pria';
+                const nameLabel =
+                  eventType === 'birthday'
+                    ? 'Nama Lengkap Yang Berulang Tahun'
+                    : eventType === 'event'
+                      ? 'Judul / Nama Utama Acara'
+                      : 'Nama Lengkap & Gelar Pria';
+                const nickLabel =
+                  eventType === 'birthday'
+                    ? 'Nama Panggilan (Tampil di Cover & Judul)'
+                    : eventType === 'event'
+                      ? 'Nama Singkat Sampul (Tampil di Cover)'
+                      : 'Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)';
+
+                return (
                 <div className="space-y-5 animate-in fade-in-0 duration-150">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {/* Mempelai Pria */}
+                  <div className={`grid grid-cols-1 ${isCouple ? 'md:grid-cols-2' : ''} gap-5`}>
+                    {/* Mempelai Pria / Tokoh Utama / Judul Acara */}
                     <div className="p-4.5 rounded-2xl bg-indigo-50/50 border border-indigo-100/90 space-y-3.5">
                       <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs uppercase tracking-wider">
                         <Heart className="w-3.5 h-3.5 text-indigo-600 fill-indigo-600" />
-                        <span>Mempelai Pria</span>
+                        <span>{card1Title}</span>
                       </div>
 
                       <Input
-                        label="Nama Lengkap & Gelar Pria"
+                        label={nameLabel}
                         required
-                        placeholder="Ahmad Fajar, S.T."
+                        placeholder={
+                          eventType === 'birthday'
+                            ? 'Raka Pratama'
+                            : eventType === 'event'
+                              ? 'Syukuran Aqiqah Baby Zayn'
+                              : 'Ahmad Fajar, S.T.'
+                        }
                         value={groomName}
                         onChange={(e) => setGroomName(e.target.value)}
                       />
 
                       <Input
-                        label="Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)"
-                        placeholder="Contoh: Fajar"
+                        label={nickLabel}
+                        placeholder={
+                          eventType === 'birthday'
+                            ? 'Contoh: Raka'
+                            : eventType === 'event'
+                              ? 'Contoh: Baby Zayn'
+                              : 'Contoh: Fajar'
+                        }
                         value={groomNickname}
                         onChange={(e) => setGroomNickname(e.target.value)}
                         helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
@@ -1113,13 +1255,13 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <Input
-                          label="Nama Ayah Pria"
+                          label={isCouple ? 'Nama Ayah Pria' : 'Nama Ayah / Tuan Rumah (Opsional)'}
                           placeholder="Bpk. H. Abdurrahman"
                           value={groomFather}
                           onChange={(e) => setGroomFather(e.target.value)}
                         />
                         <Input
-                          label="Nama Ibu Pria"
+                          label={isCouple ? 'Nama Ibu Pria' : 'Nama Ibu / Penyelenggara (Opsional)'}
                           placeholder="Ibu Hj. Maryam"
                           value={groomMother}
                           onChange={(e) => setGroomMother(e.target.value)}
@@ -1127,16 +1269,19 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                       </div>
                     </div>
 
-                    {/* Mempelai Wanita */}
+                    {/* Mempelai Wanita (Hanya untuk Wedding & Engagement) */}
+                    {isCouple && (
                     <div className="p-4.5 rounded-2xl bg-rose-50/50 border border-rose-100/90 space-y-3.5">
                       <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider">
                         <Heart className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
-                        <span>Mempelai Wanita</span>
+                        <span>
+                          {eventType === 'engagement' ? 'Calon Mempelai Wanita' : 'Mempelai Wanita'}
+                        </span>
                       </div>
 
                       <Input
                         label="Nama Lengkap & Gelar Wanita"
-                        required
+                        required={isCouple}
                         placeholder="Siti Aminah, S.Pd."
                         value={brideName}
                         onChange={(e) => setBrideName(e.target.value)}
@@ -1165,6 +1310,7 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                         />
                       </div>
                     </div>
+                    )}
                   </div>
 
                   {/* Ayat / Kutipan & Ucapan Penutup */}
@@ -1195,29 +1341,38 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                     />
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* ============================================================== */}
               {/* TAB 3: JADWAL & LOKASI ACARA (AKAD & RESEPSI)                  */}
               {/* ============================================================== */}
               {activeModalTab === 'events' && (
                 <div className="space-y-5 animate-in fade-in-0 duration-150">
-                  {/* Akad Nikah */}
+                  {/* Acara Utama (Akad / Lamaran / Perayaan) */}
                   <div className="p-4.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3.5">
                     <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
                       <Calendar className="w-4 h-4 text-emerald-600" />
-                      <span>Akad Nikah / Pemberkatan</span>
+                      <span>
+                        {eventType === 'wedding'
+                          ? 'Akad Nikah / Pemberkatan'
+                          : eventType === 'engagement'
+                            ? 'Acara Lamaran / Tunangan'
+                            : eventType === 'birthday'
+                              ? 'Acara Puncak Ulang Tahun'
+                              : 'Acara Utama'}
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Input
-                        label="Tanggal Akad"
+                        label="Tanggal Acara 1"
                         placeholder="Minggu, 15 November 2026"
                         value={akadTanggal}
                         onChange={(e) => setAkadTanggal(e.target.value)}
                       />
                       <Input
-                        label="Waktu Akad"
+                        label="Waktu Acara 1"
                         placeholder="08:00 - 10:00 WIB"
                         value={akadWaktu}
                         onChange={(e) => setAkadWaktu(e.target.value)}
@@ -1225,14 +1380,14 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                     </div>
 
                     <Input
-                      label="Tempat / Lokasi Akad"
+                      label="Tempat / Lokasi Acara 1"
                       placeholder="Masjid Agung Al-Akbar Surabaya"
                       value={akadLokasi}
                       onChange={(e) => setAkadLokasi(e.target.value)}
                     />
 
                     <Textarea
-                      label="Alamat Lengkap Akad"
+                      label="Alamat Lengkap Acara 1"
                       rows={2}
                       placeholder="Jl. Masjid Al-Akbar Timur No.1, Pagesangan, Surabaya"
                       value={akadAlamat}
@@ -1240,56 +1395,75 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
                     />
 
                     <Input
-                      label="Link Google Maps Akad"
+                      label="Link Google Maps Acara 1"
                       placeholder="https://maps.google.com/?q=..."
                       value={akadMapUrl}
                       onChange={(e) => setAkadMapUrl(e.target.value)}
                     />
                   </div>
 
-                  {/* Resepsi Pernikahan */}
+                  {/* Resepsi Pernikahan / Sesi 2 (Opsional) */}
                   <div className="p-4.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3.5">
-                    <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
-                      <Clock className="w-4 h-4 text-indigo-600" />
-                      <span>Resepsi Pernikahan</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Input
-                        label="Tanggal Resepsi"
-                        placeholder="Minggu, 15 November 2026"
-                        value={resepsiTanggal}
-                        onChange={(e) => setResepsiTanggal(e.target.value)}
-                      />
-                      <Input
-                        label="Waktu Resepsi"
-                        placeholder="11:00 - 14:00 WIB"
-                        value={resepsiWaktu}
-                        onChange={(e) => setResepsiWaktu(e.target.value)}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-slate-800 font-bold text-xs uppercase tracking-wider">
+                        <Clock className="w-4 h-4 text-indigo-600" />
+                        <span>
+                          {eventType === 'wedding'
+                            ? 'Resepsi Pernikahan'
+                            : 'Sesi / Acara Kedua (Opsional)'}
+                        </span>
+                      </div>
+                      <Switch
+                        checked={showSecondEvent}
+                        onChange={setShowSecondEvent}
+                        label={showSecondEvent ? 'Tampilkan Sesi 2' : 'Hanya 1 Acara'}
                       />
                     </div>
 
-                    <Input
-                      label="Tempat / Lokasi Resepsi"
-                      placeholder="Grand Ballroom Hotel Majapahit, Surabaya"
-                      value={resepsiLokasi}
-                      onChange={(e) => setResepsiLokasi(e.target.value)}
-                    />
+                    {showSecondEvent ? (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Input
+                            label="Tanggal Sesi 2"
+                            placeholder="Minggu, 15 November 2026"
+                            value={resepsiTanggal}
+                            onChange={(e) => setResepsiTanggal(e.target.value)}
+                          />
+                          <Input
+                            label="Waktu Sesi 2"
+                            placeholder="11:00 - 14:00 WIB"
+                            value={resepsiWaktu}
+                            onChange={(e) => setResepsiWaktu(e.target.value)}
+                          />
+                        </div>
 
-                    <Textarea
-                      label="Alamat Lengkap Resepsi"
-                      rows={2}
-                      placeholder="Jl. Tunjungan No.65, Genteng, Surabaya"
-                      value={resepsiAlamat}
-                      onChange={(e) => setResepsiAlamat(e.target.value)}
-                    />
+                        <Input
+                          label="Tempat / Lokasi Sesi 2"
+                          placeholder="Grand Ballroom Hotel Majapahit, Surabaya"
+                          value={resepsiLokasi}
+                          onChange={(e) => setResepsiLokasi(e.target.value)}
+                        />
 
-                    <Input
-                      label="Link Google Maps Resepsi"
-                      placeholder="https://maps.google.com/?q=..."
-                      value={resepsiMapUrl}
-                      onChange={(e) => setResepsiMapUrl(e.target.value)}
-                    />
+                        <Textarea
+                          label="Alamat Lengkap Sesi 2"
+                          rows={2}
+                          placeholder="Jl. Tunjungan No.65, Genteng, Surabaya"
+                          value={resepsiAlamat}
+                          onChange={(e) => setResepsiAlamat(e.target.value)}
+                        />
+
+                        <Input
+                          label="Link Google Maps Sesi 2"
+                          placeholder="https://maps.google.com/?q=..."
+                          value={resepsiMapUrl}
+                          onChange={(e) => setResepsiMapUrl(e.target.value)}
+                        />
+                      </>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        Sesi / acara kedua disembunyikan dari halaman undangan &amp; Open Graph. Aktifkan saklar di atas bila membutuhkan jadwal sesi kedua.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

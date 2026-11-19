@@ -198,20 +198,122 @@ class InvitationService {
 
       if (matchedTemplate) {
         const guestName = guestQuery.to || 'Tamu Undangan Terhormat';
-        return {
-          id: 0,
-          slug: cleanSlug,
-          client_name: `Demo ${matchedTemplate.name}`,
-          is_expired: false,
-          template: {
-            id: matchedTemplate.id,
-            template_code: matchedTemplate.template_code,
-            name: matchedTemplate.name,
-            thumbnail_url: matchedTemplate.thumbnail_url,
-            default_content_json: matchedTemplate.default_content_json || null,
+        const tmplDefaults = matchedTemplate.default_content_json || {};
+        const rawCategory = (
+          tmplDefaults.templateEventType ||
+          tmplDefaults.eventType ||
+          'wedding'
+        ).toLowerCase();
+        const demoEventType = rawCategory === 'all' ? 'wedding' : rawCategory;
+
+        const baseDemoByType = {
+          engagement: {
+            eventType: 'engagement',
+            showSecondEvent: false,
+            mempelaiPria: 'Arya Bimantara, S.T.',
+            panggilanPria: 'Arya',
+            ayahPria: 'Bpk. H. Suryo Kusumo',
+            ibuPria: 'Ibu Hj. Endang Rahayu',
+            mempelaiWanita: 'Bella Maharani, S.Ds.',
+            panggilanWanita: 'Bella',
+            ayahWanita: 'Bpk. H. Hendra Wijaya',
+            ibuWanita: 'Ibu Hj. Ratna Juwita',
+            ayat: 'QS. Ar-Rum: 21',
+            akad: {
+              judul: 'Acara Lamaran & Tukar Cincin',
+              tanggal: 'Minggu, 15 November 2026',
+              waktu: '09:00 - 12:00 WIB',
+              lokasi: 'Kediaman Keluarga Maharani',
+              alamat: 'Jl. Dharmahusada Indah Barat No. 24, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Surabaya',
+            },
+            resepsi: {
+              judul: 'Ramah Tamah Keluarga',
+              tanggal: 'Minggu, 15 November 2026',
+              waktu: '12:00 - 14:00 WIB',
+              lokasi: 'Kediaman Keluarga Maharani',
+              alamat: 'Jl. Dharmahusada Indah Barat No. 24, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Surabaya',
+            },
+            rekening: [
+              { bank: 'BCA', nomor: '8291038192', nama: 'Arya Bimantara' },
+              { bank: 'Mandiri', nomor: '1420019283019', nama: 'Bella Maharani' },
+            ],
+            alamatKado:
+              'Jl. Dharmahusada Indah Barat VI No. 24, Mulyorejo, Surabaya (0812-3456-7890)',
           },
-          content_json: {
-            ...(matchedTemplate.default_content_json || {}),
+          birthday: {
+            eventType: 'birthday',
+            showSecondEvent: false,
+            mempelaiPria: 'Clara Putri Maharani',
+            panggilanPria: 'Clara',
+            anakKePria: 'Sweet 17th Birthday Celebration',
+            ayahPria: 'Bpk. Hendra Wijaya',
+            ibuPria: 'Ibu Ratna Juwita',
+            mempelaiWanita: '',
+            panggilanWanita: '',
+            ayahWanita: '',
+            ibuWanita: '',
+            ayat: 'With Gratitude & Joy',
+            akad: {
+              judul: 'Birthday Party & Dinner',
+              tanggal: 'Sabtu, 21 November 2026',
+              waktu: '18:30 - 21:30 WIB',
+              lokasi: 'Pavilion Garden, Hotel Majapahit Surabaya',
+              alamat: 'Jl. Tunjungan No.65, Genteng, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
+            },
+            resepsi: {
+              judul: 'After Party',
+              tanggal: 'Sabtu, 21 November 2026',
+              waktu: '21:30 - 23:00 WIB',
+              lokasi: 'Pavilion Garden, Hotel Majapahit Surabaya',
+              alamat: 'Jl. Tunjungan No.65, Genteng, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
+            },
+            rekening: [
+              { bank: 'BCA', nomor: '8291038192', nama: 'Clara Putri Maharani' },
+            ],
+            alamatKado:
+              'Jl. Dharmahusada Indah Barat VI No. 24, Mulyorejo, Surabaya (0812-3456-7890)',
+          },
+          event: {
+            eventType: 'event',
+            showSecondEvent: false,
+            mempelaiPria: 'Annual Gala Dinner & Awarding Night 2026',
+            panggilanPria: 'Gala Dinner 2026',
+            anakKePria: 'PT Samudera Karya Nusantara',
+            ayahPria: 'Board of Directors',
+            ibuPria: 'Executive Committee',
+            mempelaiWanita: '',
+            panggilanWanita: '',
+            ayahWanita: '',
+            ibuWanita: '',
+            ayat: 'Collaborate, Celebrate & Inspire',
+            akad: {
+              judul: 'Registrasi & Gala Dinner',
+              tanggal: 'Jumat, 27 November 2026',
+              waktu: '18:00 - 22:00 WIB',
+              lokasi: 'Grand Ballroom Shangri-La Surabaya',
+              alamat: 'Jl. Mayjen Sungkono No.120, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Shangri-La+Surabaya',
+            },
+            resepsi: {
+              judul: 'Networking Session',
+              tanggal: 'Jumat, 27 November 2026',
+              waktu: '21:00 - 22:30 WIB',
+              lokasi: 'Grand Ballroom Shangri-La Surabaya',
+              alamat: 'Jl. Mayjen Sungkono No.120, Surabaya',
+              mapUrl: 'https://maps.google.com/?q=Shangri-La+Surabaya',
+            },
+            rekening: [
+              { bank: 'Mandiri', nomor: '1420019283019', nama: 'Panitia Gala Dinner' },
+            ],
+            alamatKado: 'Gedung Graha Nusantara Lt. 5, Jl. Basuki Rahmat, Surabaya',
+          },
+          wedding: {
+            eventType: 'wedding',
+            showSecondEvent: true,
             mempelaiPria: 'Arya Bimantara, S.T.',
             panggilanPria: 'Arya',
             ayahPria: 'Bpk. H. Suryo Kusumo',
@@ -239,16 +341,63 @@ class InvitationService {
               { bank: 'BCA', nomor: '8291038192', nama: 'Arya Bimantara' },
               { bank: 'Mandiri', nomor: '1420019283019', nama: 'Bella Maharani' },
             ],
-            alamatKado: 'Jl. Dharmahusada Indah Barat VI No. 24, Mulyorejo, Surabaya (0812-3456-7890)',
+            alamatKado:
+              'Jl. Dharmahusada Indah Barat VI No. 24, Mulyorejo, Surabaya (0812-3456-7890)',
           },
-          guest: {
-            name: guestName,
-            category: 'VIP',
-            pax: 2,
-            qr_code: `VIP-${cleanSlug.toUpperCase()}-001`,
-            qr_link: `${cleanSlug.toUpperCase()}-001`,
-          },
-          rsvps: [
+        };
+
+        const demoContentBase = baseDemoByType[demoEventType] || baseDemoByType.wedding;
+
+        const demoRsvpsByType = {
+          engagement: [
+            {
+              id: 1,
+              guest_name: 'Drs. H. Bambang Soemantri',
+              attendance_status: 'Hadir',
+              message: 'Selamat atas pertunangannya, semoga dilancarkan hingga hari pernikahan.',
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              guest_name: 'Dr. Anita Prameswari',
+              attendance_status: 'Hadir',
+              message: 'Semoga segala persiapan menuju pelaminan dimudahkan oleh Allah SWT.',
+              created_at: new Date().toISOString(),
+            },
+          ],
+          birthday: [
+            {
+              id: 1,
+              guest_name: 'Nadia Kusuma',
+              attendance_status: 'Hadir',
+              message: 'Happy Sweet 17th Clara! Semoga sehat, bahagia, dan semua impiannya tercapai!',
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              guest_name: 'Bima Pratama',
+              attendance_status: 'Hadir',
+              message: 'Selamat ulang tahun! See you at the party!',
+              created_at: new Date().toISOString(),
+            },
+          ],
+          event: [
+            {
+              id: 1,
+              guest_name: 'Ir. Hendro Wibowo',
+              attendance_status: 'Hadir',
+              message: 'Terima kasih atas undangannya, sukses dan lancar untuk seluruh rangkaian acara!',
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              guest_name: 'Sari Dewi',
+              attendance_status: 'Hadir',
+              message: 'Confirmed hadir. Sampai bertemu di acara!',
+              created_at: new Date().toISOString(),
+            },
+          ],
+          wedding: [
             {
               id: 1,
               guest_name: 'Drs. H. Bambang Soemantri',
@@ -264,6 +413,33 @@ class InvitationService {
               created_at: new Date().toISOString(),
             },
           ],
+        };
+
+        return {
+          id: 0,
+          slug: cleanSlug,
+          client_name: `Demo ${matchedTemplate.name}`,
+          is_expired: false,
+          template: {
+            id: matchedTemplate.id,
+            template_code: matchedTemplate.template_code,
+            name: matchedTemplate.name,
+            thumbnail_url: matchedTemplate.thumbnail_url,
+            default_content_json: matchedTemplate.default_content_json || null,
+          },
+          content_json: {
+            ...demoContentBase,
+            ...tmplDefaults,
+            eventType: demoEventType,
+          },
+          guest: {
+            name: guestName,
+            category: 'VIP',
+            pax: 2,
+            qr_code: `VIP-${cleanSlug.toUpperCase()}-001`,
+            qr_link: `${cleanSlug.toUpperCase()}-001`,
+          },
+          rsvps: demoRsvpsByType[demoEventType] || demoRsvpsByType.wedding,
         };
       }
 

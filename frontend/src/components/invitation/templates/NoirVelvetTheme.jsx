@@ -207,7 +207,9 @@ export const NoirVelvetTheme = ({
     ? DEFAULT_QUOTE
     : d.ayatQuote;
 
-  const monogramDisplay = d.monogramText?.trim() || `${groomInitial} & ${brideInitial}`;
+  const monogramDisplay =
+    d.monogramText?.trim() ||
+    (d.showSecondPerson !== false ? `${groomInitial} & ${brideInitial}` : groomInitial);
 
   const rsvpsPerPage = 6;
   const totalRsvpPages = Math.max(1, Math.ceil((d.rsvp.list?.length || 0) / rsvpsPerPage));
@@ -334,7 +336,13 @@ export const NoirVelvetTheme = ({
               {d.coverSubtitle}
             </p>
             <h1 className="font-romantic text-[60px] xl:text-[70px] font-medium uppercase leading-[0.98] text-[#FAF3EC] tracking-wide drop-shadow-[0_6px_28px_rgba(0,0,0,0.65)]">
-              {d.groomShort} <span className="text-[#E6D2BE] font-light">&amp;</span> {d.brideShort}
+              {d.groomShort}
+              {d.showSecondPerson !== false && (
+                <>
+                  {' '}
+                  <span className="text-[#E6D2BE] font-light">&amp;</span> {d.brideShort}
+                </>
+              )}
             </h1>
             <div className="mt-4 flex items-center gap-3">
               <span className="h-[1px] w-10 bg-[#E6D2BE]/60" />
@@ -428,8 +436,12 @@ export const NoirVelvetTheme = ({
             </div>
             <h1 className="font-romantic text-[50px] sm:text-[56px] font-medium uppercase leading-[0.94] tracking-wide text-[#FAF3EC] drop-shadow-[0_4px_22px_rgba(0,0,0,0.7)]">
               {d.groomShort}
-              <span className="block text-[26px] text-[#E6D2BE] my-1 font-light">&amp;</span>
-              {d.brideShort}
+              {d.showSecondPerson !== false && (
+                <>
+                  <span className="block text-[26px] text-[#E6D2BE] my-1 font-light">&amp;</span>
+                  {d.brideShort}
+                </>
+              )}
             </h1>
           </div>
 
@@ -496,7 +508,7 @@ export const NoirVelvetTheme = ({
               </p>
 
               <p className="font-romantic text-[26px] uppercase tracking-wider text-[#E6D2BE] pt-1">
-                {d.groomShort} &amp; {d.brideShort}
+                {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
               </p>
             </div>
           </section>
@@ -514,7 +526,7 @@ export const NoirVelvetTheme = ({
                 {d.coverSubtitle}
               </p>
               <h2 className="font-romantic text-[36px] font-normal uppercase leading-tight text-white">
-                {d.groomShort} &amp; {d.brideShort}
+                {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
               </h2>
 
               <div className="w-24 h-[1px] bg-[#E6D2BE]/50 my-2" />
@@ -537,7 +549,7 @@ export const NoirVelvetTheme = ({
 
               <div className="relative z-20 pt-7 text-center">
                 <span className="inline-block px-4 py-1 rounded-full bg-[#0D0A09]/65 backdrop-blur-md border border-[#E6D2BE]/30 font-quicksand text-[10px] uppercase tracking-[0.28em] text-[#E6D2BE]">
-                  01 &bull; The Groom
+                  01 &bull; {d.person1Role || 'The Groom'}
                 </span>
               </div>
 
@@ -548,9 +560,15 @@ export const NoirVelvetTheme = ({
                 <p className="font-romantic text-[22px] font-normal text-[#E6D2BE]">
                   {d.groom}
                 </p>
-                <p className="font-public-sans text-[12.5px] font-light leading-[1.55] text-[#F6EFE8]/85 pt-1">
-                  {d.groomChildOrder} dari {d.groomFather} dan {d.groomMother}
-                </p>
+                {(d.showSecondPerson !== false || d.person1Subline || d.groomFather || d.groomMother) && (
+                  <p className="font-public-sans text-[12.5px] font-light leading-[1.55] text-[#F6EFE8]/85 pt-1">
+                    {d.showSecondPerson !== false
+                      ? `${d.groomChildOrder} dari ${d.groomFather} dan ${d.groomMother}`
+                      : [d.person1Subline, [d.groomFather, d.groomMother].filter(Boolean).join(' & ')]
+                          .filter(Boolean)
+                          .join(' — ')}
+                  </p>
+                )}
                 {d.groomInstagram && (
                   <div className="pt-2.5">
                     <a
@@ -568,44 +586,46 @@ export const NoirVelvetTheme = ({
             </div>
 
             {/* BRIDE */}
-            <div className="relative rounded-t-[150px] rounded-b-2xl overflow-hidden min-h-[520px] flex flex-col justify-between border border-[#E6D2BE]/25 shadow-2xl">
-              <KenBurnsSlideshow
-                images={brideSlideshowImages}
-                intervalMs={2800}
-                overlayClassName="bg-[linear-gradient(180deg,rgba(13,10,9,0.28)_0%,rgba(13,10,9,0.1)_40%,rgba(13,10,9,0.95)_100%)]"
-              />
+            {d.showSecondPerson !== false && (
+              <div className="relative rounded-t-[150px] rounded-b-2xl overflow-hidden min-h-[520px] flex flex-col justify-between border border-[#E6D2BE]/25 shadow-2xl">
+                <KenBurnsSlideshow
+                  images={brideSlideshowImages}
+                  intervalMs={2800}
+                  overlayClassName="bg-[linear-gradient(180deg,rgba(13,10,9,0.28)_0%,rgba(13,10,9,0.1)_40%,rgba(13,10,9,0.95)_100%)]"
+                />
 
-              <div className="relative z-20 pt-7 text-center">
-                <span className="inline-block px-4 py-1 rounded-full bg-[#0D0A09]/65 backdrop-blur-md border border-[#E6D2BE]/30 font-quicksand text-[10px] uppercase tracking-[0.28em] text-[#E6D2BE]">
-                  02 &bull; The Bride
-                </span>
-              </div>
+                <div className="relative z-20 pt-7 text-center">
+                  <span className="inline-block px-4 py-1 rounded-full bg-[#0D0A09]/65 backdrop-blur-md border border-[#E6D2BE]/30 font-quicksand text-[10px] uppercase tracking-[0.28em] text-[#E6D2BE]">
+                    02 &bull; {d.person2Role || 'The Bride'}
+                  </span>
+                </div>
 
-              <div className="relative z-20 mt-auto p-6 bg-gradient-to-t from-[#0D0A09] via-[#0D0A09]/85 to-transparent text-center space-y-1.5">
-                <h3 className="font-romantic text-[42px] font-normal uppercase leading-none text-white">
-                  {d.brideShort}
-                </h3>
-                <p className="font-romantic text-[22px] font-normal text-[#E6D2BE]">
-                  {d.bride}
-                </p>
-                <p className="font-public-sans text-[12.5px] font-light leading-[1.55] text-[#F6EFE8]/85 pt-1">
-                  {d.brideChildOrder} dari {d.brideFather} dan {d.brideMother}
-                </p>
-                {d.brideInstagram && (
-                  <div className="pt-2.5">
-                    <a
-                      href={`https://instagram.com/${d.brideInstagram.replace(/^@/, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-[#E6D2BE]/10 hover:bg-[#E6D2BE] hover:text-[#140C09] text-[#E6D2BE] font-quicksand text-[11px] font-medium px-4 py-2 rounded-full border border-[#E6D2BE]/30 transition"
-                    >
-                      <InstagramIcon className="w-3.5 h-3.5" />
-                      <span>@{d.brideInstagram.replace(/^@/, '')}</span>
-                    </a>
-                  </div>
-                )}
+                <div className="relative z-20 mt-auto p-6 bg-gradient-to-t from-[#0D0A09] via-[#0D0A09]/85 to-transparent text-center space-y-1.5">
+                  <h3 className="font-romantic text-[42px] font-normal uppercase leading-none text-white">
+                    {d.brideShort}
+                  </h3>
+                  <p className="font-romantic text-[22px] font-normal text-[#E6D2BE]">
+                    {d.bride}
+                  </p>
+                  <p className="font-public-sans text-[12.5px] font-light leading-[1.55] text-[#F6EFE8]/85 pt-1">
+                    {d.brideChildOrder} dari {d.brideFather} dan {d.brideMother}
+                  </p>
+                  {d.brideInstagram && (
+                    <div className="pt-2.5">
+                      <a
+                        href={`https://instagram.com/${d.brideInstagram.replace(/^@/, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-[#E6D2BE]/10 hover:bg-[#E6D2BE] hover:text-[#140C09] text-[#E6D2BE] font-quicksand text-[11px] font-medium px-4 py-2 rounded-full border border-[#E6D2BE]/30 transition"
+                      >
+                        <InstagramIcon className="w-3.5 h-3.5" />
+                        <span>@{d.brideInstagram.replace(/^@/, '')}</span>
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* SECTION 4: COUNTDOWN & AGENDA ACARA */}
@@ -651,7 +671,9 @@ export const NoirVelvetTheme = ({
             <div className="w-full space-y-6">
               {[
                 { ev: d.akad, parts: akadParts, defaultTitle: 'Akad Nikah' },
-                { ev: d.resepsi, parts: resepsiParts, defaultTitle: 'Resepsi' },
+                ...(d.showSecondEvent !== false
+                  ? [{ ev: d.resepsi, parts: resepsiParts, defaultTitle: 'Resepsi' }]
+                  : []),
               ].map(({ ev, parts, defaultTitle }, idx) => (
                 <div
                   key={idx}
@@ -947,7 +969,7 @@ export const NoirVelvetTheme = ({
                   Berikan Ucapan &amp; Doa Terbaik
                 </h3>
                 <p className="font-public-sans text-[12px] font-light text-[#E6D2BE]/80">
-                  Untuk Kedua Mempelai
+                  {d.showSecondPerson !== false ? 'Untuk Kedua Mempelai' : `Untuk ${d.groomShort}`}
                 </p>
               </div>
 
@@ -995,14 +1017,18 @@ export const NoirVelvetTheme = ({
                     <label className="block text-[12px] text-[#F6EFE8]">
                       Pilih Acara <span className="text-[#E6D2BE]">*</span>
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className={`grid ${d.showSecondEvent !== false ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                       {[
                         { key: 'akad', label: d.akad?.judul || 'Akad Nikah', sub: akadParts.day },
-                        {
-                          key: 'resepsi',
-                          label: d.resepsi?.judul || 'Resepsi',
-                          sub: resepsiParts.day,
-                        },
+                        ...(d.showSecondEvent !== false
+                          ? [
+                              {
+                                key: 'resepsi',
+                                label: d.resepsi?.judul || 'Resepsi',
+                                sub: resepsiParts.day,
+                              },
+                            ]
+                          : []),
                       ].map((ev) => {
                         const isSelected = selectedEvents.includes(ev.key);
                         return (
@@ -1046,7 +1072,11 @@ export const NoirVelvetTheme = ({
                     required
                     value={d.rsvp.message}
                     onChange={(e) => d.rsvp.setMessage(e.target.value)}
-                    placeholder="Tuliskan doa dan ucapan terbaik untuk kedua mempelai..."
+                    placeholder={
+                      d.showSecondPerson !== false
+                        ? 'Tuliskan doa dan ucapan terbaik untuk kedua mempelai...'
+                        : 'Tuliskan ucapan dan doa terbaik Anda...'
+                    }
                     className="w-full rounded-xl bg-[#0D0A09]/70 border border-[#E6D2BE]/20 px-3.5 py-2.5 text-[13px] text-white placeholder:text-white/35 focus:outline-none focus:border-[#E6D2BE]"
                   />
                 </div>
@@ -1143,7 +1173,7 @@ export const NoirVelvetTheme = ({
             <div className="w-[64%] my-8 overflow-hidden rounded-t-[100px] rounded-b-2xl shadow-2xl border border-[#E6D2BE]/25">
               <img
                 src={d.photoClosing || d.gallery?.[2] || d.gallery?.[0] || d.photoCover}
-                alt={`${d.groomShort} & ${d.brideShort}`}
+                alt={d.displayTitle}
                 className="w-full aspect-[2/3] object-cover"
               />
             </div>
@@ -1158,7 +1188,7 @@ export const NoirVelvetTheme = ({
               {d.closingSignoff}
             </p>
             <p className="font-romantic text-[32px] font-medium uppercase text-white mt-1">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </p>
           </section>
 
@@ -1194,7 +1224,9 @@ export const NoirVelvetTheme = ({
           guestName={d.guestName}
           qrValue={d.qrValue}
           showQr={d.showQr}
-          invitationTitle={`${d.groomShort} & ${d.brideShort}`}
+          invitationTitle={
+            d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort
+          }
           accentColor="#1C1410"
         />
 

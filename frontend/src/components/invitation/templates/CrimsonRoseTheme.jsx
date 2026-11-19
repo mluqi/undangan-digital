@@ -222,10 +222,10 @@ export const CrimsonRoseTheme = (props) => {
           {/* Header Cover: Judul Undangan & Nama Pasangan */}
           <div className="cover-stagger text-right pt-6 space-y-1">
             <span className="text-[11px] font-sans tracking-[0.35em] uppercase text-[#E5989B] font-semibold block">
-              Undangan Pernikahan
+              {d.eventType === 'wedding' ? 'Undangan Pernikahan' : d.coverSubtitle}
             </span>
             <h1 className="text-4xl sm:text-5xl font-serif-theme font-bold text-[#FFF5F5] leading-tight">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </h1>
           </div>
 
@@ -284,10 +284,10 @@ export const CrimsonRoseTheme = (props) => {
           <div className="flex items-start justify-between gap-4">
             <div className="text-left space-y-1">
               <span className="text-[10px] font-sans uppercase tracking-[0.3em] text-[#8A151F] font-bold block">
-                Undangan Pernikahan
+                {d.eventType === 'wedding' ? 'Undangan Pernikahan' : d.coverSubtitle}
               </span>
               <h2 className="text-3xl sm:text-4xl font-serif-theme font-bold text-[#4A070A] leading-tight">
-                {d.groomShort} &amp; {d.brideShort}
+                {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
               </h2>
             </div>
             {/* Format Tanggal Vertikal */}
@@ -386,61 +386,75 @@ export const CrimsonRoseTheme = (props) => {
           <div className="text-center space-y-1">
             <RoseBotanicalOrnament />
             <span className="text-[10px] font-sans uppercase tracking-[0.3em] text-[#8A151F] font-bold block">
-              Kedua Mempelai
+              {d.showSecondPerson !== false ? 'Kedua Mempelai' : d.person1Role || 'Profil Utama'}
             </span>
             <h3 className="text-3xl font-serif-theme font-bold text-[#4A070A]">
-              Mempelai Pengantin
+              {d.showSecondPerson !== false ? 'Mempelai Pengantin' : d.groomShort}
             </h3>
             <p className="text-xs text-stone-600 max-w-xs mx-auto leading-relaxed pt-1">
-              Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud melangsungkan pernikahan:
+              {d.openingGreeting}
             </p>
           </div>
 
-          <div className="relative max-w-md md:max-w-4xl lg:max-w-md mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-10 items-stretch">
+          <div
+            className={`relative max-w-md ${
+              d.showSecondPerson !== false ? 'md:max-w-4xl lg:max-w-md md:grid-cols-2 lg:grid-cols-1' : ''
+            } mx-auto grid grid-cols-1 gap-10 items-stretch`}
+          >
             {/* Mempelai Wanita */}
-            <div className="relative text-left space-y-4">
-              <div
-                className="w-48 h-60 rounded-3xl overflow-hidden border-4 border-[#8A151F] shadow-xl relative bg-stone-100"
-                style={{
-                  backgroundImage: `url(${d.photoBride})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-              <div className="space-y-1.5 pt-1">
-                <span className="text-[10px] font-sans uppercase tracking-widest text-[#8A151F] font-bold">
-                  Mempelai Wanita
-                </span>
-                <h4 className="text-2xl font-serif-theme font-bold text-[#4A070A]">
-                  {d.bride}
-                </h4>
-                <p className="text-xs text-stone-600 leading-relaxed font-sans">
-                  Putri tercinta dari:
-                  <br />
-                  <span className="font-semibold text-stone-800">{d.brideFather}</span> &amp;{' '}
-                  <span className="font-semibold text-stone-800">{d.brideMother}</span>
-                </p>
-                {/* Social Media Link Buttons */}
-                <div className="flex items-center gap-2 pt-2">
-                  <SocialIconBtn label="Instagram">
-                    <Share2 className="w-3.5 h-3.5" />
-                  </SocialIconBtn>
+            {d.showSecondPerson !== false && (
+              <>
+                <div className="relative text-left space-y-4">
+                  <div
+                    className="w-48 h-60 rounded-3xl overflow-hidden border-4 border-[#8A151F] shadow-xl relative bg-stone-100"
+                    style={{
+                      backgroundImage: `url(${d.photoBride})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[10px] font-sans uppercase tracking-widest text-[#8A151F] font-bold">
+                      {d.person2Role || 'Mempelai Wanita'}
+                    </span>
+                    <h4 className="text-2xl font-serif-theme font-bold text-[#4A070A]">
+                      {d.bride}
+                    </h4>
+                    <p className="text-xs text-stone-600 leading-relaxed font-sans">
+                      Putri tercinta dari:
+                      <br />
+                      <span className="font-semibold text-stone-800">{d.brideFather}</span> &amp;{' '}
+                      <span className="font-semibold text-stone-800">{d.brideMother}</span>
+                    </p>
+                    {/* Social Media Link Buttons */}
+                    <div className="flex items-center gap-2 pt-2">
+                      <SocialIconBtn label="Instagram">
+                        <Share2 className="w-3.5 h-3.5" />
+                      </SocialIconBtn>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Ampersand '&' Raksasa Artistik di Latar Belakang */}
+                {/* Ampersand '&' Raksasa Artistik di Latar Belakang */}
+                <div
+                  className="text-center font-serif-theme select-none pointer-events-none -my-14 md:hidden lg:block"
+                  aria-hidden="true"
+                >
+                  <span className="text-8xl sm:text-9xl font-light text-[#E5989B]/40 italic block leading-none">
+                    &amp;
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* Mempelai Pria / Subjek Utama */}
             <div
-              className="text-center font-serif-theme select-none pointer-events-none -my-14 md:hidden lg:block"
-              aria-hidden="true"
+              className={`relative space-y-4 flex flex-col ${
+                d.showSecondPerson !== false
+                  ? 'text-right md:text-left lg:text-right items-end md:items-start lg:items-end'
+                  : 'text-center items-center'
+              }`}
             >
-              <span className="text-8xl sm:text-9xl font-light text-[#E5989B]/40 italic block leading-none">
-                &amp;
-              </span>
-            </div>
-
-            {/* Mempelai Pria (Aligned Right) */}
-            <div className="relative text-right md:text-left lg:text-right space-y-4 flex flex-col items-end md:items-start lg:items-end">
               <div
                 className="w-48 h-60 rounded-3xl overflow-hidden border-4 border-[#8A151F] shadow-xl relative bg-stone-100"
                 style={{
@@ -451,19 +465,36 @@ export const CrimsonRoseTheme = (props) => {
               />
               <div className="space-y-1.5 pt-1">
                 <span className="text-[10px] font-sans uppercase tracking-widest text-[#8A151F] font-bold">
-                  Mempelai Pria
+                  {d.person1Role || 'Mempelai Pria'}
                 </span>
                 <h4 className="text-2xl font-serif-theme font-bold text-[#4A070A]">
                   {d.groom}
                 </h4>
-                <p className="text-xs text-stone-600 leading-relaxed font-sans">
-                  Putra tercinta dari:
-                  <br />
-                  <span className="font-semibold text-stone-800">{d.groomFather}</span> &amp;{' '}
-                  <span className="font-semibold text-stone-800">{d.groomMother}</span>
-                </p>
+                {(d.showSecondPerson !== false || d.person1Subline || d.groomFather || d.groomMother) && (
+                  <p className="text-xs text-stone-600 leading-relaxed font-sans">
+                    {d.showSecondPerson !== false ? 'Putra tercinta dari:' : d.person1Subline}
+                    {(d.groomFather || d.groomMother) && (
+                      <>
+                        {(d.showSecondPerson !== false || d.person1Subline) && <br />}
+                        {d.groomFather && (
+                          <span className="font-semibold text-stone-800">{d.groomFather}</span>
+                        )}
+                        {d.groomFather && d.groomMother ? ' & ' : ''}
+                        {d.groomMother && (
+                          <span className="font-semibold text-stone-800">{d.groomMother}</span>
+                        )}
+                      </>
+                    )}
+                  </p>
+                )}
                 {/* Social Media Link Buttons */}
-                <div className="flex items-center justify-end md:justify-start lg:justify-end gap-2 pt-2">
+                <div
+                  className={`flex items-center gap-2 pt-2 ${
+                    d.showSecondPerson !== false
+                      ? 'justify-end md:justify-start lg:justify-end'
+                      : 'justify-center'
+                  }`}
+                >
                   <SocialIconBtn label="Instagram">
                     <Share2 className="w-3.5 h-3.5" />
                   </SocialIconBtn>
@@ -488,11 +519,15 @@ export const CrimsonRoseTheme = (props) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
-            {/* Card Akad Nikah */}
+          <div
+            className={`grid grid-cols-1 ${
+              d.showSecondEvent !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-6 mx-auto`}
+          >
+            {/* Card Acara 1 */}
             <div className="bg-white rounded-3xl p-6 border border-[#EED7D9] shadow-sm text-center space-y-4">
               <span className="inline-block px-4 py-1 rounded-full bg-[#6E0F17] text-white text-xs font-bold uppercase tracking-wider font-sans">
-                Akad Nikah
+                {d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama')}
               </span>
 
               {/* Tanggal Split Blok Khas Simple Rustic 4 */}
@@ -556,72 +591,74 @@ export const CrimsonRoseTheme = (props) => {
               </div>
             </div>
 
-            {/* Card Resepsi Pernikahan */}
-            <div className="bg-white rounded-3xl p-6 border border-[#EED7D9] shadow-sm text-center space-y-4">
-              <span className="inline-block px-4 py-1 rounded-full bg-[#8A151F] text-white text-xs font-bold uppercase tracking-wider font-sans">
-                Resepsi Pernikahan
-              </span>
-
-              {/* Tanggal Split Blok Khas Simple Rustic 4 */}
-              <div className="flex items-center justify-center gap-4 py-2 font-sans">
-                <span className="text-right text-xs font-semibold text-stone-500 w-16 uppercase">
-                  {dateSplit.shortMonth}
+            {/* Card Acara 2 (Opsional) */}
+            {d.showSecondEvent !== false && (
+              <div className="bg-white rounded-3xl p-6 border border-[#EED7D9] shadow-sm text-center space-y-4">
+                <span className="inline-block px-4 py-1 rounded-full bg-[#8A151F] text-white text-xs font-bold uppercase tracking-wider font-sans">
+                  {d.resepsi?.judul || (d.eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi 2')}
                 </span>
-                <div className="border-x-2 border-[#8A151F] px-5 py-0.5 text-center">
-                  <span className="text-[11px] uppercase tracking-wider text-stone-600 font-medium block">
-                    {dateSplit.day}
+
+                {/* Tanggal Split Blok Khas Simple Rustic 4 */}
+                <div className="flex items-center justify-center gap-4 py-2 font-sans">
+                  <span className="text-right text-xs font-semibold text-stone-500 w-16 uppercase">
+                    {dateSplit.shortMonth}
                   </span>
-                  <span className="text-3xl font-serif-theme font-bold text-[#6E0F17] block leading-none">
-                    {dateSplit.dateNum}
+                  <div className="border-x-2 border-[#8A151F] px-5 py-0.5 text-center">
+                    <span className="text-[11px] uppercase tracking-wider text-stone-600 font-medium block">
+                      {dateSplit.day}
+                    </span>
+                    <span className="text-3xl font-serif-theme font-bold text-[#6E0F17] block leading-none">
+                      {dateSplit.dateNum}
+                    </span>
+                  </div>
+                  <span className="text-left text-xs font-semibold text-stone-500 w-16">
+                    {dateSplit.year}
                   </span>
                 </div>
-                <span className="text-left text-xs font-semibold text-stone-500 w-16">
-                  {dateSplit.year}
-                </span>
-              </div>
 
-              {/* Jam & Lokasi */}
-              <div className="space-y-1 font-sans">
-                <p className="text-xs font-bold text-[#8A151F] flex items-center justify-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{d.resepsi.waktu}</span>
-                </p>
-                <p className="text-sm font-bold text-[#2E0507] pt-1 flex items-center justify-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#8A151F]" />
-                  <span>{d.resepsi.lokasi}</span>
-                </p>
-                {d.resepsi.alamat && (
-                  <p className="text-[11px] text-stone-600 max-w-xs mx-auto leading-relaxed">
-                    {d.resepsi.alamat}
+                {/* Jam & Lokasi */}
+                <div className="space-y-1 font-sans">
+                  <p className="text-xs font-bold text-[#8A151F] flex items-center justify-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{d.resepsi.waktu}</span>
                   </p>
-                )}
-              </div>
+                  <p className="text-sm font-bold text-[#2E0507] pt-1 flex items-center justify-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#8A151F]" />
+                    <span>{d.resepsi.lokasi}</span>
+                  </p>
+                  {d.resepsi.alamat && (
+                    <p className="text-[11px] text-stone-600 max-w-xs mx-auto leading-relaxed">
+                      {d.resepsi.alamat}
+                    </p>
+                  )}
+                </div>
 
-              {/* Tombol Simpan Tanggal & Maps */}
-              <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center font-sans">
-                <a
-                  href={d.googleCalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2.5 px-4 rounded-full bg-[#6E0F17] hover:bg-[#8A151F] text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Simpan Tanggal</span>
-                </a>
-                <a
-                  href={
-                    d.resepsi.mapUrl ||
-                    `https://maps.google.com/?q=${encodeURIComponent(d.resepsi.lokasi)}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2.5 px-4 rounded-full bg-[#FCF8F8] hover:bg-[#F2E4E6] text-[#6E0F17] text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-[#EED7D9]"
-                >
-                  <Navigation className="w-3.5 h-3.5" />
-                  <span>Navigasi Map</span>
-                </a>
+                {/* Tombol Simpan Tanggal & Maps */}
+                <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center font-sans">
+                  <a
+                    href={d.googleCalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2.5 px-4 rounded-full bg-[#6E0F17] hover:bg-[#8A151F] text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <Bell className="w-3.5 h-3.5" />
+                    <span>Simpan Tanggal</span>
+                  </a>
+                  <a
+                    href={
+                      d.resepsi.mapUrl ||
+                      `https://maps.google.com/?q=${encodeURIComponent(d.resepsi.lokasi)}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2.5 px-4 rounded-full bg-[#FCF8F8] hover:bg-[#F2E4E6] text-[#6E0F17] text-xs font-medium transition-all flex items-center justify-center gap-1.5 border border-[#EED7D9]"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>Navigasi Map</span>
+                  </a>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -970,7 +1007,7 @@ export const CrimsonRoseTheme = (props) => {
               Kami yang berbahagia,
             </span>
             <p className="text-3xl font-serif-theme font-bold text-[#4A070A]">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </p>
             <p className="text-xs text-stone-500 font-sans">Beserta Segenap Keluarga Besar</p>
           </div>

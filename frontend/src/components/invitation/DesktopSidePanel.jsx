@@ -338,19 +338,23 @@ export const DesktopSidePanel = ({
               className="text-xs uppercase tracking-[0.4em] font-medium"
               style={{ color: style.secondaryColor }}
             >
-              The Wedding Of
+              {data.coverSubtitle || 'The Wedding Of'}
             </p>
             <h1
               className={`${style.titleFont} text-5xl sm:text-6xl xl:text-7xl font-bold leading-[1.05] text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]`}
             >
               {safeGroomShort}
-              <span
-                className="font-cursive mx-3 text-4xl sm:text-5xl xl:text-6xl font-normal"
-                style={{ color: style.accentColor }}
-              >
-                &amp;
-              </span>
-              {safeBrideShort}
+              {data.showSecondPerson !== false && (
+                <>
+                  <span
+                    className="font-cursive mx-3 text-4xl sm:text-5xl xl:text-6xl font-normal"
+                    style={{ color: style.accentColor }}
+                  >
+                    &amp;
+                  </span>
+                  {safeBrideShort}
+                </>
+              )}
             </h1>
           </div>
 

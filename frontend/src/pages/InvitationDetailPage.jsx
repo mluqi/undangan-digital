@@ -153,7 +153,10 @@ export const InvitationDetailPage = ({
 
   // Settings / Content Form
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
+    eventType: 'wedding',
+    showSecondEvent: true,
     client_name: '',
     template_id: '',
     slug: '',
@@ -424,7 +427,13 @@ export const InvitationDetailPage = ({
 
       // Populate settings form
       const c = invData?.content_json || {};
+      const loadedEventType = c.eventType || 'wedding';
       setSettingsForm({
+        eventType: loadedEventType,
+        showSecondEvent:
+          c.showSecondEvent !== undefined
+            ? Boolean(c.showSecondEvent)
+            : loadedEventType === 'wedding',
         client_name: invData.client_name || '',
         template_id: invData.template_id?.toString() || '',
         slug: invData.slug || '',
@@ -940,7 +949,16 @@ export const InvitationDetailPage = ({
 
   const handleCopyShareText = (guest) => {
     const publicUrl = `${window.location.origin}/invitation/${invitation.slug}?to=${encodeURIComponent(guest.name)}`;
-    const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami:\n\n${publicUrl}`;
+    const evType = settingsForm.eventType || invitation?.content_json?.eventType || 'wedding';
+    const eventPhrase =
+      evType === 'engagement'
+        ? 'acara lamaran kami'
+        : evType === 'birthday'
+        ? 'acara ulang tahun'
+        : evType === 'event'
+        ? `acara ${settingsForm.mempelaiPria || invitation?.client_name || 'kami'}`
+        : 'acara pernikahan kami';
+    const text = `Kepada Yth. *${guest.name}*,\n\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di ${eventPhrase}:\n\n${publicUrl}`;
     navigator.clipboard.writeText(text);
     toast.success('Teks undangan personal tamu berhasil disalin untuk WhatsApp!');
   };
@@ -1147,6 +1165,8 @@ export const InvitationDetailPage = ({
         slug: settingsForm.slug,
         expired_at: settingsForm.expired_at || null,
         content_json: {
+          eventType: settingsForm.eventType || 'wedding',
+          showSecondEvent: Boolean(settingsForm.showSecondEvent),
           showQrCheckin: Boolean(settingsForm.showQrCheckin),
           showQr: Boolean(settingsForm.showQrCheckin),
           lockGuestList: Boolean(settingsForm.lockGuestList),
@@ -1882,67 +1902,174 @@ export const InvitationDetailPage = ({
           </div>
 
           {/* Template & Slug Card */}
-          <Card className="p-6 border-slate-200 space-y-4">
+          <Card className="p-6 border-slate-200 space-y-5">
             <h3 className="text-base font-bold text-slate-900 border-b pb-2">
-              Template & Akses Undangan
+              Template &amp; Akses Undangan
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Template Undangan"
-                required
-                options={templates.map((t) => ({
-                  value: t.id.toString(),
-                  label: `${t.name} (${t.template_code})`,
-                }))}
-                value={settingsForm.template_id}
-                onChange={(val) => {
-                  const nextTmpl = templates.find((t) => t.id.toString() === val?.toString());
-                  const nextCode = nextTmpl?.template_code;
-                  const savedOverrides = nextCode
-                    ? invitation?.content_json?.templateOverrides?.[nextCode] || {}
-                    : {};
-                  const tmplDefaults = nextTmpl?.default_content_json || {};
-                  const merged = { ...tmplDefaults, ...savedOverrides };
+            {/* Jenis Acara Dinamis */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                Jenis Acara Undangan
+              </label>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {[
+                  { id: 'wedding', label: 'Pernikahan', sub: '2 Mempelai • Akad & Resepsi', defaultAkad: 'Akad Nikah' },
+                  { id: 'engagement', label: 'Lamaran / Tunangan', sub: '2 Pasangan • Acara Lamaran', defaultAkad: 'Acara Lamaran' },
+                  { id: 'birthday', label: 'Ulang Tahun', sub: '1 Tokoh • Birthday Party', defaultAkad: 'Birthday Party' },
+                  { id: 'event', label: 'Acara Umum / Event', sub: 'Gathering / Syukuran / Aqiqah', defaultAkad: 'Acara Utama' },
+                ].map((opt) => {
+                  const active = (settingsForm.eventType || 'wedding') === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        const defaultTitles = ['Akad Nikah', 'Acara Lamaran', 'Birthday Party', 'Acara Utama', ''];
+                        setSettingsForm((prev) => ({
+                          ...prev,
+                          eventType: opt.id,
+                          showSecondEvent: opt.id === 'wedding',
+                          akadJudul: defaultTitles.includes(prev.akadJudul)
+                            ? opt.defaultAkad
+                            : prev.akadJudul,
+                        }));
+                      }}
+                      className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                        active
+                          ? 'bg-indigo-50 border-indigo-600 ring-1 ring-indigo-600 text-indigo-950'
+                          : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{opt.label}</div>
+                      <div className="text-[10.5px] text-slate-500 mt-0.5">{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                  setSettingsForm((prev) => ({
-                    ...prev,
-                    template_id: val,
-                    backgroundVideoUrl: merged.backgroundVideoUrl || '',
-                    preweddingVideoUrl: merged.preweddingVideoUrl || '',
-                    fotoPenutup: merged.fotoPenutup || '',
-                    judulPembuka: merged.judulPembuka || '',
-                    catatanCover: merged.catatanCover || '',
-                    monogram: merged.monogram || '',
-                    kutipanPembuka: merged.kutipanPembuka || '',
-                    salamPembuka: merged.salamPembuka || '',
-                    judulCountdown: merged.judulCountdown || '',
-                    judulGaleri: merged.judulGaleri || '',
-                    judulKisah: merged.judulKisah || '',
-                    judulKado: merged.judulKado || '',
-                    subjudulKado: merged.subjudulKado || '',
-                    judulRsvp: merged.judulRsvp || '',
-                    subjudulRsvp: merged.subjudulRsvp || '',
-                    judulPenutup: merged.judulPenutup || '',
-                    subjudulPenutup: merged.subjudulPenutup || '',
-                    tandaTanganPenutup: merged.tandaTanganPenutup || '',
-                    footerText: merged.footerText || '',
-                    showDresscode:
-                      merged.showDresscode !== undefined ? Boolean(merged.showDresscode) : true,
-                    judulDresscode: merged.judulDresscode || '',
-                    dresscodeText: merged.dresscodeText || '',
-                    dresscodeColors:
-                      Array.isArray(merged.dresscodeColors) && merged.dresscodeColors.length > 0
-                        ? merged.dresscodeColors
-                        : ['#fdf9f6', '#a96d79', '#68333e'],
-                    giftConfirmText: merged.giftConfirmText || '',
-                    giftWa1Name: merged.giftWa1Name || '',
-                    giftWa1Phone: merged.giftWa1Phone || '',
-                    giftWa2Name: merged.giftWa2Name || '',
-                    giftWa2Phone: merged.giftWa2Phone || '',
-                  }));
-                }}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(() => {
+                const catLabels = {
+                  wedding: 'Wedding',
+                  engagement: 'Lamaran',
+                  birthday: 'Ulang Tahun',
+                  event: 'Acara Umum',
+                  all: 'Multi-Acara',
+                };
+                const activeEventType = settingsForm.eventType || 'wedding';
+                const getTmplCat = (t) =>
+                  (
+                    t?.default_content_json?.templateEventType ||
+                    t?.default_content_json?.eventType ||
+                    'wedding'
+                  ).toLowerCase();
+
+                const matchingTemplates = templates.filter((t) => {
+                  const c = getTmplCat(t);
+                  return c === activeEventType || c === 'all';
+                });
+                const hasDedicated = matchingTemplates.length > 0;
+                const filteredPool =
+                  showAllTemplates || !hasDedicated
+                    ? templates
+                    : templates.filter((t) => {
+                        const c = getTmplCat(t);
+                        return (
+                          c === activeEventType ||
+                          c === 'all' ||
+                          t.id.toString() === settingsForm.template_id?.toString()
+                        );
+                      });
+
+                const currentTmpl = templates.find(
+                  (t) => t.id.toString() === settingsForm.template_id?.toString()
+                );
+                const currentTmplCat = currentTmpl ? getTmplCat(currentTmpl) : activeEventType;
+                const isMismatch =
+                  currentTmpl &&
+                  currentTmplCat !== activeEventType &&
+                  currentTmplCat !== 'all';
+
+                return (
+                  <div className="space-y-1.5">
+                    <Select
+                      label="Template Undangan"
+                      required
+                      options={filteredPool.map((t) => ({
+                        value: t.id.toString(),
+                        label: `[${catLabels[getTmplCat(t)] || 'Wedding'}] ${t.name} (${t.template_code})`,
+                      }))}
+                      value={settingsForm.template_id}
+                      onChange={(val) => {
+                        const nextTmpl = templates.find((t) => t.id.toString() === val?.toString());
+                        const nextCode = nextTmpl?.template_code;
+                        const savedOverrides = nextCode
+                          ? invitation?.content_json?.templateOverrides?.[nextCode] || {}
+                          : {};
+                        const tmplDefaults = nextTmpl?.default_content_json || {};
+                        const merged = { ...tmplDefaults, ...savedOverrides };
+
+                        setSettingsForm((prev) => ({
+                          ...prev,
+                          template_id: val,
+                          backgroundVideoUrl: merged.backgroundVideoUrl || '',
+                          preweddingVideoUrl: merged.preweddingVideoUrl || '',
+                          fotoPenutup: merged.fotoPenutup || '',
+                          judulPembuka: merged.judulPembuka || '',
+                          catatanCover: merged.catatanCover || '',
+                          monogram: merged.monogram || '',
+                          kutipanPembuka: merged.kutipanPembuka || '',
+                          salamPembuka: merged.salamPembuka || '',
+                          judulCountdown: merged.judulCountdown || '',
+                          judulGaleri: merged.judulGaleri || '',
+                          judulKisah: merged.judulKisah || '',
+                          judulKado: merged.judulKado || '',
+                          subjudulKado: merged.subjudulKado || '',
+                          judulRsvp: merged.judulRsvp || '',
+                          subjudulRsvp: merged.subjudulRsvp || '',
+                          judulPenutup: merged.judulPenutup || '',
+                          subjudulPenutup: merged.subjudulPenutup || '',
+                          tandaTanganPenutup: merged.tandaTanganPenutup || '',
+                          footerText: merged.footerText || '',
+                          showDresscode:
+                            merged.showDresscode !== undefined ? Boolean(merged.showDresscode) : true,
+                          judulDresscode: merged.judulDresscode || '',
+                          dresscodeText: merged.dresscodeText || '',
+                          dresscodeColors:
+                            Array.isArray(merged.dresscodeColors) && merged.dresscodeColors.length > 0
+                              ? merged.dresscodeColors
+                              : ['#fdf9f6', '#a96d79', '#68333e'],
+                          giftConfirmText: merged.giftConfirmText || '',
+                          giftWa1Name: merged.giftWa1Name || '',
+                          giftWa1Phone: merged.giftWa1Phone || '',
+                          giftWa2Name: merged.giftWa2Name || '',
+                          giftWa2Phone: merged.giftWa2Phone || '',
+                        }));
+                      }}
+                      helperText={
+                        isMismatch && hasDedicated
+                          ? `Template saat ini dikategorikan [${catLabels[currentTmplCat] || currentTmplCat}]. Tersedia template khusus [${catLabels[activeEventType] || activeEventType}] yang dapat dipilih.`
+                          : !hasDedicated
+                            ? `Belum ada template khusus kategori [${catLabels[activeEventType] || activeEventType}] — menampilkan semua template.`
+                            : undefined
+                      }
+                    />
+                    {hasDedicated && templates.length > matchingTemplates.length && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllTemplates((prev) => !prev)}
+                        className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                      >
+                        {showAllTemplates
+                          ? `Filter khusus [${catLabels[activeEventType] || activeEventType}] saja`
+                          : `Tampilkan semua kategori template (${templates.length})`}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
 
               <Input
                 label="Nama Catatan Client (Internal)"
@@ -2099,109 +2226,177 @@ export const InvitationDetailPage = ({
             </div>
           </Card>
 
-          {/* Mempelai Information */}
-          <Card className="p-6 border-slate-200 space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b pb-2">
-              Informasi Pasangan Mempelai
-            </h3>
+          {/* Mempelai / Subjek Acara Information */}
+          {(() => {
+            const evType = settingsForm.eventType || 'wedding';
+            const isCouple = evType === 'wedding' || evType === 'engagement';
+            const isBirthday = evType === 'birthday';
+            const isEvent = evType === 'event';
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pria */}
-              <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <h4 className="font-semibold text-xs uppercase tracking-wider text-indigo-700">
-                  Mempelai Pria
-                </h4>
-                <Input
-                  label="Nama Lengkap & Gelar Pria"
-                  placeholder="Nama lengkap mempelai pria beserta gelar"
-                  value={settingsForm.mempelaiPria}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiPria: e.target.value })}
-                />
-                <Input
-                  label="Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)"
-                  placeholder="Contoh: Fajar"
-                  value={settingsForm.panggilanPria}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, panggilanPria: e.target.value })}
-                  helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Anak Ke- (Pria)"
-                    placeholder="Contoh: Putra Pertama"
-                    value={settingsForm.anakKePria}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, anakKePria: e.target.value })}
-                  />
-                  <Input
-                    label="Username Instagram Pria"
-                    placeholder="Contoh: pratamabril"
-                    value={settingsForm.instagramPria}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, instagramPria: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Nama Ayah"
-                    placeholder="Nama ayah mempelai pria"
-                    value={settingsForm.ayahPria}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, ayahPria: e.target.value })}
-                  />
-                  <Input
-                    label="Nama Ibu"
-                    placeholder="Nama ibu mempelai pria"
-                    value={settingsForm.ibuPria}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, ibuPria: e.target.value })}
-                  />
-                </div>
-              </div>
+            return (
+              <Card className="p-6 border-slate-200 space-y-4">
+                <h3 className="text-base font-bold text-slate-900 border-b pb-2">
+                  {evType === 'wedding'
+                    ? 'Informasi Pasangan Mempelai'
+                    : evType === 'engagement'
+                    ? 'Informasi Pasangan Lamaran'
+                    : isBirthday
+                    ? 'Informasi Tokoh yang Berulang Tahun'
+                    : 'Informasi & Penyelenggara Acara'}
+                </h3>
 
-              {/* Wanita */}
-              <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <h4 className="font-semibold text-xs uppercase tracking-wider text-rose-700">
-                  Mempelai Wanita
-                </h4>
-                <Input
-                  label="Nama Lengkap & Gelar Wanita"
-                  placeholder="Nama lengkap mempelai wanita beserta gelar"
-                  value={settingsForm.mempelaiWanita}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiWanita: e.target.value })}
-                />
-                <Input
-                  label="Nama Panggilan / Singkat Wanita (Tampil di Cover & Judul)"
-                  placeholder="Contoh: Aminah"
-                  value={settingsForm.panggilanWanita}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, panggilanWanita: e.target.value })}
-                  helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Anak Ke- (Wanita)"
-                    placeholder="Contoh: Putri Ketiga"
-                    value={settingsForm.anakKeWanita}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, anakKeWanita: e.target.value })}
-                  />
-                  <Input
-                    label="Username Instagram Wanita"
-                    placeholder="Contoh: chusniilaili"
-                    value={settingsForm.instagramWanita}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, instagramWanita: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Nama Ayah"
-                    placeholder="Nama ayah mempelai wanita"
-                    value={settingsForm.ayahWanita}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, ayahWanita: e.target.value })}
-                  />
-                  <Input
-                    label="Nama Ibu"
-                    placeholder="Nama ibu mempelai wanita"
-                    value={settingsForm.ibuWanita}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, ibuWanita: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
+                {isCouple ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pria */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                      <h4 className="font-semibold text-xs uppercase tracking-wider text-indigo-700">
+                        {evType === 'engagement' ? 'Calon Mempelai Pria' : 'Mempelai Pria'}
+                      </h4>
+                      <Input
+                        label="Nama Lengkap & Gelar Pria"
+                        placeholder="Nama lengkap beserta gelar"
+                        value={settingsForm.mempelaiPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiPria: e.target.value })}
+                      />
+                      <Input
+                        label="Nama Panggilan / Singkat Pria (Tampil di Cover & Judul)"
+                        placeholder="Contoh: Fajar"
+                        value={settingsForm.panggilanPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, panggilanPria: e.target.value })}
+                        helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Anak Ke- (Pria)"
+                          placeholder="Contoh: Putra Pertama"
+                          value={settingsForm.anakKePria}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, anakKePria: e.target.value })}
+                        />
+                        <Input
+                          label="Username Instagram Pria"
+                          placeholder="Contoh: pratamabril"
+                          value={settingsForm.instagramPria}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, instagramPria: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Nama Ayah"
+                          placeholder="Nama ayah"
+                          value={settingsForm.ayahPria}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, ayahPria: e.target.value })}
+                        />
+                        <Input
+                          label="Nama Ibu"
+                          placeholder="Nama ibu"
+                          value={settingsForm.ibuPria}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, ibuPria: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Wanita */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                      <h4 className="font-semibold text-xs uppercase tracking-wider text-rose-700">
+                        {evType === 'engagement' ? 'Calon Mempelai Wanita' : 'Mempelai Wanita'}
+                      </h4>
+                      <Input
+                        label="Nama Lengkap & Gelar Wanita"
+                        placeholder="Nama lengkap beserta gelar"
+                        value={settingsForm.mempelaiWanita}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiWanita: e.target.value })}
+                      />
+                      <Input
+                        label="Nama Panggilan / Singkat Wanita (Tampil di Cover & Judul)"
+                        placeholder="Contoh: Aminah"
+                        value={settingsForm.panggilanWanita}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, panggilanWanita: e.target.value })}
+                        helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Anak Ke- (Wanita)"
+                          placeholder="Contoh: Putri Ketiga"
+                          value={settingsForm.anakKeWanita}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, anakKeWanita: e.target.value })}
+                        />
+                        <Input
+                          label="Username Instagram Wanita"
+                          placeholder="Contoh: chusniilaili"
+                          value={settingsForm.instagramWanita}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, instagramWanita: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Nama Ayah"
+                          placeholder="Nama ayah"
+                          value={settingsForm.ayahWanita}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, ayahWanita: e.target.value })}
+                        />
+                        <Input
+                          label="Nama Ibu"
+                          placeholder="Nama ibu"
+                          value={settingsForm.ibuWanita}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, ibuWanita: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <h4 className="font-semibold text-xs uppercase tracking-wider text-indigo-700">
+                      {isBirthday ? 'Profil Ulang Tahun' : 'Detail Acara & Penyelenggara'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Input
+                        label={isBirthday ? 'Nama Lengkap yang Berulang Tahun' : 'Nama Lengkap Acara'}
+                        placeholder={isBirthday ? 'Contoh: Clara Putri Maharani' : 'Contoh: Annual Gala Dinner 2026'}
+                        value={settingsForm.mempelaiPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, mempelaiPria: e.target.value })}
+                      />
+                      <Input
+                        label={
+                          isBirthday
+                            ? 'Nama Panggilan / Tampil di Cover'
+                            : 'Judul Singkat di Cover (Misal: Gala Dinner 2026)'
+                        }
+                        placeholder={isBirthday ? 'Contoh: Clara' : 'Contoh: Gala Dinner 2026'}
+                        value={settingsForm.panggilanPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, panggilanPria: e.target.value })}
+                        helperText="Jika dikosongkan, otomatis menggunakan kata pertama dari nama lengkap"
+                      />
+                      <Input
+                        label={
+                          isBirthday
+                            ? 'Ulang Tahun Ke- / Tema Usia (Misal: Sweet 17th / 1st Birthday)'
+                            : 'Kategori / Subjudul Acara (Misal: Corporate Gathering / Aqiqah)'
+                        }
+                        placeholder={isBirthday ? 'Contoh: Sweet 17th Birthday' : 'Contoh: Corporate Gathering'}
+                        value={settingsForm.anakKePria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, anakKePria: e.target.value })}
+                      />
+                      <Input
+                        label={isBirthday ? 'Username Instagram' : 'Username Instagram Acara / Host'}
+                        placeholder="Contoh: claraputri"
+                        value={settingsForm.instagramPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, instagramPria: e.target.value })}
+                      />
+                      <Input
+                        label={isBirthday ? 'Nama Ayah / Host 1' : 'Penyelenggara Utama / Host 1'}
+                        placeholder={isBirthday ? 'Nama ayah / orang tua 1' : 'Nama penyelenggara / lembaga'}
+                        value={settingsForm.ayahPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, ayahPria: e.target.value })}
+                      />
+                      <Input
+                        label={isBirthday ? 'Nama Ibu / Host 2' : 'Co-Host / Penyelenggara 2 (Opsional)'}
+                        placeholder={isBirthday ? 'Nama ibu / orang tua 2' : 'Panitia / Co-Host'}
+                        value={settingsForm.ibuPria}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, ibuPria: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
 
             <div className="space-y-4 pt-2 border-t border-slate-100">
               <Input
@@ -2246,100 +2441,117 @@ export const InvitationDetailPage = ({
               />
             </div>
           </Card>
+            );
+          })()}
 
           {/* Agenda Acara */}
           <Card className="p-6 border-slate-200 space-y-4">
             <h3 className="text-base font-bold text-slate-900 border-b pb-2">
-              Rangkaian Acara (Akad & Resepsi)
+              Rangkaian Acara
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Akad */}
+              {/* Acara 1 */}
               <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-700">
-                  Acara Pertama (Akad / Pemberkatan)
+                  Acara Pertama / Utama
                 </h4>
                 <Input
                   label="Judul Acara 1"
-                  placeholder="Contoh: Akad Nikah / Pemberkatan"
+                  placeholder="Contoh: Akad Nikah / Acara Lamaran / Birthday Party"
                   value={settingsForm.akadJudul}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadJudul: e.target.value })}
                 />
                 <Input
-                  label="Tanggal Akad"
+                  label="Tanggal Acara 1"
                   placeholder="Minggu, 15 November 2026"
                   value={settingsForm.akadTanggal}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadTanggal: e.target.value })}
                 />
                 <Input
-                  label="Waktu Akad"
+                  label="Waktu Acara 1"
                   placeholder="08:00 - 10:00 WIB"
                   value={settingsForm.akadWaktu}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadWaktu: e.target.value })}
                 />
                 <Input
-                  label="Nama Tempat / Gedung Akad"
+                  label="Nama Tempat / Gedung Acara 1"
                   placeholder="Masjid Agung Al-Akbar Surabaya"
                   value={settingsForm.akadLokasi}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadLokasi: e.target.value })}
                 />
                 <Textarea
-                  label="Alamat Lengkap Akad"
+                  label="Alamat Lengkap Acara 1"
                   rows={2}
                   placeholder="Jl. Masjid Al-Akbar Timur No.1, Pagesangan, Surabaya"
                   value={settingsForm.akadAlamat}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadAlamat: e.target.value })}
                 />
                 <Input
-                  label="Link Google Maps Akad"
+                  label="Link Google Maps Acara 1"
                   placeholder="https://maps.google.com/?q=..."
                   value={settingsForm.akadMapUrl}
                   onChange={(e) => setSettingsForm({ ...settingsForm, akadMapUrl: e.target.value })}
                 />
               </div>
 
-              {/* Resepsi */}
+              {/* Acara 2 (Opsional) */}
               <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-700">
-                  Acara Kedua (Resepsi / Ngunduh Mantu)
-                </h4>
-                <Input
-                  label="Judul Acara 2"
-                  placeholder="Contoh: Resepsi / Ngunduh Mantu"
-                  value={settingsForm.resepsiJudul}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiJudul: e.target.value })}
-                />
-                <Input
-                  label="Tanggal Resepsi"
-                  placeholder="Minggu, 15 November 2026"
-                  value={settingsForm.resepsiTanggal}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiTanggal: e.target.value })}
-                />
-                <Input
-                  label="Waktu Resepsi"
-                  placeholder="11:00 - 14:00 WIB"
-                  value={settingsForm.resepsiWaktu}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiWaktu: e.target.value })}
-                />
-                <Input
-                  label="Nama Tempat / Gedung Resepsi"
-                  placeholder="Grand Ballroom Hotel Majapahit, Surabaya"
-                  value={settingsForm.resepsiLokasi}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiLokasi: e.target.value })}
-                />
-                <Textarea
-                  label="Alamat Lengkap Resepsi"
-                  rows={2}
-                  placeholder="Jl. Tunjungan No.65, Genteng, Surabaya"
-                  value={settingsForm.resepsiAlamat}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiAlamat: e.target.value })}
-                />
-                <Input
-                  label="Link Google Maps Resepsi"
-                  placeholder="https://maps.google.com/?q=..."
-                  value={settingsForm.resepsiMapUrl}
-                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiMapUrl: e.target.value })}
-                />
+                <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-200/80">
+                  <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-700">
+                    Acara Kedua (Opsional)
+                  </h4>
+                  <Switch
+                    checked={settingsForm.showSecondEvent}
+                    onChange={(val) => setSettingsForm({ ...settingsForm, showSecondEvent: val })}
+                    label={settingsForm.showSecondEvent ? 'Tampilkan Sesi / Acara Kedua' : 'Disembunyikan'}
+                  />
+                </div>
+                {!settingsForm.showSecondEvent ? (
+                  <div className="p-4 rounded-xl bg-white border border-dashed border-slate-300 text-xs text-slate-600 leading-relaxed">
+                    Sesi/acara kedua sedang <strong>disembunyikan</strong>. Undangan hanya akan menampilkan 1 acara utama saja (cocok untuk Lamaran, Ulang Tahun, atau Event tunggal). Aktifkan switch di atas jika ingin menambahkan sesi kedua.
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      label="Judul Acara 2"
+                      placeholder="Contoh: Resepsi / Ramah Tamah / After Party"
+                      value={settingsForm.resepsiJudul}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiJudul: e.target.value })}
+                    />
+                    <Input
+                      label="Tanggal Acara 2"
+                      placeholder="Minggu, 15 November 2026"
+                      value={settingsForm.resepsiTanggal}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiTanggal: e.target.value })}
+                    />
+                    <Input
+                      label="Waktu Acara 2"
+                      placeholder="11:00 - 14:00 WIB"
+                      value={settingsForm.resepsiWaktu}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiWaktu: e.target.value })}
+                    />
+                    <Input
+                      label="Nama Tempat / Gedung Acara 2"
+                      placeholder="Grand Ballroom Hotel Majapahit, Surabaya"
+                      value={settingsForm.resepsiLokasi}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiLokasi: e.target.value })}
+                    />
+                    <Textarea
+                      label="Alamat Lengkap Acara 2"
+                      rows={2}
+                      placeholder="Jl. Tunjungan No.65, Genteng, Surabaya"
+                      value={settingsForm.resepsiAlamat}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiAlamat: e.target.value })}
+                    />
+                    <Input
+                      label="Link Google Maps Acara 2"
+                      placeholder="https://maps.google.com/?q=..."
+                      value={settingsForm.resepsiMapUrl}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, resepsiMapUrl: e.target.value })}
+                    />
+                  </>
+                )}
               </div>
             </div>
           </Card>
@@ -3562,7 +3774,10 @@ export const InvitationDetailPage = ({
           {(() => {
             const selectedTemplate = templates.find((t) => t.id.toString() === settingsForm.template_id);
             const templateCode = selectedTemplate?.template_code || invitation?.template?.template_code || 'mildness';
-            const TemplatePreviewComponent = getTemplateComponent(templateCode);
+            const TemplatePreviewComponent = getTemplateComponent(templateCode, {
+              ...invitation,
+              template: selectedTemplate || invitation?.template,
+            });
 
             return (
               <div className="flex justify-center">
@@ -3573,6 +3788,8 @@ export const InvitationDetailPage = ({
                       template: selectedTemplate || invitation?.template,
                       content_json: {
                         ...(invitation?.content_json || {}),
+                        eventType: settingsForm.eventType || 'wedding',
+                        showSecondEvent: Boolean(settingsForm.showSecondEvent),
                         showQrCheckin: Boolean(settingsForm.showQrCheckin),
                         showQr: Boolean(settingsForm.showQrCheckin),
                         lockGuestList: Boolean(settingsForm.lockGuestList),
@@ -3583,25 +3800,49 @@ export const InvitationDetailPage = ({
                         alamatKado: settingsForm.alamatKado,
                         mempelaiPria: settingsForm.mempelaiPria,
                         panggilanPria: settingsForm.panggilanPria,
+                        anakKePria: settingsForm.anakKePria || undefined,
+                        instagramPria: settingsForm.instagramPria || undefined,
                         ayahPria: settingsForm.ayahPria,
                         ibuPria: settingsForm.ibuPria,
                         mempelaiWanita: settingsForm.mempelaiWanita,
                         panggilanWanita: settingsForm.panggilanWanita,
+                        anakKeWanita: settingsForm.anakKeWanita || undefined,
+                        instagramWanita: settingsForm.instagramWanita || undefined,
                         ayahWanita: settingsForm.ayahWanita,
                         ibuWanita: settingsForm.ibuWanita,
                         ayat: settingsForm.ayat,
+                        salamPembuka: settingsForm.salamPembuka || undefined,
+                        kutipanPembuka: settingsForm.kutipanPembuka || undefined,
                         teksPenutup: settingsForm.teksPenutup,
                         salamPenutup: settingsForm.salamPenutup,
                         akad: {
+                          judul: settingsForm.akadJudul || undefined,
                           tanggal: settingsForm.akadTanggal,
                           waktu: settingsForm.akadWaktu,
                           lokasi: settingsForm.akadLokasi,
+                          alamat: settingsForm.akadAlamat,
+                          mapUrl: settingsForm.akadMapUrl,
                         },
                         resepsi: {
+                          judul: settingsForm.resepsiJudul || undefined,
                           tanggal: settingsForm.resepsiTanggal,
                           waktu: settingsForm.resepsiWaktu,
                           lokasi: settingsForm.resepsiLokasi,
+                          alamat: settingsForm.resepsiAlamat,
+                          mapUrl: settingsForm.resepsiMapUrl,
                         },
+                        judulPembuka: settingsForm.judulPembuka || undefined,
+                        judulCountdown: settingsForm.judulCountdown || undefined,
+                        judulGaleri: settingsForm.judulGaleri || undefined,
+                        judulKisah: settingsForm.judulKisah || undefined,
+                        judulKado: settingsForm.judulKado || undefined,
+                        subjudulKado: settingsForm.subjudulKado || undefined,
+                        judulRsvp: settingsForm.judulRsvp || undefined,
+                        subjudulRsvp: settingsForm.subjudulRsvp || undefined,
+                        judulPenutup: settingsForm.judulPenutup || undefined,
+                        subjudulPenutup: settingsForm.subjudulPenutup || undefined,
+                        tandaTanganPenutup: settingsForm.tandaTanganPenutup || undefined,
+                        footerText: settingsForm.footerText || undefined,
                         kisah: loveStories,
                         galeri: galleryPhotos,
                         musicUrl: musicUrl,

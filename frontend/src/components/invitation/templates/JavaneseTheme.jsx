@@ -234,14 +234,18 @@ export const JavaneseTheme = (props) => {
               <Gunungan className="animate-breathe" size={110} />
               <div className="space-y-1">
                 <p className="font-cinzel text-[10px] sm:text-xs tracking-[0.4em] uppercase mb-1" style={{ color: C.goldSoft }}>
-                  Pawiwahan Ageng
+                  {d.eventType === 'wedding' ? 'Pawiwahan Ageng' : d.coverSubtitle}
                 </p>
                 <h1 className="font-editorial text-4xl sm:text-5xl md:text-6xl leading-[1.05]" style={{ color: C.cream }}>
                   {d.groomShort}
-                  <span className="block md:inline-block text-2xl sm:text-3xl md:text-4xl italic my-1 md:my-0 md:mx-2" style={{ color: C.gold }}>
-                    &amp;
-                  </span>
-                  {d.brideShort}
+                  {d.showSecondPerson !== false && (
+                    <>
+                      <span className="block md:inline-block text-2xl sm:text-3xl md:text-4xl italic my-1 md:my-0 md:mx-2" style={{ color: C.gold }}>
+                        &amp;
+                      </span>
+                      {d.brideShort}
+                    </>
+                  )}
                 </h1>
                 <p className="pt-2 text-xs sm:text-sm tracking-wider" style={{ color: C.goldSoft }}>
                   {d.akad.tanggal}
@@ -298,7 +302,14 @@ export const JavaneseTheme = (props) => {
           </Reveal>
           <Reveal delay={300}>
             <h2 className="font-editorial text-5xl leading-tight" style={{ color: C.cream }}>
-              {d.groomShort} <span className="italic" style={{ color: C.gold }}>&amp;</span> {d.brideShort}
+              {d.groomShort}
+              {d.showSecondPerson !== false && (
+                <>
+                  {' '}
+                  <span className="italic" style={{ color: C.gold }}>&amp;</span>{' '}
+                  {d.brideShort}
+                </>
+              )}
             </h2>
             <p className="text-sm tracking-[0.2em] uppercase mt-2" style={{ color: C.goldSoft }}>
               {d.akad.tanggal}
@@ -320,8 +331,10 @@ export const JavaneseTheme = (props) => {
         <Reveal delay={100}>
           <p className="font-cinzel text-sm tracking-[0.15em] uppercase">Assalamu&apos;alaikum Warahmatullahi Wabarakatuh</p>
           <p className="text-[15px] leading-relaxed mt-3 text-[#5A4333]">
-            Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami. Merupakan
-            kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+            {d.eventType === 'wedding' &&
+            (!d.openingGreeting || d.openingGreeting.includes('Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan kami'))
+              ? 'Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami. Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.'
+              : d.openingGreeting}
           </p>
         </Reveal>
         <Reveal delay={150}>
@@ -340,14 +353,29 @@ export const JavaneseTheme = (props) => {
         </Reveal>
       </section>
 
-      {/* ===================== MEMPELAI ===================== */}
+      {/* ===================== MEMPELAI / PROFIL ===================== */}
       <section className="px-7 py-14 space-y-12" style={{ background: C.soganSoft }}>
-        <SectionTitle eyebrow="Kedua Mempelai" title="Mempelai" light />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+        <SectionTitle
+          eyebrow={d.showSecondPerson !== false ? 'Kedua Mempelai' : d.person1Role || 'Profil Utama'}
+          title={d.showSecondPerson !== false ? 'Mempelai' : d.groomShort}
+          light
+        />
+        <div
+          className={`grid grid-cols-1 ${d.showSecondPerson !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'} mx-auto gap-8 items-stretch`}
+        >
         {[
-          { photo: d.photoBride, name: d.bride, role: 'Mempelai Wanita', parent: 'Putri dari Bapak/Ibu', f: d.brideFather, m: d.brideMother },
-          { photo: d.photoGroom, name: d.groom, role: 'Mempelai Pria', parent: 'Putra dari Bapak/Ibu', f: d.groomFather, m: d.groomMother },
-        ].map((p, i) => (
+          ...(d.showSecondPerson !== false
+            ? [{ photo: d.photoBride, name: d.bride, role: d.person2Role || 'Mempelai Wanita', parent: 'Putri dari Bapak/Ibu', f: d.brideFather, m: d.brideMother }]
+            : []),
+          {
+            photo: d.photoGroom,
+            name: d.groom,
+            role: d.person1Role || 'Mempelai Pria',
+            parent: d.showSecondPerson !== false ? 'Putra dari Bapak/Ibu' : d.person1Subline,
+            f: d.groomFather,
+            m: d.groomMother,
+          },
+        ].map((p, i, arr) => (
           <Reveal key={p.role} delay={i * 100}>
             <div className="text-center space-y-4">
               <div className="mx-auto w-48 h-60 p-1 rounded-t-[999px]" style={{ border: `1px solid ${C.gold}` }}>
@@ -361,14 +389,21 @@ export const JavaneseTheme = (props) => {
               <h3 className="font-editorial text-3xl" style={{ color: C.cream }}>
                 {p.name}
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#D9C8A4' }}>
-                {p.parent}
-                <br />
-                <span className="font-semibold" style={{ color: C.cream }}>{p.f}</span> &amp;{' '}
-                <span className="font-semibold" style={{ color: C.cream }}>{p.m}</span>
-              </p>
+              {(p.parent || p.f || p.m) && (
+                <p className="text-sm leading-relaxed" style={{ color: '#D9C8A4' }}>
+                  {p.parent}
+                  {(p.f || p.m) && (
+                    <>
+                      {p.parent && <br />}
+                      {p.f && <span className="font-semibold" style={{ color: C.cream }}>{p.f}</span>}
+                      {p.f && p.m ? ' & ' : ''}
+                      {p.m && <span className="font-semibold" style={{ color: C.cream }}>{p.m}</span>}
+                    </>
+                  )}
+                </p>
+              )}
             </div>
-            {i === 0 && <div className="md:hidden lg:block"><Divider light /></div>}
+            {i === 0 && arr.length > 1 && <div className="md:hidden lg:block"><Divider light /></div>}
           </Reveal>
         ))}
         </div>
@@ -393,19 +428,26 @@ export const JavaneseTheme = (props) => {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+        <div
+          className={`grid grid-cols-1 ${d.showSecondEvent !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'} mx-auto gap-6 items-stretch`}
+        >
           <EventCard
-            label={{ eyebrow: 'Acara Pertama', title: 'Akad Nikah' }}
+            label={{
+              eyebrow: d.showSecondEvent !== false ? 'Acara Pertama' : 'Waktu & Tempat',
+              title: d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama'),
+            }}
             info={d.akad}
             mapLabel="Petunjuk Lokasi"
             calendarUrl={d.googleCalUrl}
           />
-          <EventCard
-            label={{ eyebrow: 'Acara Kedua', title: 'Resepsi Pernikahan' }}
-            info={d.resepsi}
-            mapLabel="Petunjuk Lokasi"
-            calendarUrl={d.googleCalUrl}
-          />
+          {d.showSecondEvent !== false && (
+            <EventCard
+              label={{ eyebrow: 'Acara Kedua', title: d.resepsi?.judul || 'Resepsi Pernikahan' }}
+              info={d.resepsi}
+              mapLabel="Petunjuk Lokasi"
+              calendarUrl={d.googleCalUrl}
+            />
+          )}
         </div>
       </section>
 
@@ -630,9 +672,15 @@ export const JavaneseTheme = (props) => {
           <Divider />
           <p className="text-xs tracking-[0.3em] uppercase font-cinzel" style={{ color: C.maroon }}>Kami yang berbahagia</p>
           <p className="font-editorial text-4xl">
-            {d.groomShort} &amp; {d.brideShort}
+            {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
           </p>
-          <p className="text-sm text-[#6B5242]">Keluarga {d.groomFather} &amp; {d.brideFather}</p>
+          {(d.groomFather || (d.showSecondPerson !== false && d.brideFather)) && (
+            <p className="text-sm text-[#6B5242]">
+              {d.showSecondPerson !== false
+                ? `Keluarga ${d.groomFather} & ${d.brideFather}`
+                : `Keluarga ${[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}`}
+            </p>
+          )}
           <p className="font-cinzel text-[11px] tracking-[0.4em] pt-6" style={{ color: C.gold }}>
             SEMOGA BERKAH & BAHAGIA
           </p>

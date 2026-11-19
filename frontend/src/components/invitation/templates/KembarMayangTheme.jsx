@@ -199,45 +199,55 @@ export const KembarMayangTheme = (props) => {
 
   const eventsList = [
     {
-      title: 'Akad Nikah',
+      title: d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama'),
       date: d.akad?.tanggal,
       time: d.akad?.waktu,
       location: d.akad?.lokasi,
       address: d.akad?.alamat,
       mapUrl: d.akad?.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(d.akad?.lokasi || '')}`,
     },
-    {
-      title: 'Resepsi',
-      date: d.resepsi?.tanggal,
-      time: d.resepsi?.waktu,
-      location: d.resepsi?.lokasi,
-      address: d.resepsi?.alamat,
-      mapUrl: d.resepsi?.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(d.resepsi?.lokasi || '')}`,
-    },
+    ...(d.showSecondEvent !== false
+      ? [
+          {
+            title: d.resepsi?.judul || (d.eventType === 'wedding' ? 'Resepsi' : 'Sesi 2'),
+            date: d.resepsi?.tanggal,
+            time: d.resepsi?.waktu,
+            location: d.resepsi?.lokasi,
+            address: d.resepsi?.alamat,
+            mapUrl:
+              d.resepsi?.mapUrl ||
+              `https://maps.google.com/?q=${encodeURIComponent(d.resepsi?.lokasi || '')}`,
+          },
+        ]
+      : []),
   ];
 
   const couple = [
-    {
-      key: 'bride',
-      role: 'Mempelai Wanita',
-      photo: d.photoBride,
-      short: d.brideShort,
-      full: d.bride,
-      label: 'Putri Pertama dari',
-      father: d.brideFather,
-      mother: d.brideMother,
-      ig: 'faifaak',
-    },
+    ...(d.showSecondPerson !== false
+      ? [
+          {
+            key: 'bride',
+            role: d.person2Role || 'Mempelai Wanita',
+            photo: d.photoBride,
+            short: d.brideShort,
+            full: d.bride,
+            label: 'Putri Pertama dari',
+            father: d.brideFather,
+            mother: d.brideMother,
+            ig: d.brideInstagram || 'faifaak',
+          },
+        ]
+      : []),
     {
       key: 'groom',
-      role: 'Mempelai Pria',
+      role: d.person1Role || 'Mempelai Pria',
       photo: d.photoGroom,
       short: d.groomShort,
       full: d.groom,
-      label: 'Putra Kedua dari',
+      label: d.showSecondPerson !== false ? 'Putra Kedua dari' : (d.person1Subline || ''),
       father: d.groomFather,
       mother: d.groomMother,
-      ig: 'ghulamzki',
+      ig: d.showSecondPerson !== false ? (d.groomInstagram || 'ghulamzki') : d.groomInstagram,
     },
   ];
 
@@ -321,14 +331,14 @@ export const KembarMayangTheme = (props) => {
           {/* Kotak Konten Cover di Langit Bagian Atas */}
           <div className="relative z-30 w-full max-w-sm px-6 pt-16 pb-32 text-center flex flex-col items-center">
             <p className="text-[10px] sm:text-[11px] font-cinzel font-semibold tracking-[0.4em] uppercase text-[#6E4B29] km-rise">
-              Wedding Invitation
+              {d.eventType === 'wedding' ? 'Wedding Invitation' : d.coverSubtitle}
             </p>
 
             <h1
               className="mt-3 text-5xl sm:text-6xl font-vidaloka text-[#3D2517] leading-tight drop-shadow-sm km-rise"
               style={{ animationDelay: '0.2s' }}
             >
-              {d.brideShort} &amp; {d.groomShort}
+              {d.showSecondPerson !== false ? `${d.brideShort} & ${d.groomShort}` : d.groomShort}
             </h1>
 
             <FiligreeDivider maxWidth={200} className="my-2 km-rise" />
@@ -363,7 +373,7 @@ export const KembarMayangTheme = (props) => {
       )}
 
       {/* ============================================================== */}
-      {/* 2. HERO SECTION (THE WEDDING OF)                                */}
+      {/* 2. HERO SECTION                                                 */}
       {/* ============================================================== */}
       <section className="relative min-h-[92vh] flex flex-col items-center justify-start text-center overflow-hidden">
         {/* Latar Belakang Ilustrasi Joglo */}
@@ -378,11 +388,11 @@ export const KembarMayangTheme = (props) => {
 
         <div className="relative z-20 pt-[14vh] px-6 space-y-2">
           <p className="text-[11px] font-cinzel font-semibold tracking-[0.4em] uppercase text-[#6E4B29]">
-            The Wedding Of
+            {d.coverSubtitle || 'The Wedding Of'}
           </p>
 
           <h2 className="text-5xl sm:text-6xl font-vidaloka text-[#3D2517] leading-tight drop-shadow-sm">
-            {d.brideShort} &amp; {d.groomShort}
+            {d.showSecondPerson !== false ? `${d.brideShort} & ${d.groomShort}` : d.groomShort}
           </h2>
 
           <p className="text-sm font-aboreto font-bold tracking-[0.3em] text-[#5C3E24] pt-2">
@@ -435,12 +445,21 @@ export const KembarMayangTheme = (props) => {
         <FlowerCorner position="bottom-left" size={180} />
 
         <SectionHeader
-          eyebrow="Bride &amp; Groom"
-          title="Mempelai"
-          subtitle="Dengan memohon Rahmat &amp; Ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:"
+          eyebrow={d.showSecondPerson !== false ? 'Bride & Groom' : d.person1Role || 'Profil Utama'}
+          title={d.showSecondPerson !== false ? 'Mempelai' : d.groomShort}
+          subtitle={
+            d.eventType === 'wedding' &&
+            (!d.openingGreeting || d.openingGreeting.includes('Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan kami'))
+              ? 'Dengan memohon Rahmat & Ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:'
+              : d.openingGreeting
+          }
         />
 
-        <div className="relative z-10 mt-12 space-y-16 max-w-sm md:max-w-3xl lg:max-w-sm mx-auto md:grid md:grid-cols-2 md:gap-8 md:space-y-0 lg:block lg:space-y-16">
+        <div
+          className={`relative z-10 mt-12 space-y-16 max-w-sm ${
+            d.showSecondPerson !== false ? 'md:max-w-3xl lg:max-w-sm md:grid md:grid-cols-2 md:gap-8 md:space-y-0 lg:block lg:space-y-16' : ''
+          } mx-auto`}
+        >
           {couple.map((p, idx) => (
             <div key={p.key} className="text-center flex flex-col items-center">
               {/* Bingkai Foto Lengkung Khas (Arch Frame) */}
@@ -471,28 +490,51 @@ export const KembarMayangTheme = (props) => {
                 {p.full}
               </p>
 
-              {/* Keterangan Orang Tua */}
-              <p className="mt-2 text-xs font-poppins leading-relaxed text-[#5C4533] max-w-xs">
-                {p.label} Bapak <strong>{p.father}</strong> &amp;
-                <br />
-                Ibu <strong>{p.mother}</strong>
-              </p>
+              {/* Keterangan Orang Tua / Penyelenggara */}
+              {(p.label || p.father || p.mother) && (
+                <p className="mt-2 text-xs font-poppins leading-relaxed text-[#5C4533] max-w-xs">
+                  {p.label}
+                  {(p.father || p.mother) && (
+                    <>
+                      {p.label ? ' ' : ''}
+                      {p.father && (
+                        <>
+                          {d.showSecondPerson !== false ? 'Bapak ' : ''}
+                          <strong>{p.father}</strong>
+                        </>
+                      )}
+                      {p.father && p.mother && (
+                        <>
+                          {' '}&amp;
+                          <br />
+                        </>
+                      )}
+                      {p.mother && (
+                        <>
+                          {d.showSecondPerson !== false ? 'Ibu ' : ''}
+                          <strong>{p.mother}</strong>
+                        </>
+                      )}
+                    </>
+                  )}
+                </p>
+              )}
 
               {/* Instagram Handle Button */}
               {p.ig && (
                 <a
-                  href={`https://instagram.com/${p.ig}`}
+                  href={`https://instagram.com/${p.ig.replace(/^@/, '')}`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-poppins text-[#7A5A3B] hover:text-[#3D2517] transition-colors"
                 >
                   <InstagramIcon className="w-3.5 h-3.5 text-[#C59B3F]" />
-                  <span>@{p.ig}</span>
+                  <span>@{p.ig.replace(/^@/, '')}</span>
                 </a>
               )}
 
               {/* Simbol Dan (&) Pemisah di antara Mempelai */}
-              {idx === 0 && (
+              {idx === 0 && d.showSecondPerson !== false && (
                 <div className="mt-10 flex flex-col items-center md:hidden lg:flex">
                   <span className="text-4xl font-imperial text-[#C59B3F]">&amp;</span>
                   <FiligreeDivider maxWidth={140} className="my-1" />
@@ -509,7 +551,7 @@ export const KembarMayangTheme = (props) => {
       <section data-reveal className="relative px-6 py-16 text-center overflow-hidden km-dark-rich text-[#FBF7ED]">
         <div className="relative z-10 max-w-sm mx-auto space-y-6">
           <p className="text-[11px] font-cinzel font-semibold tracking-[0.4em] uppercase text-[#D9BE86]">
-            Save The Date
+            {d.countdownTitle || 'Save The Date'}
           </p>
 
           {/* Kalender Tipografi Besar: 27 Oktober 2026 */}
@@ -550,19 +592,23 @@ export const KembarMayangTheme = (props) => {
       </section>
 
       {/* ============================================================== */}
-      {/* 6. WEDDING EVENT (RANGKAIAN ACARA)                              */}
+      {/* 6. RANGKAIAN ACARA                                             */}
       {/* ============================================================== */}
       <section data-reveal className="relative px-5 py-16 overflow-hidden km-paper">
         <FlowerCorner position="top-left" size={170} />
         <FlowerCorner position="bottom-right" size={180} />
 
         <SectionHeader
-          eyebrow="Wedding Event"
-          title="Acara Pernikahan"
-          subtitle="Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:"
+          eyebrow="Rangkaian Acara"
+          title={d.eventType === 'wedding' ? 'Acara Pernikahan' : 'Waktu & Tempat'}
+          subtitle={d.openingGreeting}
         />
 
-        <div className="relative z-10 mt-10 grid md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-sm md:max-w-3xl lg:max-w-sm mx-auto">
+        <div
+          className={`relative z-10 mt-10 grid ${
+            eventsList.length > 1 ? 'md:grid-cols-2 lg:grid-cols-1 max-w-sm md:max-w-3xl lg:max-w-sm' : 'max-w-sm'
+          } gap-8 mx-auto`}
+        >
           {eventsList.map((evt, idx) => (
             <div
               key={idx}
@@ -999,12 +1045,18 @@ export const KembarMayangTheme = (props) => {
               Kami yang berbahagia
             </p>
             <p className="text-6xl sm:text-7xl font-imperial text-[#FDFBF7] drop-shadow-md">
-              {d.brideShort} &amp; {d.groomShort}
+              {d.showSecondPerson !== false ? `${d.brideShort} & ${d.groomShort}` : d.groomShort}
             </p>
-            <p className="text-xs font-poppins text-[#D9BE86] pt-1 inline-flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-[#C59B3F] fill-current" />
-              <span>Keluarga Besar {d.groomFather} &amp; {d.brideFather}</span>
-            </p>
+            {(d.groomFather || (d.showSecondPerson !== false && d.brideFather)) && (
+              <p className="text-xs font-poppins text-[#D9BE86] pt-1 inline-flex items-center gap-1.5">
+                <Heart className="w-3.5 h-3.5 text-[#C59B3F] fill-current" />
+                <span>
+                  {d.showSecondPerson !== false
+                    ? `Keluarga Besar ${d.groomFather} & ${d.brideFather}`
+                    : `Keluarga Besar ${[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}`}
+                </span>
+              </p>
+            )}
           </div>
         </div>
       </section>

@@ -338,7 +338,10 @@ export const RusticWoodTheme = (props) => {
   ];
 
   const galleryTilt = ["-rotate-1", "rotate-1", "rotate-[0.6deg]"];
-  const initials = `${String(d.groomShort ?? "").charAt(0)}&${String(d.brideShort ?? "").charAt(0)}`;
+  const initials =
+    d.showSecondPerson !== false
+      ? `${String(d.groomShort ?? "").charAt(0)}&${String(d.brideShort ?? "").charAt(0)}`
+      : String(d.groomShort ?? "").charAt(0);
 
   return (
     <div
@@ -412,7 +415,7 @@ export const RusticWoodTheme = (props) => {
             {/* Left Column (Desktop): Arch Window & Couple Names */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left md:w-1/2 space-y-4">
               <p className="text-[11px] uppercase tracking-[0.4em] text-[#D8C3A5] font-sans font-medium">
-                The Wedding Celebration
+                {d.coverSubtitle || 'The Wedding Celebration'}
               </p>
 
               {/* Arch window photo */}
@@ -420,7 +423,7 @@ export const RusticWoodTheme = (props) => {
                 <div className="w-full h-full overflow-hidden rounded-t-[5rem] rounded-b-lg border-2 border-[#FAF4EC]">
                   <img
                     src={d.photoCover}
-                    alt="Couple"
+                    alt={d.displayTitle}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -428,7 +431,7 @@ export const RusticWoodTheme = (props) => {
 
               <div className="space-y-1">
                 <h1 className="text-5xl sm:text-6xl md:text-6xl font-cursive text-[#F5EEE6] leading-tight">
-                  {d.groomShort} &amp; {d.brideShort}
+                  {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
                 </h1>
                 <p className="text-xs md:text-sm tracking-[0.25em] uppercase text-[#A3B899] font-sans">
                   {d.akad.tanggal}
@@ -528,10 +531,10 @@ export const RusticWoodTheme = (props) => {
 
           <div className="space-y-1.5 pt-2">
             <span className="text-[11px] font-sans uppercase tracking-[0.35em] text-[#8C6239] font-semibold">
-              Walimatul &apos;Urs
+              {d.eventType === 'wedding' ? "Walimatul 'Urs" : d.coverSubtitle}
             </span>
             <h2 className="text-5xl font-cursive text-[#2A1B10] leading-tight">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </h2>
             <p className="text-xs font-sans tracking-widest text-[#6D4C2B] uppercase">
               {d.akad.tanggal} &bull; {d.akad.lokasi}
@@ -544,7 +547,7 @@ export const RusticWoodTheme = (props) => {
               <div className="h-80 overflow-hidden rounded-t-[7.5rem] rounded-b-2xl border-2 border-[#FAF4EC] relative bg-[#EADDCF]">
                 <img
                   src={d.photoCover}
-                  alt="Mempelai"
+                  alt={d.displayTitle}
                   data-parallax
                   className="w-full h-full object-cover scale-110"
                 />
@@ -570,9 +573,10 @@ export const RusticWoodTheme = (props) => {
             Assalamu&apos;alaikum Warahmatullahi Wabarakatuh
           </h3>
           <p className="text-xs text-[#5A3821] max-w-sm mx-auto leading-relaxed font-sans">
-            Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta&apos;ala, kami
-            mengundang Bapak/Ibu/Saudara/i untuk menghadiri syukuran pernikahan
-            kami:
+            {d.eventType === 'wedding' &&
+            (!d.openingGreeting || d.openingGreeting.includes('Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan kami'))
+              ? "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta'ala, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri syukuran pernikahan kami:"
+              : d.openingGreeting}
           </p>
 
           {/* Kertas kraft bertape */}
@@ -592,41 +596,52 @@ export const RusticWoodTheme = (props) => {
           </div>
         </section>
 
-        {/* SECTION 3: KEDUA MEMPELAI — POLAROID */}
+        {/* SECTION 3: PROFIL / KEDUA MEMPELAI — POLAROID */}
         <section className="py-16 px-6 space-y-12">
-          <SectionHeading eyebrow="Kedua Mempelai" title="Mempelai Pengantin" />
+          <SectionHeading
+            eyebrow={d.showSecondPerson !== false ? 'Kedua Mempelai' : d.person1Role || 'Profil Utama'}
+            title={d.showSecondPerson !== false ? 'Mempelai Pengantin' : d.groomShort}
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-10 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
-            <CoupleCard
-              photo={d.photoBride}
-              alt={d.bride}
-              name={d.bride}
-              role="Mempelai Wanita"
-              roleClass="text-[#4A6B53]"
-              parentLabel="Putri tercinta dari:"
-              father={d.brideFather}
-              mother={d.brideMother}
-              tilt="-rotate-2"
-            />
+          <div
+            className={`grid grid-cols-1 ${
+              d.showSecondPerson !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-10 mx-auto items-stretch`}
+          >
+            {d.showSecondPerson !== false && (
+              <>
+                <CoupleCard
+                  photo={d.photoBride}
+                  alt={d.bride}
+                  name={d.bride}
+                  role={d.person2Role || 'Mempelai Wanita'}
+                  roleClass="text-[#4A6B53]"
+                  parentLabel="Putri tercinta dari:"
+                  father={d.brideFather}
+                  mother={d.brideMother}
+                  tilt="-rotate-2"
+                />
 
-            <div
-              className="flex items-center justify-center gap-3 md:hidden lg:flex"
-              aria-hidden="true"
-            >
-              <BotanicalBranch flip className="w-20" />
-              <span className="text-4xl font-cursive text-[#8C6239]">
-                &amp;
-              </span>
-              <BotanicalBranch className="w-20" />
-            </div>
+                <div
+                  className="flex items-center justify-center gap-3 md:hidden lg:flex"
+                  aria-hidden="true"
+                >
+                  <BotanicalBranch flip className="w-20" />
+                  <span className="text-4xl font-cursive text-[#8C6239]">
+                    &amp;
+                  </span>
+                  <BotanicalBranch className="w-20" />
+                </div>
+              </>
+            )}
 
             <CoupleCard
               photo={d.photoGroom}
               alt={d.groom}
               name={d.groom}
-              role="Mempelai Pria"
+              role={d.person1Role || 'Mempelai Pria'}
               roleClass="text-[#8C6239]"
-              parentLabel="Putra tercinta dari:"
+              parentLabel={d.showSecondPerson !== false ? 'Putra tercinta dari:' : d.person1Subline}
               father={d.groomFather}
               mother={d.groomMother}
               tilt="rotate-2"
@@ -642,7 +657,7 @@ export const RusticWoodTheme = (props) => {
           <SectionHeading
             eyebrow="Save The Date"
             title="Rangkaian Acara"
-            subtitle="Insya Allah acara pernikahan kami akan diselenggarakan pada:"
+            subtitle={d.openingGreeting}
           />
 
           {/* Countdown — ubin kayu */}
@@ -665,19 +680,25 @@ export const RusticWoodTheme = (props) => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              d.showSecondEvent !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-8 mx-auto items-stretch`}
+          >
             <EventTicket
-              label="Akad Nikah"
+              label={d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama')}
               dotClass="bg-[#FBBF24]"
               event={d.akad}
               googleCalUrl={d.googleCalUrl}
             />
-            <EventTicket
-              label="Resepsi Pernikahan"
-              dotClass="bg-[#A3B899]"
-              event={d.resepsi}
-              googleCalUrl={d.googleCalUrl}
-            />
+            {d.showSecondEvent !== false && (
+              <EventTicket
+                label={d.resepsi?.judul || (d.eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi 2')}
+                dotClass="bg-[#A3B899]"
+                event={d.resepsi}
+                googleCalUrl={d.googleCalUrl}
+              />
+            )}
           </div>
         </section>
 
@@ -1012,11 +1033,15 @@ export const RusticWoodTheme = (props) => {
               <span className="relative text-2xl font-cursive">{initials}</span>
             </WaxSeal>
             <p className="text-4xl font-cursive text-[#2A1B10]">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </p>
-            <p className="text-xs text-[#5A3821] font-sans">
-              Keluarga Besar {d.groomFather} &amp; {d.brideFather}
-            </p>
+            {(d.groomFather || (d.showSecondPerson !== false && d.brideFather)) && (
+              <p className="text-xs text-[#5A3821] font-sans">
+                {d.showSecondPerson !== false
+                  ? `Keluarga Besar ${d.groomFather} & ${d.brideFather}`
+                  : `Keluarga Besar ${[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}`}
+              </p>
+            )}
           </div>
 
           <div className="pt-4">

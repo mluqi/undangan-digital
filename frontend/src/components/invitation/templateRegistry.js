@@ -11,6 +11,7 @@ import { ForestTropicalTheme } from './templates/ForestTropicalTheme';
 import { KembarMayangTheme } from './templates/KembarMayangTheme';
 import { NoirVelvetTheme } from './templates/NoirVelvetTheme';
 import { DraperyPinkTheme } from './templates/DraperyPinkTheme';
+import { CustomThemeBuilder } from './templates/CustomThemeBuilder';
 
 /**
  * TEMPLATE REGISTRY
@@ -167,15 +168,45 @@ export const TEMPLATE_REGISTRY = {
     name: 'Sundanese Classic Emerald',
     component: SundaneseTheme,
   },
+  'custom-builder': {
+    code: 'custom-builder',
+    name: 'Custom Dynamic Theme Builder',
+    component: CustomThemeBuilder,
+  },
 };
 
 /**
- * Helper untuk mengambil komponen React tema berdasarkan kode template.
- * Jika kode template belum memiliki JSX khusus, otomatis fallback ke MildnessTheme.
+ * Helper untuk mengambil komponen React tema berdasarkan kode template
+ * atau metadata baseLayout/customTheme yang tersimpan di DB template/undangan.
  */
-export const getTemplateComponent = (templateCode) => {
+export const getTemplateComponent = (templateCode, invitation = null) => {
+  const rawDefaults = invitation?.template?.default_content_json;
+  let parsedDefaults = rawDefaults;
+  if (typeof rawDefaults === 'string') {
+    try {
+      parsedDefaults = JSON.parse(rawDefaults);
+    } catch {
+      parsedDefaults = null;
+    }
+  }
+
+  const baseLayout =
+    invitation?.content_json?.baseLayout ||
+    parsedDefaults?.baseLayout ||
+    null;
+
+  if (baseLayout) {
+    const normalizedBase = String(baseLayout).toLowerCase().trim();
+    if (normalizedBase === 'custom-builder') return CustomThemeBuilder;
+    if (TEMPLATE_REGISTRY[normalizedBase]?.component) {
+      return TEMPLATE_REGISTRY[normalizedBase].component;
+    }
+  }
+
   if (!templateCode) return MildnessTheme;
-  const normalized = templateCode.toLowerCase().trim();
+  const normalized = String(templateCode).toLowerCase().trim();
   const entry = TEMPLATE_REGISTRY[normalized];
-  return entry?.component || MildnessTheme;
+  if (entry?.component) return entry.component;
+
+  return CustomThemeBuilder;
 };

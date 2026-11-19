@@ -60,6 +60,14 @@ export const SnapPhotoTheme = ({
   }, [guest]);
 
   const content = invitation?.content_json || {};
+  const eventType = (content.eventType || 'wedding').toLowerCase();
+  const showSecondPerson = eventType === 'wedding' || eventType === 'engagement';
+  const showSecondEvent =
+    content.showSecondEvent !== undefined
+      ? content.showSecondEvent !== false &&
+        content.showSecondEvent !== 'false' &&
+        content.showSecondEvent !== 0
+      : eventType === 'wedding';
 
   const groom = content.mempelaiPria || 'Ahmad Fajar, S.T.';
   const bride = content.mempelaiWanita || 'Siti Aminah, S.Pd.';
@@ -71,10 +79,37 @@ export const SnapPhotoTheme = ({
     (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
     (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
     'Aminah';
-  const groomFather = content.ayahPria || 'Bpk. H. Abdurrahman';
-  const groomMother = content.ibuPria || 'Ibu Hj. Maryam';
+  const groomFather =
+    content.ayahPria !== undefined
+      ? content.ayahPria
+      : showSecondPerson
+        ? 'Bpk. H. Abdurrahman'
+        : '';
+  const groomMother =
+    content.ibuPria !== undefined
+      ? content.ibuPria
+      : showSecondPerson
+        ? 'Ibu Hj. Maryam'
+        : '';
   const brideFather = content.ayahWanita || 'Bpk. H. Ahmad Dahlan';
   const brideMother = content.ibuWanita || 'Ibu Hj. Fatimah';
+  const displayTitle = showSecondPerson ? `${groomShort} & ${brideShort}` : groomShort;
+  const coverSubtitle =
+    eventType === 'wedding'
+      ? "WALIMATUL 'URS"
+      : eventType === 'engagement'
+        ? 'THE ENGAGEMENT OF'
+        : eventType === 'birthday'
+          ? 'BIRTHDAY CELEBRATION'
+          : 'SPECIAL EVENT';
+  const person1Role =
+    eventType === 'wedding'
+      ? 'MEMPELAI PRIA'
+      : eventType === 'engagement'
+        ? 'CALON MEMPELAI PRIA'
+        : eventType === 'birthday'
+          ? 'YANG BERULANG TAHUN'
+          : 'PENYELENGGARA ACARA';
 
   const akad = content.akad || {
     tanggal: 'Minggu, 15 November 2026',
@@ -104,7 +139,9 @@ export const SnapPhotoTheme = ({
   const ayatQuote = content.ayat || 'QS. Ar-Rum: 21';
   const closingText =
     content.teksPenutup ||
-    'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.';
+    (showSecondPerson
+      ? 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.'
+      : 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa terbaik pada acara kami.');
   const closingGreeting =
     content.salamPenutup !== undefined
       ? content.salamPenutup
@@ -274,12 +311,22 @@ export const SnapPhotoTheme = ({
   };
 
   const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `The Wedding of ${groomShort} & ${brideShort}`
+    eventType === 'wedding'
+      ? `The Wedding of ${groomShort} & ${brideShort}`
+      : eventType === 'engagement'
+        ? `Lamaran ${groomShort} & ${brideShort}`
+        : eventType === 'birthday'
+          ? `Ulang Tahun ${groomShort}`
+          : groom
   )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
-    'Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.'
+    `Mohon doa restu dan kehadiran pada acara ${displayTitle}.`
   )}&location=${encodeURIComponent(akad.lokasi)}`;
 
   const sidePanelData = {
+    eventType,
+    showSecondPerson,
+    showSecondEvent,
+    coverSubtitle,
     groomShort,
     brideShort,
     groom,
@@ -363,17 +410,21 @@ export const SnapPhotoTheme = ({
 
           {/* Desktop Responsive Content: Split between Left (Names) & Right (Guest & Button) */}
           <div className="my-auto py-8 md:py-12 flex flex-col md:flex-row md:items-end md:justify-between gap-8 md:gap-12">
-            {/* Couple Names */}
+            {/* Couple / Subject Names */}
             <div className="text-center md:text-left space-y-3 md:w-1/2">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-cinzel font-normal tracking-wide text-white leading-tight">
                 {groomShort}
-                <span className="block md:inline-block text-3xl sm:text-4xl md:text-5xl font-cursive text-amber-300 mx-2 my-1 md:my-0 font-normal">
-                  &amp;
-                </span>
-                {brideShort}
+                {showSecondPerson && (
+                  <>
+                    <span className="block md:inline-block text-3xl sm:text-4xl md:text-5xl font-cursive text-amber-300 mx-2 my-1 md:my-0 font-normal">
+                      &amp;
+                    </span>
+                    {brideShort}
+                  </>
+                )}
               </h1>
               <p className="text-xs md:text-sm font-montserrat tracking-[0.25em] text-zinc-300 uppercase">
-                Minggu, 15 November 2026
+                {akad.tanggal}
               </p>
             </div>
 
@@ -423,7 +474,7 @@ export const SnapPhotoTheme = ({
         <section className="relative min-h-[80vh] flex flex-col justify-end p-6 sm:p-8 overflow-hidden text-center">
           <img
             src={photoCover}
-            alt="Hero Prewedding"
+            alt="Hero"
             data-parallax
             className="absolute inset-0 w-full h-full object-cover brightness-70 contrast-110 scale-110"
           />
@@ -431,14 +482,18 @@ export const SnapPhotoTheme = ({
 
           <div className="relative z-10 space-y-3 pb-6">
             <span className="text-[11px] font-cinzel tracking-[0.3em] uppercase text-amber-300 font-semibold block">
-              WALIMATUL 'URS
+              {coverSubtitle}
             </span>
             <h2 className="text-4xl sm:text-5xl font-cinzel text-white leading-tight font-medium">
               {groomShort}
-              <span className="block text-2xl font-cursive text-amber-300 my-1 font-normal">
-                &
-              </span>
-              {brideShort}
+              {showSecondPerson && (
+                <>
+                  <span className="block text-2xl font-cursive text-amber-300 my-1 font-normal">
+                    &
+                  </span>
+                  {brideShort}
+                </>
+              )}
             </h2>
             <div className="inline-block py-1.5 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-zinc-200 font-montserrat tracking-widest uppercase">
               15 November 2026 • Surabaya, Jawa Timur
@@ -480,57 +535,72 @@ export const SnapPhotoTheme = ({
         <section className="py-16 px-6 space-y-12">
           <div className="text-center space-y-1">
             <span className="text-[10px] uppercase font-montserrat tracking-[0.3em] text-amber-400 font-semibold">
-              KEDUA MEMPELAI
+              {showSecondPerson
+                ? 'KEDUA MEMPELAI'
+                : eventType === 'birthday'
+                  ? 'YANG BERULANG TAHUN'
+                  : 'PROFIL ACARA'}
             </span>
-            <h3 className="text-3xl font-cinzel font-bold text-white">Mempelai Pengantin</h3>
+            <h3 className="text-3xl font-cinzel font-bold text-white">
+              {showSecondPerson ? 'Mempelai Pengantin' : groomShort}
+            </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
-            {/* Groom Card */}
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondPerson ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-8 mx-auto items-stretch`}
+          >
+            {/* Groom / Main Subject Card */}
             <div className="p-5 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4">
               <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-inner">
                 <img
                   src={photoGroom}
-                  alt="Mempelai Pria"
+                  alt={groom}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
               </div>
               <div className="text-center space-y-1.5">
                 <span className="text-[10px] uppercase tracking-widest text-amber-400 font-montserrat font-bold">
-                  MEMPELAI PRIA
+                  {person1Role}
                 </span>
                 <h4 className="text-2xl font-cinzel font-bold text-white">{groom}</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                  Putra tercinta dari:
-                  <br />
-                  <span className="font-semibold text-zinc-200">{groomFather}</span> &{' '}
-                  <span className="font-semibold text-zinc-200">{groomMother}</span>
-                </p>
+                {(showSecondPerson || groomFather || groomMother) && (
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                    {showSecondPerson ? 'Putra tercinta dari:' : 'Dari / Penyelenggara:'}
+                    <br />
+                    {groomFather && <span className="font-semibold text-zinc-200">{groomFather}</span>}
+                    {groomFather && groomMother ? ' & ' : ''}
+                    {groomMother && <span className="font-semibold text-zinc-200">{groomMother}</span>}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Bride Card */}
-            <div className="p-5 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4">
-              <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-inner">
-                <img
-                  src={photoBride}
-                  alt="Mempelai Wanita"
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                />
+            {showSecondPerson && (
+              <div className="p-5 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4">
+                <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-inner">
+                  <img
+                    src={photoBride}
+                    alt={bride}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                </div>
+                <div className="text-center space-y-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-rose-400 font-montserrat font-bold">
+                    {eventType === 'engagement' ? 'CALON MEMPELAI WANITA' : 'MEMPELAI WANITA'}
+                  </span>
+                  <h4 className="text-2xl font-cinzel font-bold text-white">{bride}</h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                    Putri tercinta dari:
+                    <br />
+                    <span className="font-semibold text-zinc-200">{brideFather}</span> &{' '}
+                    <span className="font-semibold text-zinc-200">{brideMother}</span>
+                  </p>
+                </div>
               </div>
-              <div className="text-center space-y-1.5">
-                <span className="text-[10px] uppercase tracking-widest text-rose-400 font-montserrat font-bold">
-                  MEMPELAI WANITA
-                </span>
-                <h4 className="text-2xl font-cinzel font-bold text-white">{bride}</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                  Putri tercinta dari:
-                  <br />
-                  <span className="font-semibold text-zinc-200">{brideFather}</span> &{' '}
-                  <span className="font-semibold text-zinc-200">{brideMother}</span>
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -543,15 +613,28 @@ export const SnapPhotoTheme = ({
             <h3 className="text-3xl font-cinzel font-bold text-white">Rangkaian Acara</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto">
-            {/* Akad Card */}
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondEvent ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-6 mx-auto`}
+          >
+            {/* Acara 1 Card */}
             <div className="p-6 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4 text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
                 <Heart className="w-5 h-5" />
               </div>
 
               <div>
-                <h4 className="text-xl font-cinzel font-bold text-white">Akad Nikah</h4>
+                <h4 className="text-xl font-cinzel font-bold text-white">
+                  {akad.judul ||
+                    (eventType === 'wedding'
+                      ? 'Akad Nikah'
+                      : eventType === 'engagement'
+                        ? 'Acara Lamaran'
+                        : eventType === 'birthday'
+                          ? 'Perayaan Ulang Tahun'
+                          : 'Acara Utama')}
+                </h4>
                 <div className="w-8 h-px bg-amber-400/50 mx-auto my-2" />
                 <p className="text-sm font-semibold text-amber-300 font-montserrat">
                   {akad.tanggal}
@@ -592,53 +675,57 @@ export const SnapPhotoTheme = ({
               </div>
             </div>
 
-            {/* Resepsi Card */}
-            <div className="p-6 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
-                <Sparkles className="w-5 h-5" />
-              </div>
+            {/* Acara 2 Card */}
+            {showSecondEvent && (
+              <div className="p-6 rounded-2xl bg-[#16171E] border border-zinc-800 shadow-xl space-y-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+                  <Sparkles className="w-5 h-5" />
+                </div>
 
-              <div>
-                <h4 className="text-xl font-cinzel font-bold text-white">Resepsi Pernikahan</h4>
-                <div className="w-8 h-px bg-amber-400/50 mx-auto my-2" />
-                <p className="text-sm font-semibold text-amber-300 font-montserrat">
-                  {resepsi.tanggal}
-                </p>
-                <p className="text-xs text-zinc-400 mt-0.5 flex items-center justify-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{resepsi.waktu}</span>
-                </p>
-              </div>
+                <div>
+                  <h4 className="text-xl font-cinzel font-bold text-white">
+                    {resepsi.judul || (eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi Kedua')}
+                  </h4>
+                  <div className="w-8 h-px bg-amber-400/50 mx-auto my-2" />
+                  <p className="text-sm font-semibold text-amber-300 font-montserrat">
+                    {resepsi.tanggal}
+                  </p>
+                  <p className="text-xs text-zinc-400 mt-0.5 flex items-center justify-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{resepsi.waktu}</span>
+                  </p>
+                </div>
 
-              <div className="space-y-1 text-xs text-zinc-300 pt-2 border-t border-zinc-800">
-                <p className="font-semibold text-white flex items-center justify-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-rose-400" />
-                  {resepsi.lokasi}
-                </p>
-                <p className="text-zinc-400 leading-relaxed text-[11px]">{resepsi.alamat}</p>
-              </div>
+                <div className="space-y-1 text-xs text-zinc-300 pt-2 border-t border-zinc-800">
+                  <p className="font-semibold text-white flex items-center justify-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-rose-400" />
+                    {resepsi.lokasi}
+                  </p>
+                  <p className="text-zinc-400 leading-relaxed text-[11px]">{resepsi.alamat}</p>
+                </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
-                <a
-                  href={resepsi.mapUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2.5 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-montserrat font-medium text-white transition-all flex items-center justify-center gap-1.5"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Buka Google Maps</span>
-                </a>
-                <a
-                  href={googleCalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-montserrat font-medium transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Simpan ke Kalender</span>
-                </a>
+                <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+                  <a
+                    href={resepsi.mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2.5 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-montserrat font-medium text-white transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Buka Google Maps</span>
+                  </a>
+                  <a
+                    href={googleCalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-montserrat font-medium transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Bell className="w-3.5 h-3.5" />
+                    <span>Simpan ke Kalender</span>
+                  </a>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Countdown Timer */}
             <div className="p-6 rounded-2xl bg-[#0F1014] border border-zinc-800 text-center space-y-3">
@@ -891,7 +978,11 @@ export const SnapPhotoTheme = ({
                   required
                   value={rsvpMessage}
                   onChange={(e) => setRsvpMessage(e.target.value)}
-                  placeholder="Tuliskan ucapan dan doa terbaik Anda untuk kedua mempelai..."
+                  placeholder={
+                    showSecondPerson
+                      ? 'Tuliskan ucapan dan doa terbaik Anda untuk kedua mempelai...'
+                      : 'Tuliskan ucapan dan doa terbaik Anda...'
+                  }
                   className="w-full mt-1.5 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -960,7 +1051,7 @@ export const SnapPhotoTheme = ({
               KAMI YANG BERBAHAGIA,
             </span>
             <p className="text-2xl font-cinzel font-bold text-white">
-              {groomShort} & {brideShort}
+              {displayTitle}
             </p>
             <p className="text-xs text-zinc-400">Beserta Seluruh Keluarga Besar</p>
           </div>

@@ -136,7 +136,7 @@ const getTemplateById = async (req, res) => {
 // @access  Private
 const createTemplate = async (req, res) => {
   try {
-    const { template_code, name, thumbnail_url, is_active } = req.body;
+    const { template_code, name, thumbnail_url, is_active, default_content_json } = req.body;
 
     if (!template_code || !name) {
       return res.status(400).json({
@@ -150,6 +150,7 @@ const createTemplate = async (req, res) => {
       name,
       thumbnail_url,
       is_active,
+      default_content_json,
     });
 
     return res.status(201).json({
@@ -344,6 +345,39 @@ const uploadTemplateVideo = async (req, res) => {
   }
 };
 
+// @desc    Upload default music (.mp3/audio) for a template
+// @route   POST /api/templates/upload-music or /api/templates/:id/upload-music
+// @access  Private
+const uploadTemplateMusic = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'File audio tidak ditemukan.',
+      });
+    }
+
+    const relativeUrl = `/uploads/templates/music/${req.file.filename}`;
+    const fullUrl = `${req.protocol}://${req.get('host')}${relativeUrl}`;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Musik template berhasil diunggah.',
+      data: {
+        filename: req.file.filename,
+        relativeUrl,
+        url: fullUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Error uploadTemplateMusic:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Gagal mengunggah musik template.',
+    });
+  }
+};
+
 module.exports = {
   getAllTemplates,
   getTemplateById,
@@ -352,6 +386,7 @@ module.exports = {
   deleteTemplate,
   uploadThumbnail,
   uploadTemplateVideo,
+  uploadTemplateMusic,
   getLandingCms,
   updateLandingCms,
 };

@@ -247,11 +247,29 @@ export const TimelessSnapshotTheme = ({
   }, [guest]);
 
   const content = invitation?.content_json || {};
+  const eventType = (content.eventType || "wedding").toLowerCase();
+  const showSecondPerson = eventType === "wedding" || eventType === "engagement";
+  const showSecondEvent =
+    content.showSecondEvent !== undefined
+      ? content.showSecondEvent !== false &&
+        content.showSecondEvent !== "false" &&
+        content.showSecondEvent !== 0
+      : eventType === "wedding";
 
   const groom = content.mempelaiPria || "Ahmad Fajar, S.T.";
   const bride = content.mempelaiWanita || "Siti Aminah, S.Pd.";
-  const groomFather = content.ayahPria || "Bpk. H. Abdurrahman";
-  const groomMother = content.ibuPria || "Ibu Hj. Maryam";
+  const groomFather =
+    content.ayahPria !== undefined
+      ? content.ayahPria
+      : showSecondPerson
+        ? "Bpk. H. Abdurrahman"
+        : "";
+  const groomMother =
+    content.ibuPria !== undefined
+      ? content.ibuPria
+      : showSecondPerson
+        ? "Ibu Hj. Maryam"
+        : "";
   const brideFather = content.ayahWanita || "Bpk. H. Ahmad Dahlan";
   const brideMother = content.ibuWanita || "Ibu Hj. Fatimah";
 
@@ -470,10 +488,26 @@ export const TimelessSnapshotTheme = ({
     brideName.trim().split(" ")[0] ||
     "Aminah";
 
+  const displayTitle = showSecondPerson ? `${groomFirst} & ${brideFirst}` : groomFirst;
+  const coverSubtitle =
+    eventType === "wedding"
+      ? "THE WEDDING INVITATION"
+      : eventType === "engagement"
+        ? "THE ENGAGEMENT OF"
+        : eventType === "birthday"
+          ? "BIRTHDAY INVITATION"
+          : "SPECIAL INVITATION";
+
   const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `The Wedding of ${groomFirst} & ${brideFirst}`,
+    eventType === "wedding"
+      ? `The Wedding of ${groomFirst} & ${brideFirst}`
+      : eventType === "engagement"
+        ? `Lamaran ${groomFirst} & ${brideFirst}`
+        : eventType === "birthday"
+          ? `Ulang Tahun ${groomFirst}`
+          : groom
   )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
-    "Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.",
+    `Mohon doa restu dan kehadiran pada acara ${displayTitle}.`
   )}&location=${encodeURIComponent(akad.lokasi)}`;
 
   const countdownItems = [
@@ -484,6 +518,10 @@ export const TimelessSnapshotTheme = ({
   ];
 
   const sidePanelData = {
+    eventType,
+    showSecondPerson,
+    showSecondEvent,
+    coverSubtitle,
     groomShort: groomFirst,
     brideShort: brideFirst,
     groom,
@@ -570,16 +608,16 @@ export const TimelessSnapshotTheme = ({
               {/* Left Side: Polaroid Photo Showcase */}
               <div className="flex flex-col items-center md:w-1/2">
                 <div className="mb-4">
-                  <LabelTag>THE WEDDING INVITATION</LabelTag>
+                  <LabelTag>{coverSubtitle}</LabelTag>
                 </div>
                 <div className="relative max-w-[240px] sm:max-w-[270px] md:max-w-[290px] w-full bg-white p-3 pb-6 shadow-2xl border border-stone-200 transform -rotate-2 hover:rotate-0 transition-transform">
                   <img
                     src={photoCover}
-                    alt="Mempelai"
+                    alt={displayTitle}
                     className="w-full h-56 sm:h-64 object-cover"
                   />
                   <p className="mt-3 font-cursive text-2xl sm:text-3xl text-center text-[#5C4A3A]">
-                    {groomFirst} &amp; {brideFirst}
+                    {displayTitle}
                   </p>
                   <PhotoCorners />
                 </div>
@@ -658,9 +696,17 @@ export const TimelessSnapshotTheme = ({
 
           <div className="px-6 pt-12 space-y-10">
             <div className="space-y-3">
-              <LabelTag>WALIMATUL &apos;URS</LabelTag>
+              <LabelTag>
+                {eventType === "wedding"
+                  ? "WALIMATUL 'URS"
+                  : eventType === "engagement"
+                    ? "THE ENGAGEMENT OF"
+                    : eventType === "birthday"
+                      ? "BIRTHDAY CELEBRATION"
+                      : "SPECIAL EVENT"}
+              </LabelTag>
               <h2 className="text-6xl sm:text-7xl font-cursive leading-none text-[#2C241D]">
-                {groomFirst} & {brideFirst}
+                {showSecondPerson ? `${groomFirst} & ${brideFirst}` : groomFirst}
               </h2>
             </div>
 
@@ -677,7 +723,7 @@ export const TimelessSnapshotTheme = ({
               <div className="relative bg-white p-3.5 pb-5 shadow-2xl border border-stone-200">
                 <img
                   src={photoCover}
-                  alt="Mempelai"
+                  alt={showSecondPerson ? `${groomFirst} & ${brideFirst}` : groomFirst}
                   className="develop-img w-full h-80 object-cover"
                 />
                 <p className="mt-4 font-cursive text-2xl text-[#5C4A3A]">
@@ -714,37 +760,57 @@ export const TimelessSnapshotTheme = ({
           </div>
         </section>
 
-        {/* MEMPELAI SECTION — HALAMAN ALBUM GELAP */}
+        {/* MEMPELAI / PROFIL SECTION — HALAMAN ALBUM GELAP */}
         <section className="py-16 px-6 bg-[#2C241D] space-y-14">
           <SectionHeading
             light
-            eyebrow="KEDUA MEMPELAI"
-            title="Mempelai Pengantin"
+            eyebrow={
+              showSecondPerson
+                ? "KEDUA MEMPELAI"
+                : eventType === "birthday"
+                  ? "YANG BERULANG TAHUN"
+                  : "PROFIL ACARA"
+            }
+            title={showSecondPerson ? "Mempelai Pengantin" : groomFirst}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-12 md:gap-8 lg:gap-16 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondPerson ? "md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md" : "max-w-md"
+            } gap-12 md:gap-8 lg:gap-16 mx-auto items-stretch`}
+          >
             <MountedPrint
               photo={photoGroom}
-              alt="Mempelai Pria"
-              role="MEMPELAI PRIA"
+              alt={groom}
+              role={
+                eventType === "wedding"
+                  ? "MEMPELAI PRIA"
+                  : eventType === "engagement"
+                    ? "CALON MEMPELAI PRIA"
+                    : eventType === "birthday"
+                      ? "YANG BERULANG TAHUN"
+                      : "PENYELENGGARA"
+              }
               name={groom}
-              parentLabel="Putra tercinta dari:"
+              parentLabel={showSecondPerson ? "Putra tercinta dari:" : groomFather || groomMother ? "Dari / Penyelenggara:" : ""}
               father={groomFather}
               mother={groomMother}
               tilt="-rotate-2"
               frameNo="01A"
             />
-            <MountedPrint
-              photo={photoBride}
-              alt="Mempelai Wanita"
-              role="MEMPELAI WANITA"
-              name={bride}
-              parentLabel="Putri tercinta dari:"
-              father={brideFather}
-              mother={brideMother}
-              tilt="rotate-2"
-              frameNo="02A"
-            />
+            {showSecondPerson && (
+              <MountedPrint
+                photo={photoBride}
+                alt="Mempelai Wanita"
+                role={eventType === "engagement" ? "CALON MEMPELAI WANITA" : "MEMPELAI WANITA"}
+                name={bride}
+                parentLabel="Putri tercinta dari:"
+                father={brideFather}
+                mother={brideMother}
+                tilt="rotate-2"
+                frameNo="02A"
+              />
+            )}
           </div>
         </section>
 
@@ -777,21 +843,36 @@ export const TimelessSnapshotTheme = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondEvent ? "md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md" : "max-w-md"
+            } gap-8 mx-auto items-stretch`}
+          >
             <EventFrame
               no="01"
-              title="Akad Nikah"
+              title={
+                akad.judul ||
+                (eventType === "wedding"
+                  ? "Akad Nikah"
+                  : eventType === "engagement"
+                    ? "Acara Lamaran"
+                    : eventType === "birthday"
+                      ? "Perayaan Ulang Tahun"
+                      : "Acara Utama")
+              }
               icon={Heart}
               event={akad}
               googleCalUrl={googleCalUrl}
             />
-            <EventFrame
-              no="02"
-              title="Resepsi Pernikahan"
-              icon={Sparkles}
-              event={resepsi}
-              googleCalUrl={googleCalUrl}
-            />
+            {showSecondEvent && (
+              <EventFrame
+                no="02"
+                title={resepsi.judul || (eventType === "wedding" ? "Resepsi Pernikahan" : "Sesi Kedua")}
+                icon={Sparkles}
+                event={resepsi}
+                googleCalUrl={googleCalUrl}
+              />
+            )}
           </div>
         </section>
 
@@ -1092,7 +1173,7 @@ export const TimelessSnapshotTheme = ({
                 KAMI YANG BERBAHAGIA,
               </span>
               <p className="text-4xl sm:text-5xl font-cursive text-[#F9F6F0] leading-tight">
-                {groomFirst} & {brideFirst}
+                {displayTitle}
               </p>
               <p className="text-xs text-[#C9BBA6] font-sans">
                 Beserta Segenap Keluarga Besar

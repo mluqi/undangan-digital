@@ -291,6 +291,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
         if (mounted && Array.isArray(dbList) && dbList.length > 0) {
           const sorted = [...dbList].sort((a, b) => a.id - b.id);
           const mapped = sorted.map((t, idx) => {
+            const dJson = t.default_content_json || {};
             const meta = TEMPLATE_META_BY_CODE[t.template_code] || {
               category:
                 t.template_code.includes('jawa') ||
@@ -302,6 +303,13 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   : 'modern',
               tag: 'Atelier',
             };
+            const eventCategory = (
+              dJson.templateEventType ||
+              dJson.eventType ||
+              'wedding'
+            ).toLowerCase();
+            const styleCategory = dJson.styleCategory || meta.category;
+            const tag = dJson.tag || meta.tag;
             const fallbackImg =
               DEFAULT_DB_TEMPLATES.find((d) => d.code === t.template_code)
                 ?.image ||
@@ -311,8 +319,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               no: String(idx + 1).padStart(2, '0'),
               code: t.template_code,
               name: t.name,
-              category: meta.category,
-              tag: meta.tag,
+              category: styleCategory,
+              eventCategory,
+              tag,
               image: t.thumbnail_url || fallbackImg,
             };
           });
@@ -350,7 +359,23 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
   const filteredTemplates =
     activeCategory === 'all'
       ? templates
+      : ['wedding', 'engagement', 'birthday', 'event'].includes(activeCategory)
+      ? templates.filter(
+          (t) =>
+            (t.eventCategory || 'wedding') === activeCategory ||
+            t.eventCategory === 'all'
+        )
       : templates.filter((t) => t.category === activeCategory);
+
+  const eventCategoryTabs = [
+    { id: 'engagement', label: 'Lamaran' },
+    { id: 'birthday', label: 'Ulang Tahun' },
+    { id: 'event', label: 'Acara Umum' },
+  ].filter((tab) =>
+    templates.some(
+      (t) => t.eventCategory === tab.id || t.eventCategory === 'all'
+    )
+  );
 
   const modesList = cms.systemModes || SYSTEM_MODES;
   const currentMode =
@@ -642,12 +667,13 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                 </h2>
               </div>
 
-              <div className="flex gap-6 text-[11px] uppercase tracking-[0.22em]">
+              <div className="flex flex-wrap gap-6 text-[11px] uppercase tracking-[0.22em]">
                 {[
                   { id: 'all', label: 'Semua' },
                   { id: 'modern', label: 'Modern' },
                   { id: 'tradisional', label: 'Adat' },
                   { id: 'rustic', label: 'Botanical' },
+                  ...eventCategoryTabs,
                 ].map((tab) => (
                   <button
                     key={tab.id}

@@ -68,8 +68,16 @@ export const MildnessTheme = ({
   }, [guest]);
 
   const content = invitation?.content_json || {};
+  const eventType = (content.eventType || 'wedding').toLowerCase();
+  const showSecondPerson = eventType === 'wedding' || eventType === 'engagement';
+  const showSecondEvent =
+    content.showSecondEvent !== undefined
+      ? content.showSecondEvent !== false &&
+        content.showSecondEvent !== 'false' &&
+        content.showSecondEvent !== 0
+      : eventType === 'wedding';
 
-  // Mempelai & Orang Tua
+  // Mempelai / Tokoh Utama & Orang Tua
   const groom = content.mempelaiPria || 'Ahmad Fajar, S.T.';
   const bride = content.mempelaiWanita || 'Siti Aminah, S.Pd.';
   const groomShort =
@@ -80,10 +88,45 @@ export const MildnessTheme = ({
     (content.panggilanWanita && String(content.panggilanWanita).trim()) ||
     (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
     'Aminah';
-  const groomFather = content.ayahPria || 'Bpk. H. Abdurrahman';
-  const groomMother = content.ibuPria || 'Ibu Hj. Maryam';
+  const groomFather =
+    content.ayahPria !== undefined
+      ? content.ayahPria
+      : showSecondPerson
+        ? 'Bpk. H. Abdurrahman'
+        : '';
+  const groomMother =
+    content.ibuPria !== undefined
+      ? content.ibuPria
+      : showSecondPerson
+        ? 'Ibu Hj. Maryam'
+        : '';
   const brideFather = content.ayahWanita || 'Bpk. H. Ahmad Dahlan';
   const brideMother = content.ibuWanita || 'Ibu Hj. Fatimah';
+  const displayTitle = showSecondPerson ? `${groomShort} & ${brideShort}` : groomShort;
+  const coverSubtitle =
+    eventType === 'wedding'
+      ? 'The Wedding Of'
+      : eventType === 'engagement'
+        ? 'The Engagement Of'
+        : eventType === 'birthday'
+          ? 'Birthday Celebration'
+          : 'Special Event Invitation';
+  const person1Role =
+    eventType === 'wedding'
+      ? 'Mempelai Pria'
+      : eventType === 'engagement'
+        ? 'Calon Mempelai Pria'
+        : eventType === 'birthday'
+          ? 'Yang Berulang Tahun'
+          : 'Tuan Rumah / Penyelenggara';
+  const openingGreeting =
+    eventType === 'wedding'
+      ? "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta'ala, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri hari bahagia pernikahan kami:"
+      : eventType === 'engagement'
+        ? 'Dengan penuh rasa syukur dan bahagia, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara lamaran kami:'
+        : eventType === 'birthday'
+          ? 'Dengan penuh rasa syukur dan kebahagiaan, kami mengundang Anda untuk turut merayakan momen spesial ulang tahun ini:'
+          : 'Dengan penuh rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dalam acara kami:';
 
   // Akad & Resepsi
   const akad = content.akad || {
@@ -329,6 +372,10 @@ export const MildnessTheme = ({
   };
 
   const sidePanelData = {
+    eventType,
+    showSecondPerson,
+    showSecondEvent,
+    coverSubtitle,
     groomShort,
     brideShort,
     groom,
@@ -436,10 +483,10 @@ export const MildnessTheme = ({
             {/* Header Tag */}
             <div className="space-y-1 pt-2 md:pt-0">
               <span className="text-xs uppercase tracking-[0.3em] text-stone-500 font-medium block">
-                The Wedding Of
+                {coverSubtitle}
               </span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-cursive text-stone-800 leading-tight">
-                {groomShort} &amp; {brideShort}
+                {displayTitle}
               </h1>
             </div>
 
@@ -501,10 +548,10 @@ export const MildnessTheme = ({
           {/* Top Leaf Accent Pattern */}
           <div className="pt-6 space-y-1">
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500 font-medium">
-              Walimatul 'Urs
+              {eventType === 'wedding' ? "Walimatul 'Urs" : coverSubtitle}
             </p>
             <h2 className="text-4xl md:text-5xl font-cursive text-stone-800">
-              {groomShort} & {brideShort}
+              {displayTitle}
             </h2>
           </div>
 
@@ -564,53 +611,66 @@ export const MildnessTheme = ({
           </div>
         </section>
 
-        {/* SECTION 3: PASANGAN MEMPELAI (BRIDE & GROOM) */}
+        {/* SECTION 3: PROFIL / PASANGAN MEMPELAI */}
         <section id="couple" className="py-16 px-6 text-center space-y-12">
           <div className="space-y-3">
             <span className="text-xs uppercase tracking-[0.25em] text-stone-500 font-medium">
-              Mempelai Bahagia
+              {showSecondPerson
+                ? 'Mempelai Bahagia'
+                : eventType === 'birthday'
+                  ? 'Yang Berulang Tahun'
+                  : 'Profil Utama'}
             </span>
             <h2 className="text-3xl font-serif-theme font-bold text-stone-800">
-              Assalamu'alaikum Wr. Wb.
+              Assalamu&apos;alaikum Wr. Wb.
             </h2>
             <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
-              Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta'ala, kami mengundang
-              Bapak/Ibu/Saudara/i untuk menghadiri hari bahagia pernikahan kami:
+              {openingGreeting}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondPerson ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-8 mx-auto items-stretch`}
+          >
             {/* MEMPELAI WANITA */}
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm w-full max-w-sm mx-auto space-y-4 transition-all hover:shadow-md flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
-                  <img
-                    src={photoBride}
-                    alt={bride}
-                    className="w-full h-full object-cover rounded-t-full rounded-b-xl"
-                  />
+            {showSecondPerson && (
+              <>
+                <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm w-full max-w-sm mx-auto space-y-4 transition-all hover:shadow-md flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
+                      <img
+                        src={photoBride}
+                        alt={bride}
+                        className="w-full h-full object-cover rounded-t-full rounded-b-xl"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-cursive text-stone-900">{bride}</h3>
+                      <p className="text-xs text-stone-500 font-medium">
+                        {eventType === 'engagement' ? 'Calon Mempelai Wanita' : 'Mempelai Wanita'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
+                    <p className="text-stone-400 text-[11px]">Putri tercinta dari:</p>
+                    <p className="font-semibold text-stone-800">{brideFather}</p>
+                    <p className="text-stone-500">&</p>
+                    <p className="font-semibold text-stone-800">{brideMother}</p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-2xl font-cursive text-stone-900">{bride}</h3>
-                  <p className="text-xs text-stone-500 font-medium">Mempelai Wanita</p>
+
+                {/* Ampersand Divider */}
+                <div className="hidden lg:flex items-center justify-center gap-3">
+                  <span className="h-px w-12 bg-stone-300" />
+                  <span className="text-3xl font-cursive text-amber-800">&</span>
+                  <span className="h-px w-12 bg-stone-300" />
                 </div>
-              </div>
-              <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
-                <p className="text-stone-400 text-[11px]">Putri tercinta dari:</p>
-                <p className="font-semibold text-stone-800">{brideFather}</p>
-                <p className="text-stone-500">&</p>
-                <p className="font-semibold text-stone-800">{brideMother}</p>
-              </div>
-            </div>
+              </>
+            )}
 
-            {/* Ampersand Divider */}
-            <div className="hidden lg:flex items-center justify-center gap-3">
-              <span className="h-px w-12 bg-stone-300" />
-              <span className="text-3xl font-cursive text-amber-800">&</span>
-              <span className="h-px w-12 bg-stone-300" />
-            </div>
-
-            {/* MEMPELAI PRIA */}
+            {/* MEMPELAI PRIA / TOKOH UTAMA */}
             <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm w-full max-w-sm mx-auto space-y-4 transition-all hover:shadow-md flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="w-36 h-48 mx-auto rounded-t-full rounded-b-2xl overflow-hidden p-1.5 bg-gradient-to-b from-stone-200 to-amber-100 shadow-md">
@@ -622,15 +682,19 @@ export const MildnessTheme = ({
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-2xl font-cursive text-stone-900">{groom}</h3>
-                  <p className="text-xs text-stone-500 font-medium">Mempelai Pria</p>
+                  <p className="text-xs text-stone-500 font-medium">{person1Role}</p>
                 </div>
               </div>
-              <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
-                <p className="text-stone-400 text-[11px]">Putra tercinta dari:</p>
-                <p className="font-semibold text-stone-800">{groomFather}</p>
-                <p className="text-stone-500">&</p>
-                <p className="font-semibold text-stone-800">{groomMother}</p>
-              </div>
+              {(showSecondPerson || groomFather || groomMother) && (
+                <div className="text-xs text-stone-600 space-y-0.5 border-t border-stone-100 pt-3">
+                  <p className="text-stone-400 text-[11px]">
+                    {showSecondPerson ? 'Putra tercinta dari:' : 'Dari / Penyelenggara:'}
+                  </p>
+                  {groomFather && <p className="font-semibold text-stone-800">{groomFather}</p>}
+                  {groomFather && groomMother && <p className="text-stone-500">&</p>}
+                  {groomMother && <p className="font-semibold text-stone-800">{groomMother}</p>}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -678,13 +742,24 @@ export const MildnessTheme = ({
           </div>
 
           {/* EVENT CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
-            {/* AKAD NIKAH CARD */}
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondEvent ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-6 mx-auto items-stretch`}
+          >
+            {/* ACARA 1 CARD */}
             <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-0" />
               <div className="relative z-10 space-y-4 text-center">
                 <span className="inline-block px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold tracking-wider uppercase">
-                  Akad Nikah
+                  {akad.judul ||
+                    (eventType === 'wedding'
+                      ? 'Akad Nikah'
+                      : eventType === 'engagement'
+                        ? 'Acara Lamaran'
+                        : eventType === 'birthday'
+                          ? 'Perayaan Ulang Tahun'
+                          : 'Acara Utama')}
                 </span>
 
                 <div className="space-y-2 py-2">
@@ -723,8 +798,8 @@ export const MildnessTheme = ({
 
                   <a
                     href={getGoogleCalendarUrl(
-                      `Akad Nikah ${groomShort} & ${brideShort}`,
-                      `Akad Nikah di ${akad.lokasi}`,
+                      `${akad.judul || (eventType === 'wedding' ? 'Akad Nikah' : 'Acara')} ${displayTitle}`,
+                      `${akad.judul || 'Acara'} di ${akad.lokasi}`,
                       akad.lokasi,
                       '2026-11-15T08:00:00+07:00',
                       '2026-11-15T10:00:00+07:00'
@@ -740,66 +815,69 @@ export const MildnessTheme = ({
               </div>
             </div>
 
-            {/* RESEPSI PERNIKAHAN CARD */}
-            <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-0" />
-              <div className="relative z-10 space-y-4 text-center">
-                <span className="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-semibold tracking-wider uppercase">
-                  Resepsi Pernikahan
-                </span>
+            {/* ACARA 2 CARD */}
+            {showSecondEvent && (
+              <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-0" />
+                <div className="relative z-10 space-y-4 text-center">
+                  <span className="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-semibold tracking-wider uppercase">
+                    {resepsi.judul ||
+                      (eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi Kedua')}
+                  </span>
 
-                <div className="space-y-2 py-2">
-                  <div className="flex items-center justify-center gap-2 text-stone-700">
-                    <Calendar className="w-4 h-4 text-amber-700" />
-                    <span className="font-medium text-sm">{resepsi.tanggal}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-stone-700">
-                    <Clock className="w-4 h-4 text-amber-700" />
-                    <span className="text-sm">{resepsi.waktu}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-stone-700">
-                    <MapPin className="w-4 h-4 text-amber-700" />
-                    <span className="font-semibold text-sm">{resepsi.lokasi}</span>
-                  </div>
-                  {resepsi.alamat && (
-                    <p className="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
-                      {resepsi.alamat}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2 pt-2">
-                  <a
-                    href={
-                      resepsi.mapUrl ||
-                      `https://maps.google.com/?q=${encodeURIComponent(resepsi.lokasi)}`
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-stone-900 text-white text-xs font-medium hover:bg-black transition-all flex items-center justify-center gap-2 shadow"
-                  >
-                    <Navigation className="w-3.5 h-3.5" />
-                    <span>Petunjuk Lokasi (Google Maps)</span>
-                  </a>
-
-                  <a
-                    href={getGoogleCalendarUrl(
-                      `Resepsi Pernikahan ${groomShort} & ${brideShort}`,
-                      `Resepsi di ${resepsi.lokasi}`,
-                      resepsi.lokasi,
-                      '2026-11-15T11:00:00+07:00',
-                      '2026-11-15T14:00:00+07:00'
+                  <div className="space-y-2 py-2">
+                    <div className="flex items-center justify-center gap-2 text-stone-700">
+                      <Calendar className="w-4 h-4 text-amber-700" />
+                      <span className="font-medium text-sm">{resepsi.tanggal}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-stone-700">
+                      <Clock className="w-4 h-4 text-amber-700" />
+                      <span className="text-sm">{resepsi.waktu}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-stone-700">
+                      <MapPin className="w-4 h-4 text-amber-700" />
+                      <span className="font-semibold text-sm">{resepsi.lokasi}</span>
+                    </div>
+                    {resepsi.alamat && (
+                      <p className="text-xs text-stone-500 max-w-xs mx-auto leading-relaxed">
+                        {resepsi.alamat}
+                      </p>
                     )}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-stone-100 text-stone-700 text-xs font-medium hover:bg-stone-200 transition-all flex items-center justify-center gap-2 border border-stone-200"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Simpan ke Kalender</span>
-                  </a>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-2">
+                    <a
+                      href={
+                        resepsi.mapUrl ||
+                        `https://maps.google.com/?q=${encodeURIComponent(resepsi.lokasi)}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-stone-900 text-white text-xs font-medium hover:bg-black transition-all flex items-center justify-center gap-2 shadow"
+                    >
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>Petunjuk Lokasi (Google Maps)</span>
+                    </a>
+
+                    <a
+                      href={getGoogleCalendarUrl(
+                        `${resepsi.judul || (eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi 2')} ${displayTitle}`,
+                        `${resepsi.judul || 'Sesi 2'} di ${resepsi.lokasi}`,
+                        resepsi.lokasi,
+                        '2026-11-15T11:00:00+07:00',
+                        '2026-11-15T14:00:00+07:00'
+                      )}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-stone-100 text-stone-700 text-xs font-medium hover:bg-stone-200 transition-all flex items-center justify-center gap-2 border border-stone-200"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Simpan ke Kalender</span>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -1139,19 +1217,23 @@ export const MildnessTheme = ({
           <div className="space-y-2 pt-4">
             <p className="text-xs uppercase tracking-widest text-stone-400">Kami yang berbahagia,</p>
             <h2 className="text-4xl md:text-5xl font-cursive text-stone-900">
-              {groomShort} & {brideShort}
+              {displayTitle}
             </h2>
-            <p className="text-xs text-stone-500 pt-1">
-              Keluarga Besar {groomFather} & {brideFather}
-            </p>
+            {(groomFather || (showSecondPerson && brideFather)) && (
+              <p className="text-xs text-stone-500 pt-1">
+                {showSecondPerson
+                  ? `Keluarga Besar ${groomFather} & ${brideFather}`
+                  : `Keluarga Besar ${[groomFather, groomMother].filter(Boolean).join(' & ')}`}
+              </p>
+            )}
           </div>
 
           <div className="pt-8 border-t border-stone-200/60 text-center space-y-1">
             <p className="font-serif-theme text-xs text-stone-500 italic">
-              The Wedding of {groomShort} & {brideShort}
+              {coverSubtitle} {displayTitle}
             </p>
             <p className="text-[10px] text-stone-400">
-              Terima kasih atas doa restu & kehadiran Anda
+              Terima kasih atas doa restu &amp; kehadiran Anda
             </p>
           </div>
         </section>
@@ -1176,7 +1258,7 @@ export const MildnessTheme = ({
             className={`p-1.5 rounded-full hover:text-white transition-colors ${
               activeNav === 'couple' ? 'text-amber-400' : ''
             }`}
-            title="Mempelai"
+            title={showSecondPerson ? 'Mempelai' : 'Profil'}
           >
             <Users className="w-4 h-4" />
           </button>

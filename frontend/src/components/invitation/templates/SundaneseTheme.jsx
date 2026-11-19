@@ -153,7 +153,7 @@ export const SundaneseTheme = (props) => {
         <Bamboo flip className="absolute right-0 top-0 h-[55%] w-auto opacity-70" />
 
         <div className="relative z-10 h-full w-full max-w-lg md:max-w-4xl lg:max-w-5xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between justify-end px-6 sm:px-8 pb-10 md:pb-16 gap-6 md:gap-12">
-          {/* Left Column: Salam & Nama Mempelai */}
+          {/* Left Column: Salam & Nama Mempelai / Acara */}
           <div className="space-y-2 text-left md:w-1/2">
             <Eyebrow light>Assalamu&apos;alaikum</Eyebrow>
             <p className="font-fraunces italic text-lg" style={{ color: '#D7E7DB' }}>
@@ -161,10 +161,14 @@ export const SundaneseTheme = (props) => {
             </p>
             <h1 className="font-fraunces text-5xl sm:text-6xl md:text-7xl leading-[0.95]" style={{ color: C.bone }}>
               {d.groomShort}
-              <span className="block text-3xl sm:text-4xl italic -my-1" style={{ color: C.honey }}>
-                dan
-              </span>
-              {d.brideShort}
+              {d.showSecondPerson !== false && (
+                <>
+                  <span className="block text-3xl sm:text-4xl italic -my-1" style={{ color: C.honey }}>
+                    dan
+                  </span>
+                  {d.brideShort}
+                </>
+              )}
             </h1>
             <p className="text-sm tracking-wide pt-1" style={{ color: '#BFD8C5' }}>
               {d.akad.tanggal}
@@ -200,14 +204,25 @@ export const SundaneseTheme = (props) => {
       {/* ===================== HERO ===================== */}
       <section className="relative" style={{ background: C.forest }}>
         <div className="relative h-[78vh] min-h-[480px]">
-          <img src={d.photoCover} alt="Foto mempelai" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={d.photoCover} alt={d.displayTitle} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, transparent 40%, ${C.forest} 100%)` }} />
           <Bamboo className="absolute left-0 top-0 h-2/3 w-auto opacity-80" />
           <div className="absolute bottom-0 inset-x-0 px-8 pb-12 space-y-2">
             <Reveal>
-              <Eyebrow light>Pernikahan</Eyebrow>
+              <Eyebrow light>
+                {d.eventType === 'wedding'
+                  ? 'Pernikahan'
+                  : d.coverSubtitle || 'Undangan'}
+              </Eyebrow>
               <h2 className="font-fraunces text-5xl leading-none mt-1" style={{ color: C.bone }}>
-                {d.groomShort} <span className="italic text-3xl" style={{ color: C.honey }}>&amp;</span> {d.brideShort}
+                {d.groomShort}
+                {d.showSecondPerson !== false && (
+                  <>
+                    {' '}
+                    <span className="italic text-3xl" style={{ color: C.honey }}>&amp;</span>{' '}
+                    {d.brideShort}
+                  </>
+                )}
               </h2>
               <p className="text-sm mt-2" style={{ color: '#BFD8C5' }}>{d.akad.tanggal}</p>
             </Reveal>
@@ -242,17 +257,34 @@ export const SundaneseTheme = (props) => {
         </Reveal>
       </section>
 
-      {/* ===================== MEMPELAI (ZIGZAG) ===================== */}
+      {/* ===================== MEMPELAI / PROFIL (ZIGZAG) ===================== */}
       <section className="px-6 py-12 space-y-12" style={{ background: C.mist }}>
         <div className="space-y-1">
-          <Eyebrow>Yang Berbahagia</Eyebrow>
-          <h2 className="font-fraunces text-4xl">Mempelai</h2>
+          <Eyebrow>{d.showSecondPerson !== false ? 'Yang Berbahagia' : d.person1Role || 'Profil Utama'}</Eyebrow>
+          <h2 className="font-fraunces text-4xl">
+            {d.showSecondPerson !== false ? 'Mempelai' : d.groomShort}
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+        <div
+          className={`grid grid-cols-1 ${
+            d.showSecondPerson !== false
+              ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md'
+              : 'max-w-md'
+          } gap-8 mx-auto items-stretch`}
+        >
         {[
-          { photo: d.bride, img: d.photoBride, role: 'Mempelai Wanita', f: d.brideFather, m: d.brideMother, kid: 'Putri' },
-          { photo: d.groom, img: d.photoGroom, role: 'Mempelai Pria', f: d.groomFather, m: d.groomMother, kid: 'Putra' },
+          ...(d.showSecondPerson !== false
+            ? [{ photo: d.bride, img: d.photoBride, role: d.person2Role || 'Mempelai Wanita', f: d.brideFather, m: d.brideMother, kid: 'Putri' }]
+            : []),
+          {
+            photo: d.groom,
+            img: d.photoGroom,
+            role: d.person1Role || 'Mempelai Pria',
+            f: d.groomFather,
+            m: d.groomMother,
+            kid: d.showSecondPerson !== false ? 'Putra' : d.person1Subline,
+          },
         ].map((p, i) => (
           <Reveal key={p.role}>
             <div className={`flex items-center gap-5 ${i % 2 ? 'flex-row-reverse md:flex-row text-right md:text-left' : ''}`}>
@@ -262,9 +294,25 @@ export const SundaneseTheme = (props) => {
               <div className="space-y-1.5">
                 <p className="text-[11px] font-bold tracking-[0.25em] uppercase" style={{ color: C.honey }}>{p.role}</p>
                 <h3 className="font-fraunces text-2xl leading-tight">{p.photo}</h3>
-                <p className="text-[13px] leading-relaxed text-[#4A5E54]">
-                  {p.kid} dari Bapak <b>{p.f}</b> dan Ibu <b>{p.m}</b>
-                </p>
+                {(p.kid || p.f || p.m) && (
+                  <p className="text-[13px] leading-relaxed text-[#4A5E54]">
+                    {d.showSecondPerson !== false ? (
+                      <>
+                        {p.kid} dari Bapak <b>{p.f}</b> dan Ibu <b>{p.m}</b>
+                      </>
+                    ) : (
+                      <>
+                        {p.kid}
+                        {(p.f || p.m) && (
+                          <>
+                            {p.kid ? ' — ' : ''}
+                            <b>{[p.f, p.m].filter(Boolean).join(' & ')}</b>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
           </Reveal>
@@ -296,55 +344,71 @@ export const SundaneseTheme = (props) => {
             </div>
           </Reveal>
 
-          <div className="flex p-1 rounded-full" style={{ background: '#ffffff14' }} role="tablist">
-            {EVENT_TABS.map((t) => (
-              <button
-                key={t.key}
-                role="tab"
-                aria-selected={activeEvent === t.key}
-                onClick={() => setActiveEvent(t.key)}
-                className="flex-1 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer"
-                style={activeEvent === t.key ? { background: C.honey, color: C.forest } : { color: '#BFD8C5' }}
+          {d.showSecondEvent !== false ? (
+            <div className="flex p-1 rounded-full" style={{ background: '#ffffff14' }} role="tablist">
+              {EVENT_TABS.map((t) => (
+                <button
+                  key={t.key}
+                  role="tab"
+                  aria-selected={activeEvent === t.key}
+                  onClick={() => setActiveEvent(t.key)}
+                  className="flex-1 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer"
+                  style={activeEvent === t.key ? { background: C.honey, color: C.forest } : { color: '#BFD8C5' }}
+                >
+                  {t.key === 'akad' ? (d.akad?.judul || t.label) : (d.resepsi?.judul || t.label)}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <span
+                className="px-6 py-2 rounded-full text-sm font-bold"
+                style={{ background: C.honey, color: C.forest }}
               >
-                {t.label}
-              </button>
-            ))}
-          </div>
+                {d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama')}
+              </span>
+            </div>
+          )}
 
-          <div key={activeEvent} className={`rounded-3xl p-6 space-y-4 animate-[fadeUp_0.5s_ease] ${LEAF_SHAPE}`} style={{ background: C.bone, color: C.ink }}>
-            <div className="space-y-1.5 text-sm">
-              <p className="flex items-center gap-2 font-bold"><Calendar className="w-4 h-4" style={{ color: C.honey }} />{event.tanggal}</p>
-              <p className="flex items-center gap-2"><Clock className="w-4 h-4" style={{ color: C.honey }} />{event.waktu}</p>
-            </div>
-            <div className="h-px" style={{ background: C.sage }} />
-            <div>
-              <p className="font-fraunces text-xl flex items-start gap-2">
-                <MapPin className="w-4 h-4 mt-1.5 shrink-0" style={{ color: C.clay }} />
-                {event.lokasi}
-              </p>
-              {event.alamat && <p className="text-[13px] mt-1 pl-6 text-[#4A5E54] leading-relaxed">{event.alamat}</p>}
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <a
-                href={event.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(event.lokasi)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="py-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5"
-                style={{ background: C.forest, color: C.bone }}
-              >
-                <Navigation className="w-3.5 h-3.5" /> Peta Lokasi
-              </a>
-              <a
-                href={d.googleCalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="py-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5"
-                style={{ background: C.sage, color: C.forest }}
-              >
-                <Bell className="w-3.5 h-3.5" /> Kalender
-              </a>
-            </div>
-          </div>
+          {(() => {
+            const displayedEvent = d.showSecondEvent !== false ? event : d.akad;
+            return (
+              <div key={d.showSecondEvent !== false ? activeEvent : 'akad'} className={`rounded-3xl p-6 space-y-4 animate-[fadeUp_0.5s_ease] ${LEAF_SHAPE}`} style={{ background: C.bone, color: C.ink }}>
+                <div className="space-y-1.5 text-sm">
+                  <p className="flex items-center gap-2 font-bold"><Calendar className="w-4 h-4" style={{ color: C.honey }} />{displayedEvent.tanggal}</p>
+                  <p className="flex items-center gap-2"><Clock className="w-4 h-4" style={{ color: C.honey }} />{displayedEvent.waktu}</p>
+                </div>
+                <div className="h-px" style={{ background: C.sage }} />
+                <div>
+                  <p className="font-fraunces text-xl flex items-start gap-2">
+                    <MapPin className="w-4 h-4 mt-1.5 shrink-0" style={{ color: C.clay }} />
+                    {displayedEvent.lokasi}
+                  </p>
+                  {displayedEvent.alamat && <p className="text-[13px] mt-1 pl-6 text-[#4A5E54] leading-relaxed">{displayedEvent.alamat}</p>}
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <a
+                    href={displayedEvent.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(displayedEvent.lokasi)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5"
+                    style={{ background: C.forest, color: C.bone }}
+                  >
+                    <Navigation className="w-3.5 h-3.5" /> Peta Lokasi
+                  </a>
+                  <a
+                    href={d.googleCalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="py-3 rounded-full text-xs font-bold flex items-center justify-center gap-1.5"
+                    style={{ background: C.sage, color: C.forest }}
+                  >
+                    <Bell className="w-3.5 h-3.5" /> Kalender
+                  </a>
+                </div>
+              </div>
+            );
+          })()}
         </div>
         <Wave fill={C.bone} />
       </section>
@@ -565,9 +629,15 @@ export const SundaneseTheme = (props) => {
             <div className="pt-6">
               <p className="text-[11px] tracking-[0.25em] uppercase" style={{ color: '#BFD8C5' }}>Kami yang berbahagia</p>
               <p className="font-fraunces text-4xl mt-1">
-                {d.groomShort} &amp; {d.brideShort}
+                {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
               </p>
-              <p className="text-sm mt-1" style={{ color: '#BFD8C5' }}>Keluarga {d.groomFather} &amp; {d.brideFather}</p>
+              {(d.groomFather || (d.showSecondPerson !== false && d.brideFather)) && (
+                <p className="text-sm mt-1" style={{ color: '#BFD8C5' }}>
+                  {d.showSecondPerson !== false
+                    ? `Keluarga ${d.groomFather} & ${d.brideFather}`
+                    : `Keluarga ${[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}`}
+                </p>
+              )}
             </div>
           </Reveal>
         </div>

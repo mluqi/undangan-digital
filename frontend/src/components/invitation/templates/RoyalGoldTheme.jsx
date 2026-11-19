@@ -116,21 +116,27 @@ export const RoyalGoldTheme = (props) => {
 
   const eventsList = [
     {
-      title: 'Akad Nikah',
+      title: d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama'),
       date: d.akad?.tanggal,
       time: d.akad?.waktu,
       location: d.akad?.lokasi,
       address: d.akad?.alamat,
       mapUrl: d.akad?.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(d.akad?.lokasi || '')}`,
     },
-    {
-      title: 'Resepsi Pernikahan',
-      date: d.resepsi?.tanggal,
-      time: d.resepsi?.waktu,
-      location: d.resepsi?.lokasi,
-      address: d.resepsi?.alamat,
-      mapUrl: d.resepsi?.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(d.resepsi?.lokasi || '')}`,
-    },
+    ...(d.showSecondEvent !== false
+      ? [
+          {
+            title: d.resepsi?.judul || (d.eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi 2'),
+            date: d.resepsi?.tanggal,
+            time: d.resepsi?.waktu,
+            location: d.resepsi?.lokasi,
+            address: d.resepsi?.alamat,
+            mapUrl:
+              d.resepsi?.mapUrl ||
+              `https://maps.google.com/?q=${encodeURIComponent(d.resepsi?.lokasi || '')}`,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -216,11 +222,11 @@ export const RoyalGoldTheme = (props) => {
 
                 <div className="space-y-2">
                   <p className="text-[11px] font-sans tracking-[0.35em] uppercase text-[#DFB76C] font-semibold">
-                    The Royal Wedding of
+                    {d.eventType === 'wedding' ? 'The Royal Wedding of' : d.coverSubtitle}
                   </p>
 
                   <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-serif-theme leading-tight text-gold-gradient">
-                    {d.groomShort} &amp; {d.brideShort}
+                    {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
                   </h1>
                 </div>
 
@@ -229,7 +235,7 @@ export const RoyalGoldTheme = (props) => {
                 </div>
 
                 <p className="hidden md:block text-xs text-neutral-400 font-sans italic leading-relaxed pt-2">
-                  Tanpa mengurangi rasa hormat, kami mengundang Anda untuk hadir pada momen istimewa pernikahan kami.
+                  {d.openingGreeting}
                 </p>
               </div>
 
@@ -251,7 +257,7 @@ export const RoyalGoldTheme = (props) => {
                 </div>
 
                 <p className="block md:hidden text-xs text-neutral-400 font-sans italic leading-relaxed text-center">
-                  Tanpa mengurangi rasa hormat, kami mengundang Anda untuk hadir pada momen istimewa pernikahan kami.
+                  {d.openingGreeting}
                 </p>
 
                 {/* Tombol Buka Undangan */}
@@ -287,11 +293,15 @@ export const RoyalGoldTheme = (props) => {
         <div className="relative z-10 space-y-3 pb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B0D12]/80 border border-[#DFB76C]/40 text-[#DFB76C] text-xs font-sans uppercase tracking-[0.25em]">
             <Crown className="w-3.5 h-3.5 text-[#DFB76C]" />
-            <span>Walimatul Ursy</span>
+            <span>
+              {d.eventType === 'wedding'
+                ? 'Walimatul Ursy'
+                : d.coverSubtitle}
+            </span>
           </div>
 
           <h2 className="text-4xl sm:text-5xl font-bold font-serif-theme text-gold-gradient leading-tight drop-shadow-lg">
-            {d.groomShort} &amp; {d.brideShort}
+            {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
           </h2>
 
           <p className="text-sm font-sans tracking-widest text-[#E6E1D8]/80 uppercase">
@@ -345,16 +355,20 @@ export const RoyalGoldTheme = (props) => {
         <section data-reveal className="space-y-8 text-center">
           <div>
             <span className="text-xs font-sans uppercase tracking-[0.3em] text-[#DFB76C] font-semibold block">
-              Mempelai Bahagia
+              {d.showSecondPerson !== false ? 'Mempelai Bahagia' : d.person1Role || 'Profil Utama'}
             </span>
             <h3 className="text-2xl sm:text-3xl font-serif-theme font-bold text-white mt-1">
-              Sang Pangeran &amp; Sang Ratu
+              {d.showSecondPerson !== false ? 'Sang Pangeran & Sang Ratu' : d.groomShort}
             </h3>
             <GoldFiligreeDivider />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
-            {/* Mempelai Pria */}
+          <div
+            className={`grid grid-cols-1 ${
+              d.showSecondPerson !== false ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-8 mx-auto items-stretch`}
+          >
+            {/* Mempelai Pria / Tokoh Utama */}
             <div className="p-6 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 relative overflow-hidden shadow-xl text-center group">
               <RoyalCorner position="top-right" />
               <div className="relative w-36 h-48 mx-auto rounded-t-full rounded-b-xl overflow-hidden border-2 border-[#DFB76C] shadow-[0_0_20px_rgba(223,183,108,0.3)] mb-4">
@@ -368,40 +382,64 @@ export const RoyalGoldTheme = (props) => {
                 {d.groom}
               </h4>
               <p className="text-xs font-sans text-[#DFB76C] tracking-wider uppercase mt-1">
-                Mempelai Pria
+                {d.person1Role || 'Mempelai Pria'}
               </p>
-              <p className="text-xs font-sans text-neutral-400 mt-2">
-                Putra dari Bapak <strong className="text-neutral-200">{d.groomFather}</strong> &amp; Ibu <strong className="text-neutral-200">{d.groomMother}</strong>
-              </p>
+              {(d.showSecondPerson !== false || d.person1Subline || d.groomFather || d.groomMother) && (
+                <p className="text-xs font-sans text-neutral-400 mt-2">
+                  {d.showSecondPerson !== false ? (
+                    <>
+                      Putra dari Bapak <strong className="text-neutral-200">{d.groomFather}</strong> &amp; Ibu{' '}
+                      <strong className="text-neutral-200">{d.groomMother}</strong>
+                    </>
+                  ) : (
+                    <>
+                      {d.person1Subline}
+                      {(d.groomFather || d.groomMother) && (
+                        <>
+                          {d.person1Subline ? ' — ' : ''}
+                          <strong className="text-neutral-200">
+                            {[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}
+                          </strong>
+                        </>
+                      )}
+                    </>
+                  )}
+                </p>
+              )}
             </div>
 
             {/* Simbol Dan (&) */}
-            <div className="flex items-center justify-center my-[-10px] md:hidden lg:flex">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#DFB76C] to-[#9A7228] text-black font-bold font-serif-theme flex items-center justify-center shadow-lg text-lg">
-                &amp;
-              </div>
-            </div>
+            {d.showSecondPerson !== false && (
+              <>
+                <div className="flex items-center justify-center my-[-10px] md:hidden lg:flex">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#DFB76C] to-[#9A7228] text-black font-bold font-serif-theme flex items-center justify-center shadow-lg text-lg">
+                    &amp;
+                  </div>
+                </div>
 
-            {/* Mempelai Wanita */}
-            <div className="p-6 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 relative overflow-hidden shadow-xl text-center group">
-              <RoyalCorner position="top-left" />
-              <div className="relative w-36 h-48 mx-auto rounded-t-full rounded-b-xl overflow-hidden border-2 border-[#DFB76C] shadow-[0_0_20px_rgba(223,183,108,0.3)] mb-4">
-                <img
-                  src={d.photoBride}
-                  alt={d.bride}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </div>
-              <h4 className="text-xl font-bold font-serif-theme text-gold-gradient">
-                {d.bride}
-              </h4>
-              <p className="text-xs font-sans text-[#DFB76C] tracking-wider uppercase mt-1">
-                Mempelai Wanita
-              </p>
-              <p className="text-xs font-sans text-neutral-400 mt-2">
-                Putri dari Bapak <strong className="text-neutral-200">{d.brideFather}</strong> &amp; Ibu <strong className="text-neutral-200">{d.brideMother}</strong>
-              </p>
-            </div>
+                {/* Mempelai Wanita */}
+                <div className="p-6 rounded-2xl bg-[#121620] border border-[#DFB76C]/30 relative overflow-hidden shadow-xl text-center group">
+                  <RoyalCorner position="top-left" />
+                  <div className="relative w-36 h-48 mx-auto rounded-t-full rounded-b-xl overflow-hidden border-2 border-[#DFB76C] shadow-[0_0_20px_rgba(223,183,108,0.3)] mb-4">
+                    <img
+                      src={d.photoBride}
+                      alt={d.bride}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <h4 className="text-xl font-bold font-serif-theme text-gold-gradient">
+                    {d.bride}
+                  </h4>
+                  <p className="text-xs font-sans text-[#DFB76C] tracking-wider uppercase mt-1">
+                    {d.person2Role || 'Mempelai Wanita'}
+                  </p>
+                  <p className="text-xs font-sans text-neutral-400 mt-2">
+                    Putri dari Bapak <strong className="text-neutral-200">{d.brideFather}</strong> &amp; Ibu{' '}
+                    <strong className="text-neutral-200">{d.brideMother}</strong>
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -419,7 +457,11 @@ export const RoyalGoldTheme = (props) => {
             <GoldFiligreeDivider />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              eventsList.length > 1 ? 'md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md' : 'max-w-md'
+            } gap-6 mx-auto items-stretch`}
+          >
             {eventsList.map((evt, idx) => (
               <div
                 key={idx}
@@ -497,7 +539,9 @@ export const RoyalGoldTheme = (props) => {
               Menghitung Hari
             </h4>
             <p className="text-xs font-sans text-neutral-400 mt-1 mb-5">
-              Menuju awal ikatan suci kami berdua
+              {d.eventType === 'wedding'
+                ? 'Menuju awal ikatan suci kami berdua'
+                : 'Menuju hari bahagia yang telah dinantikan'}
             </p>
 
             <div className="grid grid-cols-4 gap-2 sm:gap-3">
@@ -790,7 +834,11 @@ export const RoyalGoldTheme = (props) => {
                 value={d.rsvp?.message || ''}
                 onChange={(e) => d.rsvp?.setMessage(e.target.value)}
                 rows={3}
-                placeholder="Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
+                placeholder={
+                  d.showSecondPerson !== false
+                    ? 'Tuliskan ucapan dan doa terbaik untuk kedua mempelai...'
+                    : 'Tuliskan ucapan dan doa terbaik Anda...'
+                }
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0D12] border border-[#DFB76C]/30 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-[#DFB76C] focus:ring-1 focus:ring-[#DFB76C]"
               />
             </div>
@@ -876,11 +924,15 @@ export const RoyalGoldTheme = (props) => {
               Kami yang berbahagia,
             </span>
             <p className="text-3xl font-serif-theme font-bold text-gold-gradient">
-              {d.groomShort} &amp; {d.brideShort}
+              {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
             </p>
-            <p className="text-xs text-neutral-400 font-sans">
-              Keluarga Besar {d.groomFather} &amp; {d.brideFather}
-            </p>
+            {(d.groomFather || (d.showSecondPerson !== false && d.brideFather)) && (
+              <p className="text-xs text-neutral-400 font-sans">
+                {d.showSecondPerson !== false
+                  ? `Keluarga Besar ${d.groomFather} & ${d.brideFather}`
+                  : `Keluarga Besar ${[d.groomFather, d.groomMother].filter(Boolean).join(' & ')}`}
+              </p>
+            )}
           </div>
         </section>
       </div>

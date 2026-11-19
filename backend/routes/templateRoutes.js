@@ -15,6 +15,8 @@ router.post('/upload-thumbnail', verifyToken, upload.single('thumbnail'), templa
 router.post('/:id/upload-thumbnail', verifyToken, upload.single('thumbnail'), templateController.uploadThumbnail);
 router.post('/upload-video', verifyToken, upload.video.single('video'), templateController.uploadTemplateVideo);
 router.post('/:id/upload-video', verifyToken, upload.video.single('video'), templateController.uploadTemplateVideo);
+router.post('/upload-music', verifyToken, upload.single('audio'), templateController.uploadTemplateMusic);
+router.post('/:id/upload-music', verifyToken, upload.single('audio'), templateController.uploadTemplateMusic);
 router.post('/', verifyToken, templateController.createTemplate);
 router.put('/:id', verifyToken, templateController.updateTemplate);
 router.delete('/:id', verifyToken, templateController.deleteTemplate);

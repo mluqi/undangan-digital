@@ -13,7 +13,7 @@ export const InvitationTemplateModal = ({
   if (!isOpen || !invitation) return null;
 
   const templateCode = invitation?.template?.template_code || invitation?.template_code || 'mildness';
-  const TemplateComponent = getTemplateComponent(templateCode);
+  const TemplateComponent = getTemplateComponent(templateCode, invitation);
 
   const handleClose = () => {
     document.querySelectorAll('audio').forEach((el) => {

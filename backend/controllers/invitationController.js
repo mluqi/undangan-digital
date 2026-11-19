@@ -101,25 +101,64 @@ const isSocialCrawler = (userAgent = '') =>
 
 const renderOpenGraphHtml = (invitation, req) => {
   const content = invitation?.content_json || {};
+  const eventType = (content.eventType || 'wedding').toLowerCase();
+  const showSecondEvent =
+    content.showSecondEvent !== undefined
+      ? content.showSecondEvent !== false &&
+        content.showSecondEvent !== 'false' &&
+        content.showSecondEvent !== 0
+      : eventType === 'wedding';
+
   const groom = content.panggilanPria || content.mempelaiPria || 'Ahmad';
   const bride = content.panggilanWanita || content.mempelaiWanita || 'Aminah';
+  const mainName =
+    content.mempelaiPria ||
+    content.panggilanPria ||
+    (eventType === 'birthday' ? 'Ulang Tahun' : 'Acara Spesial');
+  const shortMainName =
+    content.panggilanPria || content.mempelaiPria || 'Ulang Tahun';
 
-  const title = `Undangan Pernikahan ${groom} dan ${bride}`;
+  let title = `Undangan Pernikahan ${groom} dan ${bride}`;
+  if (eventType === 'engagement') {
+    title = `Undangan Lamaran ${groom} & ${bride}`;
+  } else if (eventType === 'birthday') {
+    title = `Undangan Ulang Tahun ${shortMainName}`;
+  } else if (eventType === 'event') {
+    title = /^undangan\b/i.test(mainName) ? mainName : `Undangan ${mainName}`;
+  }
+
+  const defaultFirstEventLabel =
+    eventType === 'wedding'
+      ? 'Akad'
+      : eventType === 'engagement'
+        ? 'Lamaran'
+        : eventType === 'birthday'
+          ? 'Perayaan'
+          : 'Acara';
+  const defaultSecondEventLabel =
+    eventType === 'wedding' ? 'Resepsi' : 'Sesi 2';
+
+  const firstEventLabel =
+    (content.akad?.judul || '').trim() || defaultFirstEventLabel;
+  const secondEventLabel =
+    (content.resepsi?.judul || '').trim() || defaultSecondEventLabel;
 
   const akadDate = (content.akad?.tanggal || '').trim();
-  const resepsiDate = (content.resepsi?.tanggal || '').trim();
+  const resepsiDate = showSecondEvent
+    ? (content.resepsi?.tanggal || '').trim()
+    : '';
   let desc = '';
   if (akadDate && resepsiDate) {
     desc =
       akadDate === resepsiDate
-        ? `Akad & Resepsi: ${akadDate}`
-        : `Akad: ${akadDate} & Resepsi: ${resepsiDate}`;
+        ? `${firstEventLabel} & ${secondEventLabel}: ${akadDate}`
+        : `${firstEventLabel}: ${akadDate} & ${secondEventLabel}: ${resepsiDate}`;
   } else if (akadDate) {
-    desc = `Akad: ${akadDate}`;
+    desc = `${firstEventLabel}: ${akadDate}`;
   } else if (resepsiDate) {
-    desc = `Resepsi: ${resepsiDate}`;
+    desc = `${secondEventLabel}: ${resepsiDate}`;
   } else {
-    desc = `Undangan Pernikahan ${groom} dan ${bride}`;
+    desc = title;
   }
 
   // Ambil foto share WhatsApp (custom) atau fallback ke foto cover yang digunakan di hero

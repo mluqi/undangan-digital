@@ -250,21 +250,37 @@ export const DraperyPinkTheme = ({
             />
           </div>
 
-          {/* Top Header: We're GETTING MARRIED & Couple Names */}
+          {/* Top Header: Cover Subtitle & Couple/Subject Names */}
           <div className="relative z-20 flex flex-col items-center mt-2 cover-stagger">
-            <p className="font-slight text-[44px] sm:text-[50px] text-[#fdf9f6] leading-none drop-shadow-[0_2px_10px_rgba(59,24,31,0.45)]">
-              We’re
-            </p>
-            <p
-              className="text-[14px] sm:text-[16px] uppercase tracking-[0.18em] text-[#fdf9f6] -mt-1 font-medium drop-shadow-[0_2px_8px_rgba(59,24,31,0.4)]"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              GETTING MARRIED
-            </p>
+            {d.showSecondPerson !== false ? (
+              <>
+                <p className="font-slight text-[44px] sm:text-[50px] text-[#fdf9f6] leading-none drop-shadow-[0_2px_10px_rgba(59,24,31,0.45)]">
+                  We’re
+                </p>
+                <p
+                  className="text-[14px] sm:text-[16px] uppercase tracking-[0.18em] text-[#fdf9f6] -mt-1 font-medium drop-shadow-[0_2px_8px_rgba(59,24,31,0.4)]"
+                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                >
+                  {d.eventType === 'engagement' ? 'GETTING ENGAGED' : 'GETTING MARRIED'}
+                </p>
 
-            <h1 className="font-sloop text-[50px] sm:text-[58px] text-[#fdf9f6] leading-[1.1] mt-3 drop-shadow-[0_4px_14px_rgba(59,24,31,0.5)]">
-              {d.brideShort} &amp; {d.groomShort}
-            </h1>
+                <h1 className="font-sloop text-[50px] sm:text-[58px] text-[#fdf9f6] leading-[1.1] mt-3 drop-shadow-[0_4px_14px_rgba(59,24,31,0.5)]">
+                  {d.brideShort} &amp; {d.groomShort}
+                </h1>
+              </>
+            ) : (
+              <>
+                <p
+                  className="text-[14px] sm:text-[16px] uppercase tracking-[0.18em] text-[#fdf9f6] font-medium drop-shadow-[0_2px_8px_rgba(59,24,31,0.4)]"
+                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                >
+                  {d.coverSubtitle || (d.eventType === 'birthday' ? "YOU'RE INVITED" : 'UNDANGAN ACARA')}
+                </p>
+                <h1 className="font-sloop text-[50px] sm:text-[58px] text-[#fdf9f6] leading-[1.1] mt-3 drop-shadow-[0_4px_14px_rgba(59,24,31,0.5)]">
+                  {d.groomShort}
+                </h1>
+              </>
+            )}
           </div>
 
           {/* Center Interactive Closed Lace Envelope with Orchids & Wax Seal */}
@@ -522,73 +538,77 @@ export const DraperyPinkTheme = ({
                 className="h-9 w-auto object-contain"
               />
               <p className="text-[12.5px] leading-[1.65] text-[#3b181f]">
-                {d.openingGreeting &&
-                !d.openingGreeting.includes('Dengan penuh rasa syukur dan bahagia')
-                  ? d.openingGreeting
-                  : 'Dengan memohon rahmat & ridho Allah SWT, kami mengundang bapak/ibu/saudara/i untuk hadir pada pernikahan:'}
+                {d.eventType === 'wedding' &&
+                (!d.openingGreeting || d.openingGreeting.includes('Dengan penuh rasa syukur dan bahagia'))
+                  ? 'Dengan memohon rahmat & ridho Allah SWT, kami mengundang bapak/ibu/saudara/i untuk hadir pada pernikahan:'
+                  : d.openingGreeting}
               </p>
             </Reveal>
 
             {/* Bride Cameo Row */}
-            <div className="relative z-10 mt-10 grid grid-cols-12 items-center gap-2">
-              <Reveal variant="fade-right" delay={100} className="col-span-6 relative flex justify-center">
-                <div className="relative w-[175px] sm:w-[190px] aspect-[3/4] dp-envelope-float">
-                  {/* 3D Baroque Dusty Rose Cameo Frame (Base Layer) */}
-                  <img
-                    src={ASSETS.cameoOvalFrame}
-                    alt=""
-                    className="relative z-10 w-full h-full object-contain pointer-events-none drop-shadow-[0_10px_20px_rgba(104,51,62,0.28)]"
-                  />
-                  {/* Photo Masked Inside the Inner Cameo Oval */}
-                  <div className="absolute left-[22.5%] right-[22.5%] top-[19.5%] bottom-[19.5%] rounded-[50%] overflow-hidden z-20 shadow-[inset_0_3px_10px_rgba(59,24,31,0.45)] border border-[#e6ddcb]/40">
-                    <img
-                      src={bridePhoto}
-                      alt={d.bride}
-                      className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-                    />
-                  </div>
-                  <img
-                    src={ASSETS.butterfly}
-                    alt=""
-                    className="pointer-events-none absolute -bottom-3 right-2 w-11 h-11 object-contain z-30 dp-butterfly-drift"
-                  />
+            {d.showSecondPerson !== false && (
+              <>
+                <div className="relative z-10 mt-10 grid grid-cols-12 items-center gap-2">
+                  <Reveal variant="fade-right" delay={100} className="col-span-6 relative flex justify-center">
+                    <div className="relative w-[175px] sm:w-[190px] aspect-[3/4] dp-envelope-float">
+                      {/* 3D Baroque Dusty Rose Cameo Frame (Base Layer) */}
+                      <img
+                        src={ASSETS.cameoOvalFrame}
+                        alt=""
+                        className="relative z-10 w-full h-full object-contain pointer-events-none drop-shadow-[0_10px_20px_rgba(104,51,62,0.28)]"
+                      />
+                      {/* Photo Masked Inside the Inner Cameo Oval */}
+                      <div className="absolute left-[22.5%] right-[22.5%] top-[19.5%] bottom-[19.5%] rounded-[50%] overflow-hidden z-20 shadow-[inset_0_3px_10px_rgba(59,24,31,0.45)] border border-[#e6ddcb]/40">
+                        <img
+                          src={bridePhoto}
+                          alt={d.bride}
+                          className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
+                        />
+                      </div>
+                      <img
+                        src={ASSETS.butterfly}
+                        alt=""
+                        className="pointer-events-none absolute -bottom-3 right-2 w-11 h-11 object-contain z-30 dp-butterfly-drift"
+                      />
+                    </div>
+                  </Reveal>
+
+                  <Reveal variant="fade-left" delay={220} className="col-span-6 text-center px-1 space-y-1">
+                    <h2 className="font-sloop text-[50px] sm:text-[56px] text-[#68333e] leading-none">
+                      {d.brideShort}
+                    </h2>
+                    <p className="text-[12px] font-bold text-[#3b181f] leading-snug">
+                      {d.bride}
+                    </p>
+                    <p className="text-[12px] leading-[1.55] text-[#68333e] pt-1">
+                      {d.brideChildOrder || 'Putri Pertama'} dari
+                      <br />
+                      {d.brideFather}
+                      <br />
+                      &amp; {d.brideMother}
+                    </p>
+                    {d.brideInstagram && (
+                      <a
+                        href={`https://instagram.com/${d.brideInstagram.replace(/^@/, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-1.5 text-[11px] text-[#a96d79] hover:text-[#68333e] underline"
+                      >
+                        @{d.brideInstagram.replace(/^@/, '')}
+                      </a>
+                    )}
+                  </Reveal>
                 </div>
-              </Reveal>
 
-              <Reveal variant="fade-left" delay={220} className="col-span-6 text-center px-1 space-y-1">
-                <h2 className="font-sloop text-[50px] sm:text-[56px] text-[#68333e] leading-none">
-                  {d.brideShort}
-                </h2>
-                <p className="text-[12px] font-bold text-[#3b181f] leading-snug">
-                  {d.bride}
-                </p>
-                <p className="text-[12px] leading-[1.55] text-[#68333e] pt-1">
-                  {d.brideChildOrder || 'Putri Pertama'} dari
-                  <br />
-                  {d.brideFather}
-                  <br />
-                  &amp; {d.brideMother}
-                </p>
-                {d.brideInstagram && (
-                  <a
-                    href={`https://instagram.com/${d.brideInstagram.replace(/^@/, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-1.5 text-[11px] text-[#a96d79] hover:text-[#68333e] underline"
-                  >
-                    @{d.brideInstagram.replace(/^@/, '')}
-                  </a>
-                )}
-              </Reveal>
-            </div>
+                {/* Center Ampersand */}
+                <Reveal variant="zoom-in" delay={150} className="relative z-10 my-3 text-center">
+                  <span className="font-amoresa text-[24px] text-[#68333e] inline-block animate-breathe">&amp;</span>
+                </Reveal>
+              </>
+            )}
 
-            {/* Center Ampersand */}
-            <Reveal variant="zoom-in" delay={150} className="relative z-10 my-3 text-center">
-              <span className="font-amoresa text-[24px] text-[#68333e] inline-block animate-breathe">&amp;</span>
-            </Reveal>
-
-            {/* Groom Cameo Row */}
-            <div className="relative z-10 grid grid-cols-12 items-center gap-2 pb-10">
+            {/* Groom / Main Subject Cameo Row */}
+            <div className={`relative z-10 ${d.showSecondPerson === false ? 'mt-10' : ''} grid grid-cols-12 items-center gap-2 pb-10`}>
               <Reveal variant="fade-right" delay={120} className="col-span-6 text-center px-1 space-y-1">
                 <h2 className="font-sloop text-[50px] sm:text-[56px] text-[#68333e] leading-none">
                   {d.groomShort}
@@ -596,13 +616,25 @@ export const DraperyPinkTheme = ({
                 <p className="text-[12px] font-bold text-[#3b181f] leading-snug">
                   {d.groom}
                 </p>
-                <p className="text-[12px] leading-[1.55] text-[#68333e] pt-1">
-                  {d.groomChildOrder || 'Putra Pertama'} dari
-                  <br />
-                  {d.groomFather}
-                  <br />
-                  &amp; {d.groomMother}
-                </p>
+                {(d.showSecondPerson !== false || d.person1Subline || d.groomFather || d.groomMother) && (
+                  <p className="text-[12px] leading-[1.55] text-[#68333e] pt-1">
+                    {d.showSecondPerson !== false
+                      ? `${d.groomChildOrder || 'Putra Pertama'} dari`
+                      : d.person1Subline}
+                    {(d.groomFather || d.groomMother) && (
+                      <>
+                        {(d.showSecondPerson !== false || d.person1Subline) && <br />}
+                        {d.groomFather}
+                        {d.groomMother && (
+                          <>
+                            {d.groomFather && <br />}
+                            {d.groomFather ? <>&amp; {d.groomMother}</> : d.groomMother}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </p>
+                )}
                 {d.groomInstagram && (
                   <a
                     href={`https://instagram.com/${d.groomInstagram.replace(/^@/, '')}`}
@@ -683,16 +715,16 @@ export const DraperyPinkTheme = ({
               </h2>
             </Reveal>
 
-            {/* 3-Column Date Table (Akad | AGUSTUS 08 2026 | Resepsi) */}
+            {/* 3-Column Date Table (Akad | AGUSTUS 08 2026 | Resepsi / Lokasi) */}
             <Reveal
               variant="fade-up"
               delay={120}
               className="relative z-10 mt-8 grid grid-cols-3 items-center max-w-[360px] mx-auto"
             >
-              {/* Left: Akad */}
+              {/* Left: Akad / Acara Utama */}
               <div className="border-l-2 border-[#68333e] py-3 px-2 flex flex-col items-center justify-center space-y-1">
                 <span className="font-sloop text-[28px] text-[#68333e] leading-none">
-                  {d.akad?.judul || 'Akad'}
+                  {d.akad?.judul || (d.eventType === 'wedding' ? 'Akad' : 'Acara')}
                 </span>
                 <span className="text-[11px] font-bold text-[#68333e]">
                   {d.akad?.waktu}
@@ -712,15 +744,26 @@ export const DraperyPinkTheme = ({
                 </span>
               </div>
 
-              {/* Right: Resepsi */}
-              <div className="border-r-2 border-[#68333e] py-3 px-2 flex flex-col items-center justify-center space-y-1">
-                <span className="font-sloop text-[28px] text-[#68333e] leading-none">
-                  {d.resepsi?.judul || 'Resepsi'}
-                </span>
-                <span className="text-[11px] font-bold text-[#68333e]">
-                  {d.resepsi?.waktu}
-                </span>
-              </div>
+              {/* Right: Resepsi / Lokasi (ketika 1 acara) */}
+              {d.showSecondEvent !== false ? (
+                <div className="border-r-2 border-[#68333e] py-3 px-2 flex flex-col items-center justify-center space-y-1">
+                  <span className="font-sloop text-[28px] text-[#68333e] leading-none">
+                    {d.resepsi?.judul || 'Resepsi'}
+                  </span>
+                  <span className="text-[11px] font-bold text-[#68333e]">
+                    {d.resepsi?.waktu}
+                  </span>
+                </div>
+              ) : (
+                <div className="border-r-2 border-[#68333e] py-3 px-2 flex flex-col items-center justify-center space-y-1">
+                  <span className="font-sloop text-[28px] text-[#68333e] leading-none">
+                    Lokasi
+                  </span>
+                  <span className="text-[10px] font-bold text-[#68333e] line-clamp-2 text-center leading-tight">
+                    {d.akad?.lokasi}
+                  </span>
+                </div>
+              )}
             </Reveal>
 
             {/* Live Countdown Pills */}
@@ -776,7 +819,7 @@ export const DraperyPinkTheme = ({
                   {d.akad.alamat}
                 </p>
               )}
-              {d.akad?.mapUrl && d.akad.mapUrl !== d.resepsi?.mapUrl && (
+              {d.akad?.mapUrl && (d.showSecondEvent === false || d.akad.mapUrl !== d.resepsi?.mapUrl) && (
                 <div className="pt-2">
                   <a
                     href={d.akad.mapUrl}
@@ -791,52 +834,56 @@ export const DraperyPinkTheme = ({
               )}
             </Reveal>
 
-            {/* Calla Lily Divider */}
-            <Reveal variant="zoom-in" className="relative z-10 my-7 flex justify-center items-center gap-2">
-              <img
-                src={ASSETS.callaLilyGreen}
-                alt=""
-                className="w-10 h-16 object-contain dp-tassel-l"
-              />
-              <img
-                src={ASSETS.callaLilyBurgundy}
-                alt=""
-                className="w-10 h-16 object-contain dp-tassel-r"
-              />
-            </Reveal>
+            {d.showSecondEvent !== false && (
+              <>
+                {/* Calla Lily Divider */}
+                <Reveal variant="zoom-in" className="relative z-10 my-7 flex justify-center items-center gap-2">
+                  <img
+                    src={ASSETS.callaLilyGreen}
+                    alt=""
+                    className="w-10 h-16 object-contain dp-tassel-l"
+                  />
+                  <img
+                    src={ASSETS.callaLilyBurgundy}
+                    alt=""
+                    className="w-10 h-16 object-contain dp-tassel-r"
+                  />
+                </Reveal>
 
-            {/* Resepsi Details */}
-            <Reveal variant="fade-up" delay={120} className="relative z-10 space-y-2 max-w-[330px] mx-auto">
-              <h3 className="font-sloop text-[62px] sm:text-[70px] text-[#68333e] leading-none">
-                {d.resepsi?.judul || 'Resepsi'}
-              </h3>
-              <p className="text-[14px] font-bold text-[#68333e]">
-                {d.resepsi?.tanggal}
-                <br />
-                {d.resepsi?.waktu}
-              </p>
-              <p className="text-[14px] font-bold uppercase tracking-wide text-[#68333e] pt-2">
-                {d.resepsi?.lokasi}
-              </p>
-              {d.resepsi?.alamat && (
-                <p className="text-[12.5px] leading-relaxed text-[#68333e]/90">
-                  {d.resepsi.alamat}
-                </p>
-              )}
-              {(d.resepsi?.mapUrl || d.akad?.mapUrl) && (
-                <div className="pt-3">
-                  <a
-                    href={d.resepsi?.mapUrl || d.akad?.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-sheen inline-flex items-center gap-2 rounded-full bg-[#68333e] hover:bg-[#3b181f] text-[#fdf9f6] text-[13px] font-bold px-8 py-2.5 shadow-md transition"
-                  >
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>Google Maps</span>
-                  </a>
-                </div>
-              )}
-            </Reveal>
+                {/* Resepsi Details */}
+                <Reveal variant="fade-up" delay={120} className="relative z-10 space-y-2 max-w-[330px] mx-auto">
+                  <h3 className="font-sloop text-[62px] sm:text-[70px] text-[#68333e] leading-none">
+                    {d.resepsi?.judul || 'Resepsi'}
+                  </h3>
+                  <p className="text-[14px] font-bold text-[#68333e]">
+                    {d.resepsi?.tanggal}
+                    <br />
+                    {d.resepsi?.waktu}
+                  </p>
+                  <p className="text-[14px] font-bold uppercase tracking-wide text-[#68333e] pt-2">
+                    {d.resepsi?.lokasi}
+                  </p>
+                  {d.resepsi?.alamat && (
+                    <p className="text-[12.5px] leading-relaxed text-[#68333e]/90">
+                      {d.resepsi.alamat}
+                    </p>
+                  )}
+                  {(d.resepsi?.mapUrl || d.akad?.mapUrl) && (
+                    <div className="pt-3">
+                      <a
+                        href={d.resepsi?.mapUrl || d.akad?.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-sheen inline-flex items-center gap-2 rounded-full bg-[#68333e] hover:bg-[#3b181f] text-[#fdf9f6] text-[13px] font-bold px-8 py-2.5 shadow-md transition"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>Google Maps</span>
+                      </a>
+                    </div>
+                  )}
+                </Reveal>
+              </>
+            )}
 
             {/* Dress Code Section */}
             {d.showDresscode && (
@@ -1124,7 +1171,11 @@ export const DraperyPinkTheme = ({
                     maxLength={500}
                     value={d.rsvp.message}
                     onChange={(e) => d.rsvp.setMessage(e.target.value)}
-                    placeholder="Tuliskan ucapan dan doa untuk kedua mempelai..."
+                    placeholder={
+                      d.showSecondPerson !== false
+                        ? 'Tuliskan ucapan dan doa untuk kedua mempelai...'
+                        : 'Tuliskan ucapan dan doa terbaik Anda...'
+                    }
                     className="w-full rounded-xl bg-white border border-[#68333e]/25 px-3.5 py-2 text-[12.5px] text-[#3b181f] focus:outline-none focus:border-[#68333e]"
                   />
                 </div>
@@ -1423,18 +1474,27 @@ export const DraperyPinkTheme = ({
                     />
                     <div className="relative z-10 space-y-2.5 px-1">
                       <p className="text-[11.5px] sm:text-[12.5px] leading-[1.58] text-[#68333e]">
-                        {d.closingText &&
-                        !d.closingText.includes('Merupakan suatu kehormatan dan kebahagiaan')
-                          ? d.closingText
-                          : 'Menjadi sebuah kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dalam hari bahagia kami. Terimakasih atas segala ucapan, doa, dan perhatian yang diberikan.'}
+                        {d.eventType === 'wedding' &&
+                        (!d.closingText || d.closingText.includes('Merupakan suatu kehormatan dan kebahagiaan'))
+                          ? 'Menjadi sebuah kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dalam hari bahagia kami. Terimakasih atas segala ucapan, doa, dan perhatian yang diberikan.'
+                          : d.closingText}
                       </p>
                       <p className="text-[12px] font-bold text-[#68333e]">
-                        {d.closingSubtitle || 'Sampai jumpa di hari pernikahan kami!'}
+                        {d.closingSubtitle ||
+                          (d.eventType === 'wedding'
+                            ? 'Sampai jumpa di hari pernikahan kami!'
+                            : 'Sampai jumpa di hari bahagia kami!')}
                       </p>
                       <div className="pt-1 font-sloop text-[46px] sm:text-[52px] text-[#68333e] leading-[0.88]">
-                        <div>{d.brideShort}</div>
-                        <div className="text-[34px] my-0.5">&amp;</div>
-                        <div>{d.groomShort}</div>
+                        {d.showSecondPerson !== false ? (
+                          <>
+                            <div>{d.brideShort}</div>
+                            <div className="text-[34px] my-0.5">&amp;</div>
+                            <div>{d.groomShort}</div>
+                          </>
+                        ) : (
+                          <div>{d.groomShort}</div>
+                        )}
                       </div>
                     </div>
 
@@ -1492,7 +1552,9 @@ export const DraperyPinkTheme = ({
           guestName={d.guestName}
           qrValue={d.qrValue}
           showQr={d.showQr}
-          invitationTitle={`${d.brideShort} & ${d.groomShort}`}
+          invitationTitle={
+            d.showSecondPerson !== false ? `${d.brideShort} & ${d.groomShort}` : d.groomShort
+          }
           accentColor="#68333e"
         />
 

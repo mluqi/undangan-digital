@@ -232,11 +232,29 @@ export const SereinTheme = ({
   }, [guest]);
 
   const content = invitation?.content_json || {};
+  const eventType = (content.eventType || "wedding").toLowerCase();
+  const showSecondPerson = eventType === "wedding" || eventType === "engagement";
+  const showSecondEvent =
+    content.showSecondEvent !== undefined
+      ? content.showSecondEvent !== false &&
+        content.showSecondEvent !== "false" &&
+        content.showSecondEvent !== 0
+      : eventType === "wedding";
 
   const groom = content.mempelaiPria || "Ahmad Fajar, S.T.";
   const bride = content.mempelaiWanita || "Siti Aminah, S.Pd.";
-  const groomFather = content.ayahPria || "Bpk. H. Abdurrahman";
-  const groomMother = content.ibuPria || "Ibu Hj. Maryam";
+  const groomFather =
+    content.ayahPria !== undefined
+      ? content.ayahPria
+      : showSecondPerson
+        ? "Bpk. H. Abdurrahman"
+        : "";
+  const groomMother =
+    content.ibuPria !== undefined
+      ? content.ibuPria
+      : showSecondPerson
+        ? "Ibu Hj. Maryam"
+        : "";
   const brideFather = content.ayahWanita || "Bpk. H. Ahmad Dahlan";
   const brideMother = content.ibuWanita || "Ibu Hj. Fatimah";
 
@@ -269,7 +287,9 @@ export const SereinTheme = ({
   const ayatQuote = content.ayat || "QS. Ar-Rum: 21";
   const closingText =
     content.teksPenutup ||
-    "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.";
+    (showSecondPerson
+      ? "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai."
+      : "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa terbaik pada acara kami.");
   const closingGreeting =
     content.salamPenutup !== undefined
       ? content.salamPenutup
@@ -450,10 +470,26 @@ export const SereinTheme = ({
     brideName.trim().split(" ")[0] ||
     "Aminah";
 
+  const displayTitle = showSecondPerson ? `${groomFirst} & ${brideFirst}` : groomFirst;
+  const coverSubtitle =
+    eventType === "wedding"
+      ? "THE WEDDING OF"
+      : eventType === "engagement"
+        ? "THE ENGAGEMENT OF"
+        : eventType === "birthday"
+          ? "BIRTHDAY CELEBRATION"
+          : "SPECIAL INVITATION";
+
   const googleCalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    `The Wedding of ${groomFirst} & ${brideFirst}`,
+    eventType === "wedding"
+      ? `The Wedding of ${groomFirst} & ${brideFirst}`
+      : eventType === "engagement"
+        ? `Lamaran ${groomFirst} & ${brideFirst}`
+        : eventType === "birthday"
+          ? `Ulang Tahun ${groomFirst}`
+          : groom
   )}&dates=20261115T010000Z/20261115T070000Z&details=${encodeURIComponent(
-    "Pernikahan Suci Ahmad Fajar & Siti Aminah. Mohon doa restu.",
+    `Mohon doa restu dan kehadiran pada acara ${displayTitle}.`
   )}&location=${encodeURIComponent(akad.lokasi)}`;
 
   const countdownItems = [
@@ -464,6 +500,10 @@ export const SereinTheme = ({
   ];
 
   const sidePanelData = {
+    eventType,
+    showSecondPerson,
+    showSecondEvent,
+    coverSubtitle,
     groomShort: groomFirst,
     brideShort: brideFirst,
     groom,
@@ -554,7 +594,7 @@ export const SereinTheme = ({
 
             <div className="absolute inset-x-0 top-0 pt-8 text-center space-y-2">
               <span className="block text-[11px] font-sans tracking-[0.4em] uppercase text-white/90 font-medium">
-                THE WEDDING OF
+                {coverSubtitle}
               </span>
               <span className="block w-8 h-px bg-white/60 mx-auto" />
             </div>
@@ -568,8 +608,12 @@ export const SereinTheme = ({
               </span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-light tracking-wide text-[#24201D] leading-tight">
                 {groomFirst}
-                <span className="italic font-sans text-amber-700 mx-2">&amp;</span>
-                {brideFirst}
+                {showSecondPerson && (
+                  <>
+                    <span className="italic font-sans text-amber-700 mx-2">&amp;</span>
+                    {brideFirst}
+                  </>
+                )}
               </h1>
               <p className="text-xs font-sans tracking-[0.3em] text-[#7C7369] uppercase">
                 15 November 2026 • Surabaya
@@ -615,13 +659,25 @@ export const SereinTheme = ({
         {/* HERO */}
         <section className="relative px-6 pt-16 pb-20 text-center space-y-10">
           <div className="space-y-5">
-            <Eyebrow>WALIMATUL &apos;URS</Eyebrow>
+            <Eyebrow>
+              {eventType === "wedding"
+                ? "WALIMATUL 'URS"
+                : eventType === "engagement"
+                  ? "THE ENGAGEMENT OF"
+                  : eventType === "birthday"
+                    ? "BIRTHDAY CELEBRATION"
+                    : "SPECIAL EVENT"}
+            </Eyebrow>
             <h2 className="font-serif font-light text-[#24201D] leading-[1.05] text-5xl sm:text-6xl">
               {groomFirst}
-              <span className="block text-2xl font-sans italic text-amber-800 my-3 font-light">
-                &
-              </span>
-              {brideFirst}
+              {showSecondPerson && (
+                <>
+                  <span className="block text-2xl font-sans italic text-amber-800 my-3 font-light">
+                    &
+                  </span>
+                  {brideFirst}
+                </>
+              )}
             </h2>
             <Ornament />
           </div>
@@ -634,7 +690,7 @@ export const SereinTheme = ({
             <div className="relative aspect-[3/4] overflow-hidden bg-[#E8E2D8] shadow-xl">
               <img
                 src={photoCover}
-                alt="Mempelai"
+                alt={showSecondPerson ? `${groomFirst} & ${brideFirst}` : groomFirst}
                 data-parallax
                 className="w-full h-full object-cover scale-110"
               />
@@ -662,31 +718,54 @@ export const SereinTheme = ({
           </div>
         </section>
 
-        {/* MEMPELAI */}
+        {/* MEMPELAI / PROFIL UTAMA */}
         <section className="py-20 px-6 sm:px-8 space-y-14">
-          <SectionTitle eyebrow="KEDUA MEMPELAI" title="Mempelai Pengantin" />
+          <SectionTitle
+            eyebrow={
+              showSecondPerson
+                ? "KEDUA MEMPELAI"
+                : eventType === "birthday"
+                  ? "YANG BERULANG TAHUN"
+                  : "PROFIL ACARA"
+            }
+            title={showSecondPerson ? "Mempelai Pengantin" : groomFirst}
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-12 md:gap-8 lg:gap-16 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondPerson ? "md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md" : "max-w-md"
+            } gap-12 md:gap-8 lg:gap-16 mx-auto items-stretch`}
+          >
             <CoupleBlock
               photo={photoGroom}
-              alt="Mempelai Pria"
-              role="MEMPELAI PRIA"
+              alt={groom}
+              role={
+                eventType === "wedding"
+                  ? "MEMPELAI PRIA"
+                  : eventType === "engagement"
+                    ? "CALON MEMPELAI PRIA"
+                    : eventType === "birthday"
+                      ? "YANG BERULANG TAHUN"
+                      : "PENYELENGGARA"
+              }
               name={groom}
-              parentLabel="Putra tercinta dari:"
+              parentLabel={showSecondPerson ? "Putra tercinta dari:" : groomFather || groomMother ? "Dari / Penyelenggara:" : ""}
               father={groomFather}
               mother={groomMother}
               side="left"
             />
-            <CoupleBlock
-              photo={photoBride}
-              alt="Mempelai Wanita"
-              role="MEMPELAI WANITA"
-              name={bride}
-              parentLabel="Putri tercinta dari:"
-              father={brideFather}
-              mother={brideMother}
-              side="right"
-            />
+            {showSecondPerson && (
+              <CoupleBlock
+                photo={photoBride}
+                alt="Mempelai Wanita"
+                role={eventType === "engagement" ? "CALON MEMPELAI WANITA" : "MEMPELAI WANITA"}
+                name={bride}
+                parentLabel="Putri tercinta dari:"
+                father={brideFather}
+                mother={brideMother}
+                side="right"
+              />
+            )}
           </div>
         </section>
 
@@ -723,21 +802,36 @@ export const SereinTheme = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 max-w-md md:max-w-4xl lg:max-w-md mx-auto items-stretch">
+          <div
+            className={`grid grid-cols-1 ${
+              showSecondEvent ? "md:grid-cols-2 lg:grid-cols-1 max-w-md md:max-w-4xl lg:max-w-md" : "max-w-md"
+            } gap-6 mx-auto items-stretch`}
+          >
             <EventBlock
               no="01"
-              title="Akad Nikah"
+              title={
+                akad.judul ||
+                (eventType === "wedding"
+                  ? "Akad Nikah"
+                  : eventType === "engagement"
+                    ? "Acara Lamaran"
+                    : eventType === "birthday"
+                      ? "Perayaan Ulang Tahun"
+                      : "Acara Utama")
+              }
               icon={Heart}
               event={akad}
               googleCalUrl={googleCalUrl}
             />
-            <EventBlock
-              no="02"
-              title="Resepsi Pernikahan"
-              icon={Sparkles}
-              event={resepsi}
-              googleCalUrl={googleCalUrl}
-            />
+            {showSecondEvent && (
+              <EventBlock
+                no="02"
+                title={resepsi.judul || (eventType === "wedding" ? "Resepsi Pernikahan" : "Sesi Kedua")}
+                icon={Sparkles}
+                event={resepsi}
+                googleCalUrl={googleCalUrl}
+              />
+            )}
           </div>
         </section>
 
@@ -1047,10 +1141,14 @@ export const SereinTheme = ({
             </span>
             <p className="text-4xl font-serif font-light text-[#24201D] leading-tight">
               {groomFirst}
-              <span className="block text-xl font-sans italic text-amber-800 my-1">
-                &
-              </span>
-              {brideFirst}
+              {showSecondPerson && (
+                <>
+                  <span className="block text-xl font-sans italic text-amber-800 my-1">
+                    &
+                  </span>
+                  {brideFirst}
+                </>
+              )}
             </p>
             <p className="text-xs text-[#6B5A4E] font-sans">
               Beserta Segenap Keluarga Besar

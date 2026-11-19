@@ -1174,14 +1174,18 @@ export const ForestTropicalTheme = (props) => {
                 <Trees className="h-7 w-7 text-[#B7E36B]" />
               </div>
               <p className="mb-2 text-xs font-medium tracking-[0.25em] text-[#E8D27A]">
-                The Wedding of
+                {d.coverSubtitle || 'The Wedding of'}
               </p>
               <h2 className="font-serif-theme text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.7)] w-full px-2 break-words">
                 <span className="inline-block">{d.groomShort}</span>
-                <span className="font-cursive mx-1.5 sm:mx-2.5 text-[1.2em] text-[#E8D27A] align-middle">
-                  &
-                </span>
-                <span className="inline-block">{d.brideShort}</span>
+                {d.showSecondPerson !== false && (
+                  <>
+                    <span className="font-cursive mx-1.5 sm:mx-2.5 text-[1.2em] text-[#E8D27A] align-middle">
+                      &
+                    </span>
+                    <span className="inline-block">{d.brideShort}</span>
+                  </>
+                )}
               </h2>
             </div>
 
@@ -1329,14 +1333,18 @@ export const ForestTropicalTheme = (props) => {
             {/* nama + tanggal + CTA, ditaruh di bawah seperti referensi */}
             <div className="mt-auto pt-24">
               <p className="mb-2 text-xs font-semibold tracking-[0.25em] text-[#E8D27A] uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                The Wedding of
+                {d.coverSubtitle || 'The Wedding of'}
               </p>
               <h1 className="font-serif-theme text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold leading-[1.1] text-[#F7FBE9] drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] max-w-full px-2 break-words">
                 <span className="inline-block max-w-full">{d.groomShort}</span>
-                <span className="font-cursive mx-2 sm:mx-3 text-[1.25em] text-[#E8D27A] drop-shadow-[0_2px_14px_rgba(232,210,122,0.6)] align-middle">
-                  &
-                </span>
-                <span className="inline-block max-w-full">{d.brideShort}</span>
+                {d.showSecondPerson !== false && (
+                  <>
+                    <span className="font-cursive mx-2 sm:mx-3 text-[1.25em] text-[#E8D27A] drop-shadow-[0_2px_14px_rgba(232,210,122,0.6)] align-middle">
+                      &
+                    </span>
+                    <span className="inline-block max-w-full">{d.brideShort}</span>
+                  </>
+                )}
               </h1>
 
               <div
@@ -1419,63 +1427,83 @@ export const ForestTropicalTheme = (props) => {
         >
           <CanopyEdge />
           <SectionTitle
-            title="Bride & Groom"
-            desc="Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud melangsungkan pernikahan suci:"
+            title={d.showSecondPerson !== false ? 'Bride & Groom' : d.person1Role || d.groomShort}
+            desc={d.openingGreeting}
           />
 
-          <div className="mx-auto grid max-w-md grid-cols-1 gap-12 md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
-            {/* Pria */}
+          <div
+            className={`mx-auto grid max-w-md grid-cols-1 gap-12 ${
+              d.showSecondPerson !== false ? 'md:max-w-4xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1' : ''
+            }`}
+          >
+            {/* Pria / Tokoh Utama */}
             <Reveal variant="fade-right" delay={100}>
               <div className="text-center">
                 <GroomBotanicalFrame src={d.photoGroom} alt={d.groom} />
                 <p className="mt-8 text-xs font-bold uppercase tracking-wider text-[#A6D854]">
-                  Mempelai Pria
+                  {d.person1Role || 'Mempelai Pria'}
                 </p>
                 <h3 className="font-serif-theme mt-1.5 text-2xl sm:text-3xl font-extrabold leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
                   {d.groom}
                 </h3>
-                <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
-                  Putra tercinta dari
-                  <br />
-                  <strong className="font-bold text-white tracking-wide">
-                    {d.groomFather}
-                  </strong>
-                  <br />&{" "}
-                  <strong className="font-bold text-white tracking-wide">
-                    {d.groomMother}
-                  </strong>
-                </p>
+                {(d.showSecondPerson !== false || d.person1Subline || d.groomFather || d.groomMother) && (
+                  <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
+                    {d.showSecondPerson !== false ? 'Putra tercinta dari' : d.person1Subline}
+                    {(d.groomFather || d.groomMother) && (
+                      <>
+                        {(d.showSecondPerson !== false || d.person1Subline) && <br />}
+                        {d.groomFather && (
+                          <strong className="font-bold text-white tracking-wide">
+                            {d.groomFather}
+                          </strong>
+                        )}
+                        {d.groomFather && d.groomMother && (
+                          <>
+                            <br />&amp;{' '}
+                          </>
+                        )}
+                        {d.groomMother && (
+                          <strong className="font-bold text-white tracking-wide">
+                            {d.groomMother}
+                          </strong>
+                        )}
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
             </Reveal>
 
             {/* Wanita */}
-            <Reveal variant="fade-left" delay={200}>
-              <div className="text-center">
-                <BrideBotanicalFrame
-                  src={d.photoBride}
-                  alt={d.bride}
-                  ringFrom={C.fern}
-                  ringTo={C.gold}
-                />
-                <p className="mt-8 text-xs font-bold uppercase tracking-wider text-[#A6D854]">
-                  Mempelai Wanita
-                </p>
-                <h3 className="font-serif-theme mt-1.5 text-2xl sm:text-3xl font-extrabold leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-                  {d.bride}
-                </h3>
-                <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
-                  Putri tercinta dari
-                  <br />
-                  <strong className="font-bold text-white tracking-wide">
-                    {d.brideFather}
-                  </strong>
-                  <br />&{" "}
-                  <strong className="font-bold text-white tracking-wide">
-                    {d.brideMother}
-                  </strong>
-                </p>
-              </div>
-            </Reveal>
+            {d.showSecondPerson !== false && (
+              <Reveal variant="fade-left" delay={200}>
+                <div className="text-center">
+                  <BrideBotanicalFrame
+                    src={d.photoBride}
+                    alt={d.bride}
+                    ringFrom={C.fern}
+                    ringTo={C.gold}
+                  />
+                  <p className="mt-8 text-xs font-bold uppercase tracking-wider text-[#A6D854]">
+                    {d.person2Role || 'Mempelai Wanita'}
+                  </p>
+                  <h3 className="font-serif-theme mt-1.5 text-2xl sm:text-3xl font-extrabold leading-snug text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                    {d.bride}
+                  </h3>
+                  <p className="mt-3 text-xs sm:text-[13px] font-medium leading-relaxed text-[#D9EBCB]">
+                    Putri tercinta dari
+                    <br />
+                    <strong className="font-bold text-white tracking-wide">
+                      {d.brideFather}
+                    </strong>
+                    <br />&{" "}
+                    <strong className="font-bold text-white tracking-wide">
+                      {d.brideMother}
+                    </strong>
+                  </p>
+                </div>
+              </Reveal>
+            )}
           </div>
 
           <FoliageEdge />
@@ -1489,7 +1517,7 @@ export const ForestTropicalTheme = (props) => {
           className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.dark}`}
         >
           <CanopyEdge />
-          <SectionTitle title="Save The Date" />
+          <SectionTitle title={d.countdownTitle || 'Save The Date'} />
 
           <Reveal variant="zoom-in" delay={100}>
             <div className="mx-auto max-w-sm">
@@ -1515,8 +1543,9 @@ export const ForestTropicalTheme = (props) => {
               </div>
 
               <p className="mx-auto mt-6 max-w-[18rem] text-[13px] italic leading-relaxed text-[#CFE3C2]">
-                Dan kami bersyukur, dipertemukan Allah di waktu terbaik. Kini
-                kami menanti hari istimewa kami.
+                {d.eventType === 'wedding'
+                  ? 'Dan kami bersyukur, dipertemukan Allah di waktu terbaik. Kini kami menanti hari istimewa kami.'
+                  : 'Menanti momen berharga bersama keluarga, sahabat, dan orang-orang tercinta.'}
               </p>
 
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
@@ -1543,17 +1572,27 @@ export const ForestTropicalTheme = (props) => {
             </div>
           </Reveal>
 
-          <div className="mx-auto mt-14 grid max-w-md grid-cols-1 gap-12 md:max-w-3xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1">
+          <div
+            className={`mx-auto mt-14 grid max-w-md grid-cols-1 gap-12 ${
+              d.showSecondEvent !== false ? 'md:max-w-3xl md:grid-cols-2 lg:max-w-md lg:grid-cols-1' : ''
+            }`}
+          >
             <Reveal variant="fade-right" delay={120}>
-              <EventBlock title="Akad Nikah" icon={Calendar} event={d.akad} />
-            </Reveal>
-            <Reveal variant="fade-left" delay={220}>
               <EventBlock
-                title="Resepsi Pernikahan"
-                icon={Clock}
-                event={d.resepsi}
+                title={d.akad?.judul || (d.eventType === 'wedding' ? 'Akad Nikah' : 'Acara Utama')}
+                icon={Calendar}
+                event={d.akad}
               />
             </Reveal>
+            {d.showSecondEvent !== false && (
+              <Reveal variant="fade-left" delay={220}>
+                <EventBlock
+                  title={d.resepsi?.judul || (d.eventType === 'wedding' ? 'Resepsi Pernikahan' : 'Sesi 2')}
+                  icon={Clock}
+                  event={d.resepsi}
+                />
+              </Reveal>
+            )}
           </div>
         </section>
 
@@ -1654,7 +1693,11 @@ export const ForestTropicalTheme = (props) => {
           >
             <CanopyEdge />
             <SectionTitle
-              title={`Bekal Langkah Awal ${d.groomShort} & ${d.brideShort}`}
+              title={
+                d.showSecondPerson !== false
+                  ? `Bekal Langkah Awal ${d.groomShort} & ${d.brideShort}`
+                  : d.giftTitle || `Apresiasi & Kado Digital`
+              }
               desc="Doa restu Anda merupakan karunia yang sangat berarti bagi kami."
             />
 
@@ -1895,7 +1938,9 @@ export const ForestTropicalTheme = (props) => {
                   placeholder={
                     d.rsvp.hasSubmitted
                       ? "Terima kasih, Anda telah mengirimkan ucapan & doa restu."
-                      : "Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
+                      : d.showSecondPerson !== false
+                        ? "Tuliskan ucapan dan doa terbaik untuk kedua mempelai..."
+                        : "Tuliskan ucapan dan doa terbaik Anda..."
                   }
                   className={`${inputCls} ${d.rsvp.hasSubmitted ? "cursor-not-allowed bg-black/40 text-stone-300 opacity-70" : ""}`}
                 />
@@ -1905,8 +1950,11 @@ export const ForestTropicalTheme = (props) => {
                 <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-950/50 p-3 text-[11px] text-emerald-300 leading-snug">
                   <Check className="h-4 w-4 shrink-0 text-emerald-400" />
                   <span>
-                    Anda telah mengirimkan ucapan doa restu untuk kedua
-                    mempelai. Terima kasih!
+                    Anda telah mengirimkan ucapan doa restu{" "}
+                    {d.showSecondPerson !== false
+                      ? "untuk kedua mempelai."
+                      : `untuk ${d.groomShort}.`}{" "}
+                    Terima kasih!
                   </span>
                 </div>
               )}
@@ -2043,11 +2091,11 @@ export const ForestTropicalTheme = (props) => {
                 Kami yang berbahagia,
               </p>
               <h3 className="font-serif-theme text-3xl sm:text-4xl font-extrabold text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] tracking-wide">
-                {d.groomShort} & {d.brideShort}
+                {d.showSecondPerson !== false ? `${d.groomShort} & ${d.brideShort}` : d.groomShort}
               </h3>
 
               <p className="mt-8 text-[10px] text-[#9DB890]">
-                Tamuva Digital Wedding Invitation
+                Tamuva Digital Invitation
               </p>
             </Reveal>
           </div>

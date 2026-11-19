@@ -46,6 +46,17 @@ export const templateService = {
       body: formData,
     });
   },
+  async uploadMusic(file, templateId = null) {
+    const formData = new FormData();
+    formData.append('audio', file);
+    const endpoint = templateId
+      ? `/templates/${templateId}/upload-music`
+      : '/templates/upload-music';
+    return await request(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+  },
   async getLandingCms() {
     return await request('/templates/landing-cms');
   },
