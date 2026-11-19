@@ -25,7 +25,7 @@ const PUBLIC_PREFIXES = [
   '/p/',
 ];
 
-const ADMIN_PORTAL_DOMAINS = (import.meta.env.VITE_ADMIN_DOMAINS || 'story.tamuva.id')
+const ADMIN_PORTAL_DOMAINS = (import.meta.env.VITE_ADMIN_DOMAINS || 'story.tamuva.id,story.tamuva.com')
   .split(',')
   .map((d) => d.trim().toLowerCase())
   .filter(Boolean);

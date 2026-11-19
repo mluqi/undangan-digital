@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
                   req.originalUrl,
                 );
 
-                if (hostname === "story.tamuva.id") {
+                if (hostname === "story.tamuva.id" || hostname === "story.tamuva.com") {
                   html = html
                     .replace(/<title>.*?<\/title>/i, "<title>Portal Undangan Digital</title>")
                     .replace(/<meta\s+property="og:site_name"[^>]*\/?>/i, '<meta property="og:site_name" content="Portal Undangan Digital" />')
