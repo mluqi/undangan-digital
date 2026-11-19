@@ -1647,7 +1647,8 @@ export const ForestTropicalTheme = (props) => {
         {/* ============================================================ */}
         {/* AMPLOP DIGITAL & KADO                                         */}
         {/* ============================================================ */}
-        {(Boolean(d.giftAddress) || (d.bankAccounts && d.bankAccounts.length > 0)) && (
+        {(Boolean(d.giftAddress) ||
+          (d.bankAccounts && d.bankAccounts.length > 0)) && (
           <section
             className={`relative z-[1] overflow-hidden px-6 pb-20 pt-24 ${band.mid}`}
           >

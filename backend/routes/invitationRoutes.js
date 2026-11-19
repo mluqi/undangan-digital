@@ -19,6 +19,7 @@ router.delete('/:id', verifyToken, invitationController.deleteInvitation);
 router.post('/:id/upload-music', verifyToken, upload.single('audio'), invitationController.uploadMusic);
 router.post('/:id/upload-gallery', verifyToken, upload.array('photos', 15), invitationController.uploadGallery);
 router.post('/:id/upload-photo', verifyToken, upload.single('photo'), invitationController.uploadPhoto);
+router.post('/:id/upload-video', verifyToken, upload.video.single('video'), invitationController.uploadVideo);
 
 module.exports = router;
 

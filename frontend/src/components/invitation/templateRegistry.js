@@ -8,6 +8,9 @@ import { RusticWoodTheme } from './templates/RusticWoodTheme';
 import { RoyalGoldTheme } from './templates/RoyalGoldTheme';
 import { CrimsonRoseTheme } from './templates/CrimsonRoseTheme';
 import { ForestTropicalTheme } from './templates/ForestTropicalTheme';
+import { KembarMayangTheme } from './templates/KembarMayangTheme';
+import { NoirVelvetTheme } from './templates/NoirVelvetTheme';
+import { DraperyPinkTheme } from './templates/DraperyPinkTheme';
 
 /**
  * TEMPLATE REGISTRY
@@ -110,6 +113,34 @@ export const TEMPLATE_REGISTRY = {
     code: 'tropical-forest',
     name: 'Forest Tropical Lush Botanical',
     component: ForestTropicalTheme,
+  },
+  // 11. Kembar Mayang Sage & Copper - Adat Jawa modern (terinspirasi layout leafitation Jawa 03)
+  'jawa-kembar-mayang': {
+    code: 'jawa-kembar-mayang',
+    name: 'Kembar Mayang Sage & Copper',
+    component: KembarMayangTheme,
+  },
+  // 12. Noir Velvet Motion - Espresso Noir, Champagne Gold & Video Editorial
+  'noir-velvet': {
+    code: 'noir-velvet',
+    name: 'Noir Velvet Motion',
+    component: NoirVelvetTheme,
+  },
+  'simpul-kisah': {
+    code: 'noir-velvet',
+    name: 'Noir Velvet Motion',
+    component: NoirVelvetTheme,
+  },
+  // 13. Drapery Pink & Vintage Lace - Romantic Satin Curtain, Cream Lace & Baroque Cameo
+  'drapery-pink': {
+    code: 'drapery-pink',
+    name: 'Drapery Pink & Vintage Lace',
+    component: DraperyPinkTheme,
+  },
+  'lynk-drapery-pink': {
+    code: 'drapery-pink',
+    name: 'Drapery Pink & Vintage Lace',
+    component: DraperyPinkTheme,
   },
   'red-white': {
     code: 'red-white',

@@ -14,6 +14,7 @@ import { RsvpsPage } from './pages/RsvpsPage';
 import { UsersPage } from './pages/UsersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PublicInvitationPage } from './pages/PublicInvitationPage';
+import { LandingPage } from './pages/LandingPage';
 
 const PUBLIC_PREFIXES = [
   '/invitation/',
@@ -23,6 +24,19 @@ const PUBLIC_PREFIXES = [
   '/u/',
   '/p/',
 ];
+
+const ADMIN_PORTAL_DOMAINS = (import.meta.env.VITE_ADMIN_DOMAINS || 'story.tamuva.id')
+  .split(',')
+  .map((d) => d.trim().toLowerCase())
+  .filter(Boolean);
+
+function isAdminOnlyDomain() {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname.toLowerCase();
+  if (ADMIN_PORTAL_DOMAINS.includes(host)) return true;
+  const params = new URLSearchParams(window.location.search);
+  return params.get('portal') === 'admin';
+}
 
 const VALID_DETAIL_TABS = ['guests', 'rsvps', 'settings', 'preview'];
 
@@ -114,17 +128,17 @@ function DashboardLayout({ currentPath, onNavigate }) {
   // Update browser tab title dynamically
   useEffect(() => {
     const titles = {
-      '/dashboard': 'Dashboard — UndanganKita Admin',
+      '/dashboard': 'Dashboard — SAMSKARA Admin',
       '/invitations': route.type === 'invitation-detail'
-        ? `${activeInvitationTitle || `Undangan #${route.invitationId}`} (${TAB_LABELS[route.tab] || 'Detail'}) — UndanganKita Admin`
-        : 'Undangan Client — UndanganKita Admin',
-      '/templates': 'Master Templates — UndanganKita Admin',
-      '/users': 'Kelola Pengguna — UndanganKita Admin',
-      '/settings': 'Pengaturan — UndanganKita Admin',
-      '/guests': 'Daftar Tamu — UndanganKita Admin',
-      '/rsvps': 'Ucapan & RSVP — UndanganKita Admin',
+        ? `${activeInvitationTitle || `Undangan #${route.invitationId}`} (${TAB_LABELS[route.tab] || 'Detail'}) — SAMSKARA Admin`
+        : 'Undangan Client — SAMSKARA Admin',
+      '/templates': 'Templates & CMS Landing — SAMSKARA Admin',
+      '/users': 'Kelola Pengguna — SAMSKARA Admin',
+      '/settings': 'Pengaturan — SAMSKARA Admin',
+      '/guests': 'Daftar Tamu — SAMSKARA Admin',
+      '/rsvps': 'Ucapan & RSVP — SAMSKARA Admin',
     };
-    document.title = titles[route.section] || 'UndanganKita Admin';
+    document.title = titles[route.section] || 'SAMSKARA Admin';
   }, [route.section, route.type, route.invitationId, route.tab, activeInvitationTitle]);
 
   const handleLogout = async () => {
@@ -295,40 +309,77 @@ function MainApp() {
   }
 
   const { isAuthenticated, isLoading } = useAuth();
+  const cleanPath = normalizePath(locationPath);
+  const adminOnlyDomain = isAdminOnlyDomain();
 
   useEffect(() => {
     if (isLoading) return;
     if (matchedPrefix) return;
 
-    const cleanPath = normalizePath(locationPath);
+    const setMeta = (attr, key, val) => {
+      const el = document.querySelector(`meta[${attr}="${key}"]`);
+      if (el && val !== undefined) el.setAttribute('content', val);
+    };
+
+    if (adminOnlyDomain) {
+      setMeta('property', 'og:site_name', 'Portal Undangan Digital');
+      setMeta('property', 'og:title', 'Portal Undangan Digital');
+      setMeta('property', 'og:description', 'Masuk ke panel pengelolaan undangan digital.');
+      setMeta('property', 'og:image', '');
+      setMeta('property', 'og:image:secure_url', '');
+      setMeta('name', 'twitter:image', '');
+    } else {
+      const logoUrl = 'https://api-invitation.luckysdev.com/uploads/samskara.jpg';
+      setMeta('property', 'og:site_name', 'SAMSKARA - Undangan Digital');
+      setMeta('property', 'og:title', 'SAMSKARA — Eternal Memories');
+      setMeta('property', 'og:description', 'Undangan Pernikahan Digital & Buku Tamu QR');
+      setMeta('property', 'og:image', logoUrl);
+      setMeta('property', 'og:image:secure_url', logoUrl);
+      setMeta('name', 'twitter:image', logoUrl);
+    }
+
+    if (cleanPath === '/' && !adminOnlyDomain) {
+      document.title = 'SAMSKARA — Eternal Memories | Undangan Pernikahan Digital';
+      return;
+    }
 
     if (!isAuthenticated) {
-      if (cleanPath !== '/login' && cleanPath !== '/') {
-        intendedPathRef.current = cleanPath;
-      }
       if (cleanPath !== '/login') {
+        intendedPathRef.current = cleanPath === '/' ? '/dashboard' : cleanPath;
         navigate('/login', { replace: true });
       }
-      document.title = 'Masuk — UndanganKita Admin';
+      document.title = 'Masuk — SAMSKARA';
     } else {
-      if (cleanPath === '/login' || cleanPath === '/') {
-        const destination = intendedPathRef.current || '/dashboard';
+      if (cleanPath === '/login' || (adminOnlyDomain && cleanPath === '/')) {
+        const destination =
+          intendedPathRef.current && intendedPathRef.current !== '/'
+            ? intendedPathRef.current
+            : '/dashboard';
         intendedPathRef.current = null;
         navigate(destination, { replace: true });
       }
     }
-  }, [isAuthenticated, isLoading, locationPath, matchedPrefix, navigate]);
+  }, [isAuthenticated, isLoading, cleanPath, matchedPrefix, adminOnlyDomain, navigate]);
+
+  if (cleanPath === '/' && !matchedPrefix && !adminOnlyDomain) {
+    return <LandingPage isAuthenticated={isAuthenticated} onNavigate={navigate} />;
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh flex flex-col items-center justify-center bg-slate-50">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-[#FAF6F0]">
         <Spinner size="lg" label="Memeriksa sesi login..." />
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <AuthPage />;
+    return (
+      <AuthPage
+        hideBackToHome={adminOnlyDomain}
+        onBackToHome={adminOnlyDomain ? undefined : () => navigate('/')}
+      />
+    );
   }
 
   return <DashboardLayout currentPath={locationPath} onNavigate={navigate} />;

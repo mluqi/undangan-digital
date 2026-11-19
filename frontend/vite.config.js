@@ -13,7 +13,10 @@ const escapeAttr = (str = "") =>
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const apiTarget = (env.VITE_API_URL || "http://localhost:8001/api").replace(/\/api\/?$/, "");
+  const apiTarget = (env.VITE_API_URL || "http://localhost:8001/api").replace(
+    /\/api\/?$/,
+    "",
+  );
 
   return {
     plugins: [
@@ -23,12 +26,68 @@ export default defineConfig(({ mode }) => {
           server.middlewares.use(async (req, res, next) => {
             try {
               const rawUrl = req.url || "/";
-              const urlObj = new URL(rawUrl, `http://${req.headers.host || "localhost"}`);
-              const match = urlObj.pathname.match(/^\/(?:invitation|u|p|preview)\/([^/?#]+)/);
-              if (!match) return next();
+              const urlObj = new URL(
+                rawUrl,
+                `http://${req.headers.host || "localhost"}`,
+              );
+              const host =
+                req.headers["x-forwarded-host"] ||
+                req.headers.host ||
+                "localhost:5173";
+              const hostname = String(host).split(":")[0].toLowerCase();
+              const proto = (req.headers["x-forwarded-proto"] || "http")
+                .split(",")[0]
+                .trim();
+
+              const match = urlObj.pathname.match(
+                /^\/(?:invitation|u|p|preview)\/([^/?#]+)/,
+              );
+
+              // Non-/invitation routes: sesuaikan OG default berdasarkan domain
+              if (!match) {
+                const accept = req.headers.accept || "";
+                if (!accept.includes("text/html") || urlObj.pathname.startsWith("/api") || urlObj.pathname.includes(".")) {
+                  return next();
+                }
+
+                const fs = await import("node:fs/promises");
+                const path = await import("node:path");
+                let html = await fs.readFile(
+                  path.resolve(process.cwd(), "index.html"),
+                  "utf-8",
+                );
+                html = await server.transformIndexHtml(
+                  rawUrl,
+                  html,
+                  req.originalUrl,
+                );
+
+                if (hostname === "story.tamuva.id") {
+                  html = html
+                    .replace(/<title>.*?<\/title>/i, "<title>Portal Undangan Digital</title>")
+                    .replace(/<meta\s+property="og:site_name"[^>]*\/?>/i, '<meta property="og:site_name" content="Portal Undangan Digital" />')
+                    .replace(/<meta\s+property="og:title"[^>]*\/?>/i, '<meta property="og:title" content="Portal Undangan Digital" />')
+                    .replace(/<meta\s+property="og:description"[^>]*\/?>/i, '<meta property="og:description" content="Masuk ke panel pengelolaan undangan digital." />')
+                    .replace(/<meta\s+property="og:image"[^>]*\/?>/gi, "")
+                    .replace(/<meta\s+property="og:image:secure_url"[^>]*\/?>/gi, "")
+                    .replace(/<meta\s+name="twitter:image"[^>]*\/?>/gi, "");
+                } else {
+                  const defaultLogo = "https://api-invitation.luckysdev.com/uploads/samskara.jpg";
+                  html = html
+                    .replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${escapeAttr(defaultLogo)}" />`)
+                    .replace(/<meta\s+property="og:image:secure_url"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image:secure_url" content="${escapeAttr(defaultLogo)}" />`)
+                    .replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${escapeAttr(defaultLogo)}" />`);
+                }
+
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "text/html; charset=utf-8");
+                return res.end(html);
+              }
 
               const slug = decodeURIComponent(match[1]);
-              const apiRes = await fetch(`${apiTarget}/api/invitations/slug/${encodeURIComponent(slug)}`);
+              const apiRes = await fetch(
+                `${apiTarget}/api/invitations/slug/${encodeURIComponent(slug)}`,
+              );
               if (!apiRes.ok) return next();
 
               const json = await apiRes.json();
@@ -36,8 +95,10 @@ export default defineConfig(({ mode }) => {
               if (!invitation) return next();
 
               const content = invitation.content_json || {};
-              const groom = content.panggilanPria || content.mempelaiPria || "Ahmad";
-              const bride = content.panggilanWanita || content.mempelaiWanita || "Aminah";
+              const groom =
+                content.panggilanPria || content.mempelaiPria || "Ahmad";
+              const bride =
+                content.panggilanWanita || content.mempelaiWanita || "Aminah";
 
               const title = `Undangan Pernikahan ${groom} dan ${bride}`;
 
@@ -58,7 +119,11 @@ export default defineConfig(({ mode }) => {
               }
 
               let cover = content.fotoWhatsapp || content.fotoCover;
-              if (!cover && Array.isArray(content.galeri) && content.galeri.length > 0) {
+              if (
+                !cover &&
+                Array.isArray(content.galeri) &&
+                content.galeri.length > 0
+              ) {
                 cover = content.galeri[0];
               }
               if (!cover) {
@@ -66,8 +131,6 @@ export default defineConfig(({ mode }) => {
                   "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80";
               }
 
-              const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost:5173";
-              const proto = (req.headers["x-forwarded-proto"] || "http").split(",")[0].trim();
               const uploadsIdx = cover.indexOf("/uploads/");
               if (uploadsIdx !== -1) {
                 cover = `${proto}://${host}${cover.substring(uploadsIdx)}`;
@@ -77,38 +140,48 @@ export default defineConfig(({ mode }) => {
 
               const fs = await import("node:fs/promises");
               const path = await import("node:path");
-              let html = await fs.readFile(path.resolve(process.cwd(), "index.html"), "utf-8");
-              html = await server.transformIndexHtml(rawUrl, html, req.originalUrl);
+              let html = await fs.readFile(
+                path.resolve(process.cwd(), "index.html"),
+                "utf-8",
+              );
+              html = await server.transformIndexHtml(
+                rawUrl,
+                html,
+                req.originalUrl,
+              );
 
               html = html
-                .replace(/<title>.*?<\/title>/i, `<title>${escapeAttr(title)}</title>`)
+                .replace(
+                  /<title>.*?<\/title>/i,
+                  `<title>${escapeAttr(title)}</title>`,
+                )
                 .replace(
                   /<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta property="og:title" content="${escapeAttr(title)}" />`
+                  `<meta property="og:title" content="${escapeAttr(title)}" />`,
                 )
                 .replace(
                   /<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta property="og:description" content="${escapeAttr(desc)}" />`
+                  `<meta property="og:description" content="${escapeAttr(desc)}" />`,
                 )
                 .replace(
                   /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta property="og:image" content="${escapeAttr(cover)}" />`
+                  `<meta property="og:image" content="${escapeAttr(cover)}" />`,
                 )
                 .replace(
                   /<meta\s+property="og:image:secure_url"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta property="og:image:secure_url" content="${escapeAttr(cover)}" />`
+                  `<meta property="og:image:secure_url" content="${escapeAttr(cover)}" />`,
                 )
                 .replace(
                   /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta name="twitter:title" content="${escapeAttr(title)}" />`
+                  `<meta name="twitter:title" content="${escapeAttr(title)}" />`,
                 )
                 .replace(
                   /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta name="twitter:description" content="${escapeAttr(desc)}" />`
+                  `<meta name="twitter:description" content="${escapeAttr(desc)}" />`,
                 )
                 .replace(
                   /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i,
-                  `<meta name="twitter:image" content="${escapeAttr(cover)}" />`
+                  `<meta name="twitter:image" content="${escapeAttr(cover)}" />`,
                 );
 
               res.statusCode = 200;
@@ -131,6 +204,13 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
       },
+      allowedHosts: [
+        "story.tamuva.id",
+        ".samskara.id",
+        ".ngrok-free.app", // Untuk domain gratis ngrok terbaru
+        ".ngrok.io", // Untuk domain ngrok versi lama / standar
+        ".ngrok.app", // Untuk custom domain / paket berbayar ngrok
+      ],
     },
   };
 });

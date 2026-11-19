@@ -9,3 +9,4 @@ export * from './Loader';
 export * from './Breadcrumb';
 export * from './Toast';
 export * from './DataTable';
+export * from './DelleaLogo';

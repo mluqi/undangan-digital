@@ -131,26 +131,30 @@ export const DashboardPage = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-indigo-600 to-violet-600 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white shadow-xl shadow-indigo-600/15">
+      {/* Welcome Banner (Dellea Mulberry Burgundy & Champagne) */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#2B0C0C] via-[#3B1010] to-[#4A1515] border border-[#633A2C] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-[#E6D2BE] shadow-lg">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div className="space-y-2 max-w-xl min-w-0">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-indigo-100">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="truncate">Platform Undangan Pernikahan Digital v1.0</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6D2BE]/10 border border-[#C9A98B]/30 text-[11px] uppercase tracking-[0.22em] font-semibold text-[#D8BFA6]">
+              <span>SAMSKARA • Eternal ☾ Memories</span>
             </div>
-            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight break-words">
-              Selamat datang kembali, {user?.name}!
+            <h1
+              className="text-2xl sm:text-4xl font-normal tracking-tight text-[#E6D2BE] break-words"
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            >
+              Selamat datang kembali,{' '}
+              <span className="italic text-[#C9A98B]">{user?.name}!</span>
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100 leading-relaxed">
-              Pantau seluruh aktivitas pembuatan undangan client, kehadiran buku tamu RSVP, serta master katalog template Anda dari dashboard ini.
+            <p className="text-xs sm:text-sm text-[#D8BFA6]/90 leading-relaxed">
+              Kelola undangan pernikahan klien, daftar tamu VVIP hingga Grup, serta
+              foto showcase Landing Page dari satu ruang kerja.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <Button
               variant="secondary"
-              className="w-full sm:w-auto justify-center bg-white text-indigo-900 hover:bg-indigo-50 border-0 font-semibold shadow-md"
+              className="w-full sm:w-auto justify-center bg-[#E6D2BE] text-[#2B0C0C] hover:bg-[#D8BFA6] border-0 font-semibold shadow-md"
               leftIcon={Plus}
               onClick={() => onNavigate('/invitations')}
             >

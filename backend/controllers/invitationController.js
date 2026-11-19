@@ -415,6 +415,33 @@ const uploadPhoto = async (req, res) => {
   }
 };
 
+// @desc    Upload video file for invitation (background or prewedding video)
+// @route   POST /api/invitations/:id/upload-video
+// @access  Private
+const uploadVideo = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'File video tidak ditemukan.' });
+    }
+    const slug = req.invitationSlug || 'general';
+    const relativeUrl = `/uploads/${slug}/video/${req.file.filename}`;
+    const fullUrl = `${req.protocol}://${req.get('host')}${relativeUrl}`;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Video berhasil diupload.',
+      data: {
+        filename: req.file.filename,
+        relativeUrl,
+        url: fullUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Error saat upload video:', error);
+    return res.status(500).json({ success: false, message: error.message || 'Gagal upload video.' });
+  }
+};
+
 module.exports = {
   createInvitation,
   getAllInvitations,
@@ -425,6 +452,7 @@ module.exports = {
   uploadMusic,
   uploadGallery,
   uploadPhoto,
+  uploadVideo,
   serveInvitationOg,
 };
 

@@ -68,6 +68,16 @@ const THEME_STYLES = {
     icon: Sparkles,
     eyebrow: 'Pawiwahan Ageng Keraton Jawa',
   },
+  'jawa-sage': {
+    bgGradient: 'from-[#2A160D] via-[#3D2315] to-[#1E0F09]',
+    accentColor: '#C59B3F',
+    secondaryColor: '#F5E6C8',
+    badgeBg: 'bg-[#C59B3F]/20 text-[#F5E6C8] border-[#C59B3F]/35',
+    glass: 'bg-[#2A160D]/85 border-[#C59B3F]/30',
+    titleFont: 'font-vidaloka',
+    icon: Sparkles,
+    eyebrow: 'Pawiwahan Adat Jawa',
+  },
   rustic: {
     bgGradient: 'from-[#1C120A] via-[#2E1D11] to-[#140C06]',
     accentColor: '#D8C3A5',
@@ -118,6 +128,16 @@ const THEME_STYLES = {
     icon: Camera,
     eyebrow: 'Timeless Monochromatic Story',
   },
+  'drapery-pink': {
+    bgGradient: 'from-[#2A1015] via-[#4A1E27] to-[#1F0B0F]',
+    accentColor: '#E8B4BC',
+    secondaryColor: '#FDF9F6',
+    badgeBg: 'bg-[#E8B4BC]/20 text-[#FDF9F6] border-[#E8B4BC]/40',
+    glass: 'bg-[#2A1015]/80 border-[#E8B4BC]/30',
+    titleFont: 'font-quattrocento',
+    icon: Heart,
+    eyebrow: 'Romantic Satin Drapery & Vintage Lace',
+  },
 };
 
 // Aliases agar cocok dengan kode template di database/registry
@@ -127,8 +147,12 @@ THEME_STYLES['simple-rustic-4'] = THEME_STYLES.crimson;
 THEME_STYLES['elegant-gold'] = THEME_STYLES['royal-gold'];
 THEME_STYLES['sunda-priangan'] = THEME_STYLES.sunda;
 THEME_STYLES['jawa-keraton'] = THEME_STYLES.jawa;
+THEME_STYLES['jawa-kembar-mayang'] = THEME_STYLES['jawa-sage'];
 THEME_STYLES['rustic-wood'] = THEME_STYLES.rustic;
 THEME_STYLES['timeless-snapshot'] = THEME_STYLES.timeless;
+THEME_STYLES['noir-velvet'] = THEME_STYLES['snap-photo'];
+THEME_STYLES['simpul-kisah'] = THEME_STYLES['snap-photo'];
+THEME_STYLES['lynk-drapery-pink'] = THEME_STYLES['drapery-pink'];
 
 /**
  * Desktop Side Panel Component

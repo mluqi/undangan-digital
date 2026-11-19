@@ -9,7 +9,9 @@ import {
   Sparkles,
   LogOut,
   Users,
+  ExternalLink,
 } from 'lucide-react';
+import { DelleaLogo } from '../ui/DelleaLogo';
 
 export const Sidebar = ({
   isOpen = true,
@@ -33,7 +35,7 @@ export const Sidebar = ({
       path: '/invitations',
     },
     {
-      label: 'Master Templates',
+      label: 'Templates & CMS Landing',
       icon: Palette,
       path: '/templates',
     },
@@ -80,27 +82,23 @@ export const Sidebar = ({
   };
 
   const renderSidebarContent = (expanded) => (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300 border-r border-slate-800 select-none">
+    <div className="flex flex-col h-full bg-[#2B0C0C] text-[#D8BFA6] border-r border-[#4A1515] select-none">
       {/* Brand Header */}
       <div
-        className={`flex items-center border-b border-slate-800/80 py-4 ${
+        className={`flex items-center border-b border-[#4A1515]/80 py-4 ${
           expanded ? 'justify-between px-5' : 'justify-center px-2'
         }`}
       >
         <a
           href="/dashboard"
           onClick={(e) => handleNavClick(e, '/dashboard')}
-          className="flex items-center gap-3 overflow-hidden focus:outline-none"
+          className="flex items-center overflow-hidden focus:outline-none"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shrink-0 shadow-md shadow-indigo-500/20">
-            <Sparkles className="w-5 h-5" aria-hidden="true" />
-          </div>
-          {expanded && (
-            <div className="truncate">
-              <h1 className="text-sm font-bold text-white tracking-wide">NikahDigital</h1>
-              <p className="text-[11px] text-slate-400">Admin Platform</p>
-            </div>
-          )}
+          <DelleaLogo
+            variant={expanded ? 'horizontal' : 'mark'}
+            theme="light"
+            size="sm"
+          />
         </a>
 
         {/* Mobile close button */}
@@ -108,7 +106,7 @@ export const Sidebar = ({
           type="button"
           onClick={onCloseMobile}
           aria-label="Tutup Menu Navigasi"
-          className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+          className="lg:hidden p-1.5 rounded-lg text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#3B1010] transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" aria-hidden="true" />
         </button>
@@ -118,7 +116,7 @@ export const Sidebar = ({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="hidden lg:flex p-1.5 rounded-lg text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#3B1010] transition-colors cursor-pointer"
             title="Ciutkan Sidebar"
           >
             <ChevronLeft className="w-4 h-4 transition-transform duration-300" aria-hidden="true" />
@@ -128,11 +126,11 @@ export const Sidebar = ({
 
       {/* Expand button when collapsed on desktop */}
       {!expanded && (
-        <div className="hidden lg:flex justify-center py-2 border-b border-slate-800/60">
+        <div className="hidden lg:flex justify-center py-2 border-b border-[#4A1515]/60">
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#3B1010] transition-colors cursor-pointer"
             title="Perluas Sidebar"
           >
             <ChevronLeft className="w-4 h-4 rotate-180 transition-transform duration-300" aria-hidden="true" />
@@ -161,15 +159,15 @@ export const Sidebar = ({
                 !expanded ? 'justify-center' : ''
               } ${
                 isActive
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-[#4A1515] text-[#E6D2BE] border border-[#C9A98B]/35 shadow-sm'
+                  : 'text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#3B1010]'
               }`}
               title={!expanded ? item.label : undefined}
             >
               <Icon
                 aria-hidden="true"
                 className={`w-5 h-5 shrink-0 transition-colors ${
-                  isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
+                  isActive ? 'text-[#E6D2BE]' : 'text-[#C9A98B] group-hover:text-[#E6D2BE]'
                 }`}
               />
 
@@ -178,7 +176,7 @@ export const Sidebar = ({
               {expanded && item.badge && (
                 <span
                   className={`px-1.5 py-0.5 text-[10px] font-semibold rounded-md ${
-                    item.badgeColor || 'bg-slate-800 text-slate-300'
+                    item.badgeColor || 'bg-[#3B1010] text-[#E6D2BE]'
                   }`}
                 >
                   {item.badge}
@@ -187,29 +185,45 @@ export const Sidebar = ({
             </a>
           );
         })}
+
+        {/* Quick Link to Public Landing Page */}
+        <div className="pt-3 mt-3 border-t border-[#4A1515]/70">
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#3B1010] transition-all ${
+              !expanded ? 'justify-center' : ''
+            }`}
+            title="Lihat Landing Page Publik"
+          >
+            <ExternalLink className="w-4 h-4 shrink-0" />
+            {expanded && <span className="flex-1 text-left truncate">Lihat Landing Page</span>}
+          </a>
+        </div>
       </nav>
 
       {/* Bottom User Preview */}
-      <div className="p-3 border-t border-slate-800/80">
+      <div className="p-3 border-t border-[#4A1515]/80">
         <div
-          className={`flex items-center gap-3 p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 ${
+          className={`flex items-center gap-3 p-2.5 rounded-xl bg-[#3B1010] border border-[#633A2C]/50 ${
             !expanded ? 'flex-col justify-center gap-2' : ''
           }`}
         >
-          <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#E6D2BE] text-[#2B0C0C] flex items-center justify-center font-bold text-xs shrink-0">
             {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
           </div>
           {expanded && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">{user.name}</p>
-              <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+              <p className="text-xs font-semibold text-[#E6D2BE] truncate">{user.name}</p>
+              <p className="text-[11px] text-[#C9A98B] truncate">{user.email}</p>
             </div>
           )}
           {onLogout && (
             <button
               type="button"
               onClick={onLogout}
-              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-700/60 rounded-lg transition-colors cursor-pointer shrink-0"
+              className="p-1.5 text-[#C9A98B] hover:text-[#E6D2BE] hover:bg-[#4A1515] rounded-lg transition-colors cursor-pointer shrink-0"
               title="Keluar dari Aplikasi"
             >
               <LogOut className="w-4 h-4" aria-hidden="true" />

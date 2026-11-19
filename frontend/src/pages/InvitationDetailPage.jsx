@@ -164,26 +164,62 @@ export const InvitationDetailPage = ({
     showGift: true,
     mempelaiPria: '',
     panggilanPria: '',
+    anakKePria: '',
+    instagramPria: '',
     ayahPria: '',
     ibuPria: '',
     mempelaiWanita: '',
     panggilanWanita: '',
+    anakKeWanita: '',
+    instagramWanita: '',
     ayahWanita: '',
     ibuWanita: '',
+    akadJudul: 'Akad Nikah',
     akadTanggal: '',
     akadWaktu: '',
     akadLokasi: '',
     akadAlamat: '',
     akadMapUrl: '',
+    resepsiJudul: 'Resepsi',
     resepsiTanggal: '',
     resepsiWaktu: '',
     resepsiLokasi: '',
     resepsiAlamat: '',
     resepsiMapUrl: '',
+    penerimaKado: '',
     alamatKado: '',
     ayat: '',
+    salamPembuka: '',
     teksPenutup: '',
     salamPenutup: '',
+    backgroundVideoUrl: '',
+    preweddingVideoUrl: '',
+    fotoPenutup: '',
+    tanggalAkadISO: '',
+    judulPembuka: '',
+    catatanCover: '',
+    monogram: '',
+    kutipanPembuka: '',
+    judulCountdown: '',
+    judulGaleri: '',
+    judulKisah: '',
+    judulKado: '',
+    subjudulKado: '',
+    judulRsvp: '',
+    subjudulRsvp: '',
+    judulPenutup: '',
+    subjudulPenutup: '',
+    tandaTanganPenutup: '',
+    footerText: '',
+    showDresscode: true,
+    judulDresscode: '',
+    dresscodeText: '',
+    dresscodeColors: ['#fdf9f6', '#a96d79', '#68333e'],
+    giftConfirmText: '',
+    giftWa1Name: '',
+    giftWa1Phone: '',
+    giftWa2Name: '',
+    giftWa2Phone: '',
   });
 
   // Media & Assets States
@@ -198,6 +234,9 @@ export const InvitationDetailPage = ({
   const [isUploadingWhatsapp, setIsUploadingWhatsapp] = useState(false);
   const [isUploadingGroom, setIsUploadingGroom] = useState(false);
   const [isUploadingBride, setIsUploadingBride] = useState(false);
+  const [isUploadingClosing, setIsUploadingClosing] = useState(false);
+  const [isUploadingBgVideo, setIsUploadingBgVideo] = useState(false);
+  const [isUploadingPrewedVideo, setIsUploadingPrewedVideo] = useState(false);
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
@@ -207,6 +246,9 @@ export const InvitationDetailPage = ({
   const whatsappFileInputRef = useRef(null);
   const groomFileInputRef = useRef(null);
   const brideFileInputRef = useRef(null);
+  const closingFileInputRef = useRef(null);
+  const bgVideoFileInputRef = useRef(null);
+  const prewedVideoFileInputRef = useRef(null);
   const galleryFileInputRef = useRef(null);
 
   // Bank Accounts / Rekening state
@@ -278,6 +320,7 @@ export const InvitationDetailPage = ({
     if (type === 'whatsapp') setIsUploadingWhatsapp(true);
     if (type === 'groom') setIsUploadingGroom(true);
     if (type === 'bride') setIsUploadingBride(true);
+    if (type === 'closing') setIsUploadingClosing(true);
 
     try {
       const res = await invitationService.uploadPhoto(invitationId, file, type);
@@ -286,6 +329,9 @@ export const InvitationDetailPage = ({
         if (type === 'whatsapp') setFotoWhatsapp(res.data.url);
         if (type === 'groom') setFotoPria(res.data.url);
         if (type === 'bride') setFotoWanita(res.data.url);
+        if (type === 'closing') {
+          setSettingsForm((prev) => ({ ...prev, fotoPenutup: res.data.url }));
+        }
         toast.success(`Foto ${type} berhasil diupload ke /uploads/${invitation?.slug}/covers/`);
       }
     } catch (err) {
@@ -296,6 +342,34 @@ export const InvitationDetailPage = ({
       if (type === 'whatsapp') setIsUploadingWhatsapp(false);
       if (type === 'groom') setIsUploadingGroom(false);
       if (type === 'bride') setIsUploadingBride(false);
+      if (type === 'closing') setIsUploadingClosing(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleUploadVideoFile = async (e, type) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (type === 'background') setIsUploadingBgVideo(true);
+    if (type === 'prewedding') setIsUploadingPrewedVideo(true);
+
+    try {
+      const res = await invitationService.uploadVideo(invitationId, file, type);
+      if (res?.data?.url) {
+        if (type === 'background') {
+          setSettingsForm((prev) => ({ ...prev, backgroundVideoUrl: res.data.url }));
+        }
+        if (type === 'prewedding') {
+          setSettingsForm((prev) => ({ ...prev, preweddingVideoUrl: res.data.url }));
+        }
+        toast.success(`Video berhasil diupload ke /uploads/${invitation?.slug}/video/`);
+      }
+    } catch (err) {
+      console.error('Error upload video:', err);
+      toast.error(err.message || 'Gagal mengupload video.');
+    } finally {
+      if (type === 'background') setIsUploadingBgVideo(false);
+      if (type === 'prewedding') setIsUploadingPrewedVideo(false);
       e.target.value = '';
     }
   };
@@ -367,26 +441,34 @@ export const InvitationDetailPage = ({
         mempelaiPria: c.mempelaiPria || '',
         panggilanPria:
           c.panggilanPria || (c.mempelaiPria ? c.mempelaiPria.split(',')[0].trim().split(' ')[0] : ''),
+        anakKePria: c.anakKePria || 'Putra Pertama',
+        instagramPria: c.instagramPria || '',
         ayahPria: c.ayahPria || '',
         ibuPria: c.ibuPria || '',
         mempelaiWanita: c.mempelaiWanita || '',
         panggilanWanita:
           c.panggilanWanita ||
           (c.mempelaiWanita ? c.mempelaiWanita.split(',')[0].trim().split(' ')[0] : ''),
+        anakKeWanita: c.anakKeWanita || 'Putri Pertama',
+        instagramWanita: c.instagramWanita || '',
         ayahWanita: c.ayahWanita || '',
         ibuWanita: c.ibuWanita || '',
+        akadJudul: c.akad?.judul || 'Akad Nikah',
         akadTanggal: c.akad?.tanggal || '',
         akadWaktu: c.akad?.waktu || '',
         akadLokasi: c.akad?.lokasi || '',
         akadAlamat: c.akad?.alamat || '',
         akadMapUrl: c.akad?.mapUrl || '',
+        resepsiJudul: c.resepsi?.judul || 'Resepsi',
         resepsiTanggal: c.resepsi?.tanggal || '',
         resepsiWaktu: c.resepsi?.waktu || '',
         resepsiLokasi: c.resepsi?.lokasi || '',
         resepsiAlamat: c.resepsi?.alamat || '',
         resepsiMapUrl: c.resepsi?.mapUrl || '',
+        penerimaKado: c.penerimaKado || '',
         alamatKado: c.alamatKado || '',
         ayat: c.ayat || 'QS. Ar-Rum: 21',
+        salamPembuka: c.salamPembuka || '',
         teksPenutup:
           c.teksPenutup ||
           'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',
@@ -394,6 +476,37 @@ export const InvitationDetailPage = ({
           c.salamPenutup !== undefined
             ? c.salamPenutup
             : "Wassalamu'alaikum Warahmatullahi Wabarakatuh",
+        backgroundVideoUrl: c.backgroundVideoUrl || '',
+        preweddingVideoUrl: c.preweddingVideoUrl || '',
+        fotoPenutup: c.fotoPenutup || '',
+        tanggalAkadISO: c.tanggalAkadISO ? String(c.tanggalAkadISO).slice(0, 16) : '',
+        judulPembuka: c.judulPembuka || '',
+        catatanCover: c.catatanCover || '',
+        monogram: c.monogram || '',
+        kutipanPembuka: c.kutipanPembuka || '',
+        judulCountdown: c.judulCountdown || '',
+        judulGaleri: c.judulGaleri || '',
+        judulKisah: c.judulKisah || '',
+        judulKado: c.judulKado || '',
+        subjudulKado: c.subjudulKado || '',
+        judulRsvp: c.judulRsvp || '',
+        subjudulRsvp: c.subjudulRsvp || '',
+        judulPenutup: c.judulPenutup || '',
+        subjudulPenutup: c.subjudulPenutup || '',
+        tandaTanganPenutup: c.tandaTanganPenutup || '',
+        footerText: c.footerText || '',
+        showDresscode: c.showDresscode !== undefined ? Boolean(c.showDresscode) : true,
+        judulDresscode: c.judulDresscode || '',
+        dresscodeText: c.dresscodeText || '',
+        dresscodeColors:
+          Array.isArray(c.dresscodeColors) && c.dresscodeColors.length > 0
+            ? c.dresscodeColors
+            : ['#fdf9f6', '#a96d79', '#68333e'],
+        giftConfirmText: c.giftConfirmText || '',
+        giftWa1Name: c.giftWa1Name || '',
+        giftWa1Phone: c.giftWa1Phone || '',
+        giftWa2Name: c.giftWa2Name || '',
+        giftWa2Phone: c.giftWa2Phone || '',
       });
 
       // Populate bank accounts
@@ -988,6 +1101,46 @@ export const InvitationDetailPage = ({
     setIsSavingSettings(true);
 
     try {
+      const selectedTmpl = templates.find(
+        (t) => t.id.toString() === settingsForm.template_id?.toString()
+      );
+      const activeTemplateCode =
+        selectedTmpl?.template_code || invitation?.template?.template_code || 'default';
+      const existingOverrides = invitation?.content_json?.templateOverrides || {};
+      const currentTemplateOverride = {
+        backgroundVideoUrl: settingsForm.backgroundVideoUrl || undefined,
+        preweddingVideoUrl: settingsForm.preweddingVideoUrl || undefined,
+        fotoPenutup: settingsForm.fotoPenutup || undefined,
+        judulPembuka: settingsForm.judulPembuka || undefined,
+        catatanCover: settingsForm.catatanCover || undefined,
+        monogram: settingsForm.monogram || undefined,
+        kutipanPembuka: settingsForm.kutipanPembuka || undefined,
+        salamPembuka: settingsForm.salamPembuka || undefined,
+        judulCountdown: settingsForm.judulCountdown || undefined,
+        judulGaleri: settingsForm.judulGaleri || undefined,
+        judulKisah: settingsForm.judulKisah || undefined,
+        judulKado: settingsForm.judulKado || undefined,
+        subjudulKado: settingsForm.subjudulKado || undefined,
+        judulRsvp: settingsForm.judulRsvp || undefined,
+        subjudulRsvp: settingsForm.subjudulRsvp || undefined,
+        judulPenutup: settingsForm.judulPenutup || undefined,
+        subjudulPenutup: settingsForm.subjudulPenutup || undefined,
+        tandaTanganPenutup: settingsForm.tandaTanganPenutup || undefined,
+        footerText: settingsForm.footerText || undefined,
+        showDresscode: Boolean(settingsForm.showDresscode),
+        judulDresscode: settingsForm.judulDresscode || undefined,
+        dresscodeText: settingsForm.dresscodeText || undefined,
+        dresscodeColors:
+          Array.isArray(settingsForm.dresscodeColors) && settingsForm.dresscodeColors.length > 0
+            ? settingsForm.dresscodeColors
+            : undefined,
+        giftConfirmText: settingsForm.giftConfirmText || undefined,
+        giftWa1Name: settingsForm.giftWa1Name || undefined,
+        giftWa1Phone: settingsForm.giftWa1Phone || undefined,
+        giftWa2Name: settingsForm.giftWa2Name || undefined,
+        giftWa2Phone: settingsForm.giftWa2Phone || undefined,
+      };
+
       const payload = {
         client_name: settingsForm.client_name,
         template_id: parseInt(settingsForm.template_id, 10),
@@ -1001,16 +1154,22 @@ export const InvitationDetailPage = ({
           showGift: Boolean(settingsForm.showGift),
           mempelaiPria: settingsForm.mempelaiPria,
           panggilanPria: settingsForm.panggilanPria,
+          anakKePria: settingsForm.anakKePria || undefined,
+          instagramPria: settingsForm.instagramPria || undefined,
           ayahPria: settingsForm.ayahPria,
           ibuPria: settingsForm.ibuPria,
           mempelaiWanita: settingsForm.mempelaiWanita,
           panggilanWanita: settingsForm.panggilanWanita,
+          anakKeWanita: settingsForm.anakKeWanita || undefined,
+          instagramWanita: settingsForm.instagramWanita || undefined,
           ayahWanita: settingsForm.ayahWanita,
           ibuWanita: settingsForm.ibuWanita,
           ayat: settingsForm.ayat,
+          salamPembuka: settingsForm.salamPembuka || undefined,
           teksPenutup: settingsForm.teksPenutup,
           salamPenutup: settingsForm.salamPenutup,
           akad: {
+            judul: settingsForm.akadJudul || 'Akad Nikah',
             tanggal: settingsForm.akadTanggal,
             waktu: settingsForm.akadWaktu,
             lokasi: settingsForm.akadLokasi,
@@ -1018,6 +1177,7 @@ export const InvitationDetailPage = ({
             mapUrl: settingsForm.akadMapUrl || invitation?.content_json?.akad?.mapUrl || '',
           },
           resepsi: {
+            judul: settingsForm.resepsiJudul || 'Resepsi',
             tanggal: settingsForm.resepsiTanggal,
             waktu: settingsForm.resepsiWaktu,
             lokasi: settingsForm.resepsiLokasi,
@@ -1029,11 +1189,51 @@ export const InvitationDetailPage = ({
           musicUrl: musicUrl,
           musicTitle: musicTitle,
           rekening: bankAccounts.filter((b) => b.bank?.trim() || b.nomor?.trim() || b.nama?.trim()),
+          penerimaKado: settingsForm.penerimaKado || undefined,
           alamatKado: settingsForm.alamatKado || undefined,
+          backgroundVideoUrl: settingsForm.backgroundVideoUrl || undefined,
+          preweddingVideoUrl: settingsForm.preweddingVideoUrl || undefined,
+          fotoPenutup: settingsForm.fotoPenutup || undefined,
+          tanggalAkadISO: settingsForm.tanggalAkadISO
+            ? settingsForm.tanggalAkadISO.length === 16
+              ? `${settingsForm.tanggalAkadISO}:00+07:00`
+              : settingsForm.tanggalAkadISO
+            : undefined,
+          judulPembuka: settingsForm.judulPembuka || undefined,
+          catatanCover: settingsForm.catatanCover || undefined,
+          monogram: settingsForm.monogram || undefined,
+          kutipanPembuka: settingsForm.kutipanPembuka || undefined,
+          judulCountdown: settingsForm.judulCountdown || undefined,
+          judulGaleri: settingsForm.judulGaleri || undefined,
+          judulKisah: settingsForm.judulKisah || undefined,
+          judulKado: settingsForm.judulKado || undefined,
+          subjudulKado: settingsForm.subjudulKado || undefined,
+          judulRsvp: settingsForm.judulRsvp || undefined,
+          subjudulRsvp: settingsForm.subjudulRsvp || undefined,
+          judulPenutup: settingsForm.judulPenutup || undefined,
+          subjudulPenutup: settingsForm.subjudulPenutup || undefined,
+          tandaTanganPenutup: settingsForm.tandaTanganPenutup || undefined,
+          footerText: settingsForm.footerText || undefined,
+          showDresscode: Boolean(settingsForm.showDresscode),
+          judulDresscode: settingsForm.judulDresscode || undefined,
+          dresscodeText: settingsForm.dresscodeText || undefined,
+          dresscodeColors:
+            Array.isArray(settingsForm.dresscodeColors) && settingsForm.dresscodeColors.length > 0
+              ? settingsForm.dresscodeColors
+              : undefined,
+          giftConfirmText: settingsForm.giftConfirmText || undefined,
+          giftWa1Name: settingsForm.giftWa1Name || undefined,
+          giftWa1Phone: settingsForm.giftWa1Phone || undefined,
+          giftWa2Name: settingsForm.giftWa2Name || undefined,
+          giftWa2Phone: settingsForm.giftWa2Phone || undefined,
           fotoPria: fotoPria || undefined,
           fotoWanita: fotoWanita || undefined,
           fotoCover: fotoCover || undefined,
           fotoWhatsapp: fotoWhatsapp || fotoCover || undefined,
+          templateOverrides: {
+            ...existingOverrides,
+            [activeTemplateCode]: currentTemplateOverride,
+          },
         },
       };
 
@@ -1696,7 +1896,52 @@ export const InvitationDetailPage = ({
                   label: `${t.name} (${t.template_code})`,
                 }))}
                 value={settingsForm.template_id}
-                onChange={(val) => setSettingsForm({ ...settingsForm, template_id: val })}
+                onChange={(val) => {
+                  const nextTmpl = templates.find((t) => t.id.toString() === val?.toString());
+                  const nextCode = nextTmpl?.template_code;
+                  const savedOverrides = nextCode
+                    ? invitation?.content_json?.templateOverrides?.[nextCode] || {}
+                    : {};
+                  const tmplDefaults = nextTmpl?.default_content_json || {};
+                  const merged = { ...tmplDefaults, ...savedOverrides };
+
+                  setSettingsForm((prev) => ({
+                    ...prev,
+                    template_id: val,
+                    backgroundVideoUrl: merged.backgroundVideoUrl || '',
+                    preweddingVideoUrl: merged.preweddingVideoUrl || '',
+                    fotoPenutup: merged.fotoPenutup || '',
+                    judulPembuka: merged.judulPembuka || '',
+                    catatanCover: merged.catatanCover || '',
+                    monogram: merged.monogram || '',
+                    kutipanPembuka: merged.kutipanPembuka || '',
+                    salamPembuka: merged.salamPembuka || '',
+                    judulCountdown: merged.judulCountdown || '',
+                    judulGaleri: merged.judulGaleri || '',
+                    judulKisah: merged.judulKisah || '',
+                    judulKado: merged.judulKado || '',
+                    subjudulKado: merged.subjudulKado || '',
+                    judulRsvp: merged.judulRsvp || '',
+                    subjudulRsvp: merged.subjudulRsvp || '',
+                    judulPenutup: merged.judulPenutup || '',
+                    subjudulPenutup: merged.subjudulPenutup || '',
+                    tandaTanganPenutup: merged.tandaTanganPenutup || '',
+                    footerText: merged.footerText || '',
+                    showDresscode:
+                      merged.showDresscode !== undefined ? Boolean(merged.showDresscode) : true,
+                    judulDresscode: merged.judulDresscode || '',
+                    dresscodeText: merged.dresscodeText || '',
+                    dresscodeColors:
+                      Array.isArray(merged.dresscodeColors) && merged.dresscodeColors.length > 0
+                        ? merged.dresscodeColors
+                        : ['#fdf9f6', '#a96d79', '#68333e'],
+                    giftConfirmText: merged.giftConfirmText || '',
+                    giftWa1Name: merged.giftWa1Name || '',
+                    giftWa1Phone: merged.giftWa1Phone || '',
+                    giftWa2Name: merged.giftWa2Name || '',
+                    giftWa2Phone: merged.giftWa2Phone || '',
+                  }));
+                }}
               />
 
               <Input
@@ -1745,14 +1990,14 @@ export const InvitationDetailPage = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="text-sm font-bold text-slate-900">
-                        Floater QR Check-In
+                        Barcode / QR Code Check-In Tamu
                       </h4>
                       <Badge variant={settingsForm.showQrCheckin ? 'success' : 'neutral'} size="sm" dot>
                         {settingsForm.showQrCheckin ? 'Aktif' : 'Disembunyikan'}
                       </Badge>
                     </div>
                     <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
-                      Menampilkan tombol melayang (floater bookmark) di sisi layar undangan publik agar tamu dapat membuka kartu akses dan QR check-in saat tiba di lokasi acara.
+                      Jika diaktifkan, undangan akan menampilkan Barcode / QR Code Check-In (baik kartu QR di dalam halaman, tombol QR, maupun floater bookmark di samping layar). Jika dinonaktifkan, seluruh elemen QR Code di semua template akan disembunyikan.
                     </p>
                   </div>
                 </div>
@@ -1881,6 +2126,20 @@ export const InvitationDetailPage = ({
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <Input
+                    label="Anak Ke- (Pria)"
+                    placeholder="Contoh: Putra Pertama"
+                    value={settingsForm.anakKePria}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, anakKePria: e.target.value })}
+                  />
+                  <Input
+                    label="Username Instagram Pria"
+                    placeholder="Contoh: pratamabril"
+                    value={settingsForm.instagramPria}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, instagramPria: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
                     label="Nama Ayah"
                     placeholder="Nama ayah mempelai pria"
                     value={settingsForm.ayahPria}
@@ -1915,6 +2174,20 @@ export const InvitationDetailPage = ({
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <Input
+                    label="Anak Ke- (Wanita)"
+                    placeholder="Contoh: Putri Ketiga"
+                    value={settingsForm.anakKeWanita}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, anakKeWanita: e.target.value })}
+                  />
+                  <Input
+                    label="Username Instagram Wanita"
+                    placeholder="Contoh: chusniilaili"
+                    value={settingsForm.instagramWanita}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, instagramWanita: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
                     label="Nama Ayah"
                     placeholder="Nama ayah mempelai wanita"
                     value={settingsForm.ayahWanita}
@@ -1935,6 +2208,24 @@ export const InvitationDetailPage = ({
                 label="Ayat Suci / Kutipan Pembuka"
                 value={settingsForm.ayat}
                 onChange={(e) => setSettingsForm({ ...settingsForm, ayat: e.target.value })}
+              />
+
+              <Textarea
+                label="Teks Sambutan / Salam Pembuka (Opsional)"
+                rows={2}
+                placeholder="Dengan penuh rasa syukur dan bahagia, kami mengundang Bapak/Ibu/Saudara/i untuk hadir..."
+                value={settingsForm.salamPembuka}
+                onChange={(e) => setSettingsForm({ ...settingsForm, salamPembuka: e.target.value })}
+                helperText="Ditampilkan pada bagian pembuka setelah cover undangan (misal pada tema Noir Velvet Motion)"
+              />
+
+              <Textarea
+                label="Kutipan Pembuka / Quote Filosofis (Opsional)"
+                rows={2}
+                placeholder='"Setiap pertemuan memiliki maknanya dan setiap perjalanan memiliki tujuannya..."'
+                value={settingsForm.kutipanPembuka}
+                onChange={(e) => setSettingsForm({ ...settingsForm, kutipanPembuka: e.target.value })}
+                helperText="Jika diisi, akan menggantikan kutipan default di section pembuka"
               />
 
               <Textarea
@@ -1966,8 +2257,14 @@ export const InvitationDetailPage = ({
               {/* Akad */}
               <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-700">
-                  Akad Nikah
+                  Acara Pertama (Akad / Pemberkatan)
                 </h4>
+                <Input
+                  label="Judul Acara 1"
+                  placeholder="Contoh: Akad Nikah / Pemberkatan"
+                  value={settingsForm.akadJudul}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, akadJudul: e.target.value })}
+                />
                 <Input
                   label="Tanggal Akad"
                   placeholder="Minggu, 15 November 2026"
@@ -2004,8 +2301,14 @@ export const InvitationDetailPage = ({
               {/* Resepsi */}
               <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-700">
-                  Resepsi Pernikahan
+                  Acara Kedua (Resepsi / Ngunduh Mantu)
                 </h4>
+                <Input
+                  label="Judul Acara 2"
+                  placeholder="Contoh: Resepsi / Ngunduh Mantu"
+                  value={settingsForm.resepsiJudul}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, resepsiJudul: e.target.value })}
+                />
                 <Input
                   label="Tanggal Resepsi"
                   placeholder="Minggu, 15 November 2026"
@@ -2143,6 +2446,15 @@ export const InvitationDetailPage = ({
                 </div>
               </div>
 
+              <Input
+                label="Nama Penerima Kado (Opsional)"
+                placeholder="Contoh: Chusni Nurlaili"
+                value={settingsForm.penerimaKado || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, penerimaKado: e.target.value })
+                }
+              />
+
               <Textarea
                 rows={3}
                 placeholder="Contoh: Perumahan Graha Asri Blok C No. 12, Jambangan, Surabaya (Penerima: Fajar / 081234567890)"
@@ -2152,7 +2464,139 @@ export const InvitationDetailPage = ({
                 }
                 helperText="Alamat ini akan ditampilkan di section kado fisik template agar tamu dapat mengirim hadiah langsung ke lokasi pengantin."
               />
+
+              {/* Kontak Konfirmasi WhatsApp Kado Fisik (Drapery Pink & Template lainnya) */}
+              <div className="pt-3 border-t border-slate-200 space-y-3">
+                <p className="text-xs font-semibold text-slate-700">
+                  Kontak Konfirmasi Kado via WhatsApp (Opsional / Khusus Tema Drapery Pink):
+                </p>
+                <Textarea
+                  label="Teks Pengantar Konfirmasi Kado Fisik"
+                  rows={2}
+                  placeholder="Apabila Bapak/Ibu/Saudara/i berkenan mengirimkan tanda kasih berupa kado fisik, silakan melakukan konfirmasi pengiriman melalui kontak mempelai di bawah ini:"
+                  value={settingsForm.giftConfirmText || ''}
+                  onChange={(e) =>
+                    setSettingsForm({ ...settingsForm, giftConfirmText: e.target.value })
+                  }
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="Nama Kontak WA 1 (Mempelai Wanita)"
+                    placeholder="Contoh: Chusni Nurlaili"
+                    value={settingsForm.giftWa1Name || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, giftWa1Name: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Nomor WhatsApp 1"
+                    placeholder="Contoh: 0857-1234-5678"
+                    value={settingsForm.giftWa1Phone || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, giftWa1Phone: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Nama Kontak WA 2 (Mempelai Pria)"
+                    placeholder="Contoh: Brilian Pratama"
+                    value={settingsForm.giftWa2Name || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, giftWa2Name: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Nomor WhatsApp 2"
+                    placeholder="Contoh: 0812-3456-7890"
+                    value={settingsForm.giftWa2Phone || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, giftWa2Phone: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
             </div>
+          </Card>
+
+          {/* Pengaturan Dress Code & Palet Warna (Khusus Tema Drapery Pink & Tema Pendukung) */}
+          <Card className="p-6 border-slate-200 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-rose-600" />
+                  Dress Code &amp; Palet Warna Tamu (Opsional)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Atur panduan busana dan warna pakaian untuk tamu undangan (tampil otomatis di template seperti Drapery Pink).
+                </p>
+              </div>
+              <Switch
+                checked={settingsForm.showDresscode}
+                onChange={(val) => setSettingsForm({ ...settingsForm, showDresscode: val })}
+                label={settingsForm.showDresscode ? 'Ditampilkan' : 'Disembunyikan'}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Judul Section Dress Code"
+                placeholder="Dress Code"
+                value={settingsForm.judulDresscode || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulDresscode: e.target.value })
+                }
+              />
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-700">
+                  3 Palet Warna Busana (Color Swatches)
+                </label>
+                <div className="flex items-center gap-3">
+                  {[0, 1, 2].map((idx) => {
+                    const currentColors = Array.isArray(settingsForm.dresscodeColors)
+                      ? settingsForm.dresscodeColors
+                      : ['#fdf9f6', '#a96d79', '#68333e'];
+                    const colorVal = currentColors[idx] || '#a96d79';
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200"
+                      >
+                        <input
+                          type="color"
+                          value={colorVal}
+                          onChange={(e) => {
+                            const next = [...currentColors];
+                            next[idx] = e.target.value;
+                            setSettingsForm({ ...settingsForm, dresscodeColors: next });
+                          }}
+                          className="w-7 h-7 rounded-full border border-slate-300 cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={colorVal}
+                          onChange={(e) => {
+                            const next = [...currentColors];
+                            next[idx] = e.target.value;
+                            setSettingsForm({ ...settingsForm, dresscodeColors: next });
+                          }}
+                          className="w-18 text-xs font-mono text-slate-700 bg-transparent focus:outline-none"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <Textarea
+              label="Deskripsi Panduan Dress Code"
+              rows={2}
+              placeholder="Kami dengan hormat menganjurkan para tamu kami untuk mengenakan warna-warna ini untuk hari istimewa kami."
+              value={settingsForm.dresscodeText || ''}
+              onChange={(e) =>
+                setSettingsForm({ ...settingsForm, dresscodeText: e.target.value })
+              }
+            />
           </Card>
 
           {/* Kisah Kasih / Love Story Timeline (Customizable) */}
@@ -2626,6 +3070,348 @@ export const InvitationDetailPage = ({
                 </code>
               </span>
             </div>
+
+            {/* Video Latar, Video Prewedding & Foto Penutup (Custom Upload & URL) */}
+            <div className="pt-4 border-t border-slate-200 space-y-4">
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Media Video &amp; Foto Penutup (Bisa Upload Langsung atau Tempel URL)
+                </h4>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Upload video `.mp4`/`.webm`/`.mov` (maks 100MB) atau tempel tautan YouTube/MP4. Kosongkan untuk menggunakan aset bawaan tema.
+                </p>
+              </div>
+
+              <input
+                type="file"
+                ref={bgVideoFileInputRef}
+                accept="video/mp4,video/webm,video/quicktime,video/*"
+                onChange={(e) => handleUploadVideoFile(e, 'background')}
+                className="hidden"
+              />
+              <input
+                type="file"
+                ref={prewedVideoFileInputRef}
+                accept="video/mp4,video/webm,video/quicktime,video/*"
+                onChange={(e) => handleUploadVideoFile(e, 'prewedding')}
+                className="hidden"
+              />
+              <input
+                type="file"
+                ref={closingFileInputRef}
+                accept="image/*"
+                onChange={(e) => handleUploadSinglePhoto(e, 'closing')}
+                className="hidden"
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Video Background */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Video Background
+                      </h5>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-medium">
+                        {settingsForm.backgroundVideoUrl === 'none'
+                          ? 'Nonaktif'
+                          : settingsForm.backgroundVideoUrl
+                          ? 'Custom'
+                          : 'Bawaan'}
+                      </span>
+                    </div>
+                    <Input
+                      placeholder="https://.../video-bg.mp4 atau 'none'"
+                      value={settingsForm.backgroundVideoUrl || ''}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, backgroundVideoUrl: e.target.value })
+                      }
+                    />
+                    {settingsForm.backgroundVideoUrl && settingsForm.backgroundVideoUrl !== 'none' && (
+                      <video
+                        src={settingsForm.backgroundVideoUrl}
+                        controls
+                        muted
+                        className="w-full h-28 rounded-xl bg-black object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      isLoading={isUploadingBgVideo}
+                      leftIcon={Upload}
+                      onClick={() => bgVideoFileInputRef.current?.click()}
+                    >
+                      Upload Video
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-slate-600"
+                      onClick={() =>
+                        setSettingsForm({
+                          ...settingsForm,
+                          backgroundVideoUrl:
+                            settingsForm.backgroundVideoUrl === 'none' ? '' : 'none',
+                        })
+                      }
+                    >
+                      {settingsForm.backgroundVideoUrl === 'none' ? 'Pakai Bawaan' : 'Matikan Video'}
+                    </Button>
+                    {settingsForm.backgroundVideoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-rose-600"
+                        onClick={() => setSettingsForm({ ...settingsForm, backgroundVideoUrl: '' })}
+                      >
+                        Reset
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Video Prewedding (Our Moments) */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Video Prewedding (Moments)
+                    </h5>
+                    <Input
+                      placeholder="Upload .mp4 atau link YouTube/Shorts"
+                      value={settingsForm.preweddingVideoUrl || ''}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, preweddingVideoUrl: e.target.value })
+                      }
+                    />
+                    {settingsForm.preweddingVideoUrl &&
+                      !settingsForm.preweddingVideoUrl.includes('youtube') &&
+                      !settingsForm.preweddingVideoUrl.includes('youtu.be') && (
+                        <video
+                          src={settingsForm.preweddingVideoUrl}
+                          controls
+                          muted
+                          className="w-full h-28 rounded-xl bg-black object-cover"
+                        />
+                      )}
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      isLoading={isUploadingPrewedVideo}
+                      leftIcon={Upload}
+                      onClick={() => prewedVideoFileInputRef.current?.click()}
+                    >
+                      Upload Video
+                    </Button>
+                    {settingsForm.preweddingVideoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-rose-600"
+                        onClick={() => setSettingsForm({ ...settingsForm, preweddingVideoUrl: '' })}
+                      >
+                        Hapus
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Foto Penutup (Closing) */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Foto Penutup (Closing)
+                    </h5>
+                    <Input
+                      placeholder="URL foto penutup atau upload di bawah"
+                      value={settingsForm.fotoPenutup || ''}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, fotoPenutup: e.target.value })
+                      }
+                    />
+                    {settingsForm.fotoPenutup && (
+                      <div className="w-full h-28 rounded-xl overflow-hidden border border-slate-300 bg-slate-200">
+                        <img
+                          src={settingsForm.fotoPenutup}
+                          alt="Foto Penutup"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      isLoading={isUploadingClosing}
+                      leftIcon={Upload}
+                      onClick={() => closingFileInputRef.current?.click()}
+                    >
+                      {settingsForm.fotoPenutup ? 'Ganti Foto' : 'Upload Foto'}
+                    </Button>
+                    {settingsForm.fotoPenutup && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-rose-600"
+                        onClick={() => setSettingsForm({ ...settingsForm, fotoPenutup: '' })}
+                      >
+                        Reset
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Kustomisasi Label, Judul Bagian & Countdown Undangan */}
+          <Card className="p-6 border-slate-200 space-y-4">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 border-b pb-2">
+                Kustomisasi Judul Bagian, Countdown &amp; Label Tema (Opsional)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Ubah seluruh teks judul section, monogram, catatan cover, hingga target waktu countdown. Biarkan kosong untuk memakai teks bawaan tema.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Input
+                label="Target Waktu Countdown"
+                type="datetime-local"
+                value={settingsForm.tanggalAkadISO || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, tanggalAkadISO: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul Cover"
+                placeholder="The Wedding of"
+                value={settingsForm.judulPembuka || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulPembuka: e.target.value })
+                }
+              />
+              <Input
+                label="Monogram Inisial"
+                placeholder="Otomatis misal: B | C"
+                value={settingsForm.monogram || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, monogram: e.target.value })
+                }
+              />
+              <Input
+                label="Catatan Bawah Cover"
+                placeholder="*Mohon maaf jika terdapat kesalahan penulisan..."
+                value={settingsForm.catatanCover || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, catatanCover: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Countdown"
+                placeholder="Menuju Hari Bahagia Kami"
+                value={settingsForm.judulCountdown || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulCountdown: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Galeri / Momen"
+                placeholder="OUR MOMENTS"
+                value={settingsForm.judulGaleri || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulGaleri: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Kisah Cinta"
+                placeholder="OUR STORIES"
+                value={settingsForm.judulKisah || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulKisah: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Wedding Gift"
+                placeholder="Wedding Gift"
+                value={settingsForm.judulKado || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulKado: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul Wedding Gift"
+                placeholder="Tanpa mengurangi rasa hormat..."
+                value={settingsForm.subjudulKado || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, subjudulKado: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Besar RSVP"
+                placeholder="RSVP"
+                value={settingsForm.judulRsvp || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulRsvp: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul RSVP"
+                placeholder="Ucapan & doa"
+                value={settingsForm.subjudulRsvp || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, subjudulRsvp: e.target.value })
+                }
+              />
+              <Input
+                label="Judul Penutup (Closing)"
+                placeholder="Terima Kasih"
+                value={settingsForm.judulPenutup || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, judulPenutup: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul Penutup"
+                placeholder="Sampai bertemu di hari bahagia kami!"
+                value={settingsForm.subjudulPenutup || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, subjudulPenutup: e.target.value })
+                }
+              />
+              <Input
+                label="Kalimat Sebelum Nama Pasangan"
+                placeholder="Kami yang berbahagia,"
+                value={settingsForm.tandaTanganPenutup || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, tandaTanganPenutup: e.target.value })
+                }
+              />
+              <Input
+                label="Teks Brand Footer"
+                placeholder="SAMSKARA"
+                value={settingsForm.footerText || ''}
+                onChange={(e) =>
+                  setSettingsForm({ ...settingsForm, footerText: e.target.value })
+                }
+              />
+            </div>
           </Card>
 
           {/* Galeri Foto Prewedding (Custom & Multi-Upload) */}
@@ -2787,6 +3573,14 @@ export const InvitationDetailPage = ({
                       template: selectedTemplate || invitation?.template,
                       content_json: {
                         ...(invitation?.content_json || {}),
+                        showQrCheckin: Boolean(settingsForm.showQrCheckin),
+                        showQr: Boolean(settingsForm.showQrCheckin),
+                        lockGuestList: Boolean(settingsForm.lockGuestList),
+                        showDonation: Boolean(settingsForm.showDonation),
+                        showGift: Boolean(settingsForm.showGift),
+                        rekening: bankAccounts,
+                        penerimaKado: settingsForm.penerimaKado,
+                        alamatKado: settingsForm.alamatKado,
                         mempelaiPria: settingsForm.mempelaiPria,
                         panggilanPria: settingsForm.panggilanPria,
                         ayahPria: settingsForm.ayahPria,
@@ -2816,6 +3610,15 @@ export const InvitationDetailPage = ({
                         fotoWhatsapp: fotoWhatsapp || fotoCover,
                         fotoPria: fotoPria,
                         fotoWanita: fotoWanita,
+                        showDresscode: settingsForm.showDresscode,
+                        judulDresscode: settingsForm.judulDresscode,
+                        dresscodeText: settingsForm.dresscodeText,
+                        dresscodeColors: settingsForm.dresscodeColors,
+                        giftConfirmText: settingsForm.giftConfirmText,
+                        giftWa1Name: settingsForm.giftWa1Name,
+                        giftWa1Phone: settingsForm.giftWa1Phone,
+                        giftWa2Name: settingsForm.giftWa2Name,
+                        giftWa2Phone: settingsForm.giftWa2Phone,
                       },
                     }}
                     guest={selectedGuestForPreview}

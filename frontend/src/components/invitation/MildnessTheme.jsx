@@ -102,13 +102,15 @@ export const MildnessTheme = ({
     mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
   };
 
-  // Visibilitas QR Floating
-  const showQr =
-    content.showQr !== undefined
-      ? Boolean(content.showQr)
-      : content.showQrCheckin !== undefined
-      ? Boolean(content.showQrCheckin)
-      : true;
+  // Visibilitas QR Floating (Otomatis sembunyi jika dimatikan atau kategori tamu = Grup)
+  const isGrupGuest = (guest?.category || '').trim().toLowerCase() === 'grup';
+  const showQr = isGrupGuest
+    ? false
+    : content.showQr !== undefined
+    ? content.showQr !== false && content.showQr !== 'false' && content.showQr !== 0
+    : content.showQrCheckin !== undefined
+    ? content.showQrCheckin !== false && content.showQrCheckin !== 'false' && content.showQrCheckin !== 0
+    : true;
 
   // Ayat & Foto
   const ayatQuote = content.ayat || 'QS. Ar-Rum: 21';

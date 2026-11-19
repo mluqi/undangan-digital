@@ -35,6 +35,9 @@ export const normalizeTemplateCode = (input = '') => {
   if (cleaned.includes('snap') || cleaned.includes('photo') || cleaned.includes('cinematic') || cleaned.includes('dark')) return 'snap-photo';
   if (cleaned.includes('serein') || cleaned.includes('minimalist') || cleaned.includes('chic')) return 'serein';
   if (cleaned.includes('timeless') || cleaned.includes('polaroid') || cleaned.includes('vintage') || cleaned.includes('sepia')) return 'timeless-snapshot';
+  if (cleaned.includes('noir') || cleaned.includes('velvet') || cleaned.includes('simpul') || cleaned.includes('monochrome')) return 'noir-velvet';
+  if (cleaned.includes('drapery') || cleaned.includes('pink') || cleaned.includes('lace') || cleaned.includes('lynk')) return 'drapery-pink';
+  if (cleaned.includes('kembarmayang')) return 'jawa-kembar-mayang';
 
   return 'forest-tropical';
 };

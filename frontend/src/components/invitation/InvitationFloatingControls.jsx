@@ -22,9 +22,10 @@ import {
 
 export const InvitationFloatingControls = ({
   qrValue,
+  guest,
   guestName = 'Tamu Undangan',
-  guestCategory = 'Reguler',
-  guestPax = 1,
+  guestCategory: guestCategoryProp,
+  guestPax: guestPaxProp,
   isOpened = false,
   showQr = true, // Mengatur apakah floater penanda buku QR ditampilkan atau disembunyikan
   showQrFloater = true, // Khusus menyembunyikan tombol melayang QR (modal tetap bisa dibuka dari tombol konten)
@@ -33,6 +34,8 @@ export const InvitationFloatingControls = ({
   isOpen: externalIsOpen,
   onOpenChange: setExternalIsOpen,
 }) => {
+  const guestCategory = guestCategoryProp || guest?.category || 'Reguler';
+  const guestPax = guestPaxProp || guest?.pax || 1;
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isQrModalOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const setIsQrModalOpen = (val) => {

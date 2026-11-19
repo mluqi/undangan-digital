@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Background Deep Burgundy -->
+  <rect width="120" height="120" rx="22" fill="#3E1414" />
+  <g stroke="#E6D2BE" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Arch Frame (Open at Top Right for Botanical Sprig) -->
+    <path d="M99 48 V107 H17 V56 A41 41 0 0 1 65 15.4" />
+    <!-- Inner Arch Frame -->
+    <path d="M94.5 45 V102.5 H21.5 V56 A36.5 36.5 0 0 1 64.5 19.8" />
+
+    <!-- Botanical 5-Leaf Sprig on Top Right -->
+    <path d="M94.5 45 C92 33 84 23 70 13" />
+    <!-- Top Leaf 1 -->
+    <path d="M70 13 C74 12.5 79.5 15.5 81 21 C75.5 21 71.5 17.5 70 13 Z" fill="#3E1414" />
+    <path d="M73 15.5 L78 19" stroke-width="1.5" />
+    <!-- Left Leaf 2 -->
+    <path d="M84 25.5 C78.5 23.5 72.5 24.5 69.5 27.5 C73.5 30.5 79.5 30 84 25.5 Z" fill="#3E1414" />
+    <path d="M73.5 27.2 L81 26.2" stroke-width="1.5" />
+    <!-- Right Leaf 3 -->
+    <path d="M85.5 26 C84 19.5 85.5 14 88 11.5 C91 15 91.5 21.5 85.5 26 Z" fill="#3E1414" />
+    <path d="M87.5 15.5 L86.2 23" stroke-width="1.5" />
+    <!-- Lower Left Leaf 4 -->
+    <path d="M91 36.5 C85.5 33.5 79.5 33.5 76.5 36 C80 39.5 86 40 91 36.5 Z" fill="#3E1414" />
+    <path d="M80.5 36.3 L88 36.5" stroke-width="1.5" />
+    <!-- Lower Right Leaf 5 -->
+    <path d="M92.8 39 C92.5 32.5 94.8 27 97.5 24 C100 28.5 99 35 92.8 39 Z" fill="#3E1414" />
+    <path d="M96.2 28.5 L94 35.5" stroke-width="1.5" />
+
+    <!-- Geometric Open Envelope -->
+    <path d="M29 56 L58 31 L87 56 V94 H29 V56 Z" />
+    <!-- Envelope Bottom Flap & Center Diamond -->
+    <path d="M29 94 L58 68 L87 94" />
+    <path d="M29 56 L58 80 L87 56" />
+    <path d="M58 68 V80" />
+
+    <!-- Top Flap Inner Chevron Lines -->
+    <path d="M47 40.5 L58 50 L69 40.5" />
+    <path d="M43 44 L58 57 L73 44" />
+
+    <!-- Central Ribbon Loop / Knot & Side Panels -->
+    <path d="M39.5 47 L58 63 L76.5 47" />
+    <path d="M58 63 C55.8 66 55.8 70 58 70 C60.2 70 60.2 66 58 63 Z" />
+    <path d="M34.5 51.5 V60.5" />
+    <path d="M81.5 51.5 V60.5" />
+    <path d="M50 56 V66 L44.5 71" />
+    <path d="M66 56 V66 L71.5 71" />
+
+    <!-- Monogram D (Left) & L (Right) -->
+    <path d="M39 54.5 H42.8 C45.8 54.5 47.5 56.6 47.5 59.8 C47.5 63 45.8 65 42.8 65 H39 V54.5 Z" />
+    <path d="M70.5 54.5 V65 H77" />
+  </g>
+</svg>

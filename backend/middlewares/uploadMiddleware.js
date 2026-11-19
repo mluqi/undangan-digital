@@ -27,7 +27,9 @@ const storage = multer.diskStorage({
       const invitationId = req.params.id;
       let slug = req.query.slug || req.body.slug || 'general';
 
-      if (invitationId) {
+      if (req.baseUrl && req.baseUrl.includes('templates')) {
+        slug = 'templates';
+      } else if (invitationId) {
         const inv = await Invitation.findByPk(invitationId);
         if (inv && inv.slug) {
           slug = inv.slug;
@@ -42,9 +44,11 @@ const storage = multer.diskStorage({
       let subfolder = 'others';
       if (file.fieldname === 'audio' || file.mimetype.startsWith('audio/')) {
         subfolder = 'music';
+      } else if (file.fieldname === 'video' || file.mimetype.startsWith('video/')) {
+        subfolder = 'video';
       } else if (file.fieldname === 'gallery' || file.fieldname === 'photos') {
         subfolder = 'gallery';
-      } else if (['cover', 'groom', 'bride', 'photo'].includes(file.fieldname)) {
+      } else if (['cover', 'groom', 'bride', 'photo', 'thumbnail'].includes(file.fieldname)) {
         subfolder = 'covers';
       }
 
@@ -82,14 +86,23 @@ const fileFilter = (req, file, cb) => {
     'audio/x-m4a',
   ];
 
+  const allowedVideoTypes = [
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'video/x-m4v',
+    'video/ogg',
+  ];
+
   if (
     allowedImageTypes.includes(file.mimetype) ||
     allowedAudioTypes.includes(file.mimetype) ||
-    file.originalname.match(/\.(mp3|wav|m4a|aac|ogg|jpg|jpeg|png|webp)$/i)
+    allowedVideoTypes.includes(file.mimetype) ||
+    file.originalname.match(/\.(mp3|wav|m4a|aac|ogg|jpg|jpeg|png|webp|mp4|webm|mov|m4v)$/i)
   ) {
     cb(null, true);
   } else {
-    cb(new Error('Format file tidak didukung. Harap upload gambar (JPG/PNG/WEBP) atau audio (MP3/M4A/WAV).'), false);
+    cb(new Error('Format file tidak didukung. Harap upload gambar (JPG/PNG/WEBP), audio (MP3/M4A/WAV), atau video (MP4/WEBM/MOV).'), false);
   }
 };
 
@@ -97,8 +110,18 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20 MB max file size
+    fileSize: 20 * 1024 * 1024, // 20 MB max file size for images/audio
   },
 });
+
+const uploadVideoMiddleware = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100 MB max file size for video
+  },
+});
+
+upload.video = uploadVideoMiddleware;
 
 module.exports = upload;

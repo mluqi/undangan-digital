@@ -71,7 +71,7 @@ class InvitationService {
         {
           model: Template,
           as: 'template',
-          attributes: ['id', 'template_code', 'name', 'thumbnail_url'],
+          attributes: ['id', 'template_code', 'name', 'thumbnail_url', 'default_content_json'],
         },
         {
           model: User,
@@ -149,7 +149,7 @@ class InvitationService {
         {
           model: Template,
           as: 'template',
-          attributes: ['id', 'template_code', 'name', 'thumbnail_url'],
+          attributes: ['id', 'template_code', 'name', 'thumbnail_url', 'default_content_json'],
         },
         {
           model: Rsvp,
@@ -175,6 +175,11 @@ class InvitationService {
         'crimson-rose': 'crimson-rose',
         'simple-rustic-4': 'crimson-rose',
         'red-white': 'crimson-rose',
+        'noir-velvet': 'noir-velvet',
+        'simpul-kisah': 'noir-velvet',
+        'drapery-pink': 'drapery-pink',
+        'lynk-drapery-pink': 'drapery-pink',
+        'jawa-kembar-mayang': 'jawa-kembar-mayang',
       };
       const cleanSlug = slug.toLowerCase().trim();
       const mappedCode = templateAliasMap[cleanSlug] || cleanSlug;
@@ -203,8 +208,10 @@ class InvitationService {
             template_code: matchedTemplate.template_code,
             name: matchedTemplate.name,
             thumbnail_url: matchedTemplate.thumbnail_url,
+            default_content_json: matchedTemplate.default_content_json || null,
           },
           content_json: {
+            ...(matchedTemplate.default_content_json || {}),
             mempelaiPria: 'Arya Bimantara, S.T.',
             panggilanPria: 'Arya',
             ayahPria: 'Bpk. H. Suryo Kusumo',

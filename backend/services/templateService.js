@@ -7,6 +7,26 @@ class TemplateService {
    * @param {boolean} options.isActiveOnly - Filter hanya template yang aktif
    */
   async getAllTemplates(options = {}) {
+    // Pastikan template baru (seperti drapery-pink) otomatis terdaftar di DB jika belum ada
+    await Template.findOrCreate({
+      where: { template_code: 'drapery-pink' },
+      defaults: {
+        name: 'Drapery Pink & Vintage Lace',
+        thumbnail_url: '/images/drapery-pink/demo-couple-1.jpg',
+        is_active: true,
+        default_content_json: {
+          judulPembuka: 'The Wedding Of',
+          judulGaleri: 'Momen Bahagia Kami',
+          judulKisah: 'Kisah Cinta Kami',
+          judulKado: 'Kirim Hadiah',
+          dresscodeTitle: 'Dress Code',
+          dresscodeText:
+            'Kami dengan hormat menganjurkan para tamu kami untuk mengenakan warna-warna ini untuk hari istimewa kami.',
+          dresscodeColors: ['#fdf9f6', '#a96d79', '#68333e'],
+        },
+      },
+    }).catch(() => {});
+
     const where = {};
     if (options.isActiveOnly) {
       where.is_active = true;
@@ -65,7 +85,7 @@ class TemplateService {
    * @param {Object} data
    */
   async createTemplate(data) {
-    const { template_code, name, thumbnail_url, is_active } = data;
+    const { template_code, name, thumbnail_url, is_active, default_content_json } = data;
 
     // Cek duplikasi template_code
     const existing = await Template.findOne({ where: { template_code } });
@@ -80,6 +100,7 @@ class TemplateService {
       name,
       thumbnail_url,
       is_active: is_active !== undefined ? is_active : true,
+      default_content_json: default_content_json || null,
     });
   }
 

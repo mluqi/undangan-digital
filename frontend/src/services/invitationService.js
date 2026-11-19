@@ -56,4 +56,13 @@ export const invitationService = {
       body: formData,
     });
   },
+  async uploadVideo(id, file, type = 'background') {
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('type', type);
+    return await request(`/invitations/${id}/upload-video`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
 };

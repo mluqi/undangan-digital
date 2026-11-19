@@ -101,6 +101,33 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        id: 11,
+        template_code: 'jawa-kembar-mayang',
+        name: 'Kembar Mayang Sage & Copper',
+        thumbnail_url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 12,
+        template_code: 'noir-velvet',
+        name: 'Noir Velvet Motion',
+        thumbnail_url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop&q=80',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 13,
+        template_code: 'drapery-pink',
+        name: 'Drapery Pink & Vintage Lace',
+        thumbnail_url: '/images/drapery-pink/demo-couple-1.jpg',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
 
     // 2. Seed Invitations

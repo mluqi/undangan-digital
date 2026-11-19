@@ -24,4 +24,35 @@ export const templateService = {
       method: 'DELETE',
     });
   },
+  async uploadThumbnail(file, templateId = null) {
+    const formData = new FormData();
+    formData.append('thumbnail', file);
+    const endpoint = templateId
+      ? `/templates/${templateId}/upload-thumbnail`
+      : '/templates/upload-thumbnail';
+    return await request(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  async uploadVideo(file, templateId = null) {
+    const formData = new FormData();
+    formData.append('video', file);
+    const endpoint = templateId
+      ? `/templates/${templateId}/upload-video`
+      : '/templates/upload-video';
+    return await request(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+  async getLandingCms() {
+    return await request('/templates/landing-cms');
+  },
+  async updateLandingCms(data) {
+    return await request('/templates/landing-cms', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
 };

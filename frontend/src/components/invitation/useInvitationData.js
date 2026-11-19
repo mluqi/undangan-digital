@@ -46,7 +46,17 @@ const plainName = (full = '') => full.split(',')[0].trim();
  */
 export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp, defaultOpened = false }) => {
   const toast = useToast();
-  const content = invitation?.content_json || {};
+  const rawContent = invitation?.content_json || {};
+  const templateCode =
+    invitation?.template?.template_code || invitation?.template_code || '';
+  const templateDefaults = invitation?.template?.default_content_json || {};
+  const templateOverrides =
+    (templateCode && rawContent?.templateOverrides?.[templateCode]) || {};
+  const content = {
+    ...templateDefaults,
+    ...rawContent,
+    ...templateOverrides,
+  };
 
   const [isOpened, setIsOpened] = useState(Boolean(defaultOpened));
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
@@ -123,6 +133,24 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
     firstName(bride) ||
     'Aminah';
 
+  const rawAkad = content.akad || {
+    judul: 'Akad Nikah',
+    tanggal: 'Minggu, 15 November 2026',
+    waktu: '08:00 - 10:00 WIB',
+    lokasi: 'Masjid Agung Al-Akbar Surabaya',
+    alamat: 'Jl. Masjid Al-Akbar Timur No.1, Pagesangan, Surabaya',
+    mapUrl: 'https://maps.google.com/?q=Masjid+Agung+Al-Akbar+Surabaya',
+  };
+
+  const rawResepsi = content.resepsi || {
+    judul: 'Resepsi',
+    tanggal: 'Minggu, 15 November 2026',
+    waktu: '11:00 - 14:00 WIB',
+    lokasi: 'Grand Ballroom Hotel Majapahit, Surabaya',
+    alamat: 'Jl. Tunjungan No.65, Genteng, Surabaya',
+    mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
+  };
+
   const data = {
     groom,
     bride,
@@ -132,23 +160,43 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
     bridePlain: plainName(bride),
     groomFather: content.ayahPria || 'Bpk. H. Abdurrahman',
     groomMother: content.ibuPria || 'Ibu Hj. Maryam',
+    groomChildOrder: content.anakKePria || 'Putra Pertama',
+    groomInstagram: (content.instagramPria || '').replace(/^@/, '').trim(),
     brideFather: content.ayahWanita || 'Bpk. H. Ahmad Dahlan',
     brideMother: content.ibuWanita || 'Ibu Hj. Fatimah',
-    akad: content.akad || {
-      tanggal: 'Minggu, 15 November 2026',
-      waktu: '08:00 - 10:00 WIB',
-      lokasi: 'Masjid Agung Al-Akbar Surabaya',
-      alamat: 'Jl. Masjid Al-Akbar Timur No.1, Pagesangan, Surabaya',
-      mapUrl: 'https://maps.google.com/?q=Masjid+Agung+Al-Akbar+Surabaya',
+    brideChildOrder: content.anakKeWanita || 'Putri Pertama',
+    brideInstagram: (content.instagramWanita || '').replace(/^@/, '').trim(),
+    akad: {
+      ...rawAkad,
+      judul: rawAkad.judul || 'Akad Nikah',
     },
-    resepsi: content.resepsi || {
-      tanggal: 'Minggu, 15 November 2026',
-      waktu: '11:00 - 14:00 WIB',
-      lokasi: 'Grand Ballroom Hotel Majapahit, Surabaya',
-      alamat: 'Jl. Tunjungan No.65, Genteng, Surabaya',
-      mapUrl: 'https://maps.google.com/?q=Hotel+Majapahit+Surabaya',
+    resepsi: {
+      ...rawResepsi,
+      judul: rawResepsi.judul || 'Resepsi',
     },
     ayatQuote: content.ayat || 'QS. Ar-Rum: 21',
+    coverSubtitle: content.judulPembuka || 'The Wedding of',
+    coverFootnote:
+      content.catatanCover || '*Mohon maaf jika terdapat kesalahan penulisan nama & gelar',
+    monogramText: content.monogram || '',
+    kutipanPembuka: content.kutipanPembuka || '',
+    openingGreeting:
+      content.salamPembuka ||
+      'Dengan penuh rasa syukur dan bahagia, kami mengundang Bapak/Ibu/Saudara/i untuk hadir, dan memberikan doa serta restu di hari bahagia kami.',
+    countdownTitle: content.judulCountdown || 'Menuju Hari Bahagia Kami',
+    momentsTitle: content.judulGaleri || 'OUR MOMENTS',
+    storiesTitle: content.judulKisah || 'OUR STORIES',
+    giftTitle: content.judulKado || 'Wedding Gift',
+    giftSubtitle:
+      content.subjudulKado ||
+      'Tanpa mengurangi rasa hormat, bagi yang ingin memberikan tanda kasih, dapat mengirimkan melalui rekening dan alamat di bawah ini:',
+    rsvpTitle: content.judulRsvp || 'RSVP',
+    rsvpSubtitle: content.subjudulRsvp || 'Ucapan & doa',
+    closingTitle: content.judulPenutup || 'Terima Kasih',
+    closingSubtitle:
+      content.subjudulPenutup || 'Sampai bertemu di hari bahagia kami!',
+    closingSignoff: content.tandaTanganPenutup || 'Kami yang berbahagia,',
+    footerBrand: content.footerText || 'SAMSKARA',
     closingText:
       content.teksPenutup ||
       'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',
@@ -159,6 +207,9 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
     photoCover: content.fotoCover || DEFAULT_PHOTOS.cover,
     photoGroom: content.fotoPria || DEFAULT_PHOTOS.groom,
     photoBride: content.fotoWanita || DEFAULT_PHOTOS.bride,
+    photoClosing: content.fotoPenutup || '',
+    backgroundVideoUrl: content.backgroundVideoUrl || '',
+    preweddingVideoUrl: content.preweddingVideoUrl || '',
     loveStories: content.kisah && content.kisah.length ? content.kisah : DEFAULT_STORIES,
     gallery: content.galeri && content.galeri.length ? content.galeri : DEFAULT_PHOTOS.gallery,
     musicUrl:
@@ -172,11 +223,26 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
             { bank: 'BCA', nomor: '0182938192', nama: plainName(groom) },
             { bank: 'BSI', nomor: '7192830192', nama: plainName(bride) },
           ],
+    giftRecipient: content.penerimaKado || plainName(bride) || '',
     giftAddress:
       content.showGift === false
         ? ''
         : content.alamatKado ||
           'Perumahan Graha Asri Blok C No. 12, Jambangan, Surabaya (0812-3456-7890)',
+    giftConfirmText:
+      content.giftConfirmText ||
+      'Untuk pengiriman hadiah fisik bisa konfirmasi melalui nomer whatsapp dibawah ini ya..',
+    giftWa1Name: content.giftWa1Name !== undefined ? content.giftWa1Name : brideShort,
+    giftWa1Phone: content.giftWa1Phone !== undefined ? content.giftWa1Phone : '0811 2233 4455',
+    giftWa2Name: content.giftWa2Name !== undefined ? content.giftWa2Name : groomShort,
+    giftWa2Phone: content.giftWa2Phone !== undefined ? content.giftWa2Phone : '0811 2233 4455',
+    showDresscode: content.showDresscode !== undefined ? Boolean(content.showDresscode) : true,
+    dresscodeTitle: content.judulDresscode || 'Dress Code',
+    dresscodeText: content.dresscodeText || 'Pink, brown and white',
+    dresscodeColors:
+      Array.isArray(content.dresscodeColors) && content.dresscodeColors.length > 0
+        ? content.dresscodeColors
+        : ['#fdf9f6', '#a96d79', '#68333e'],
     showDonation: content.showDonation !== undefined ? Boolean(content.showDonation) : true,
     showGift: content.showGift !== undefined ? Boolean(content.showGift) : true,
     guestName: guest?.name || 'Tamu Undangan',
@@ -191,9 +257,9 @@ export const useInvitationData = ({ invitation, guest, rsvps = [], onSubmitRsvp,
       (guest?.category || '').trim().toLowerCase() === 'grup'
         ? false
         : content.showQr !== undefined
-        ? Boolean(content.showQr)
+        ? content.showQr !== false && content.showQr !== 'false' && content.showQr !== 0 && content.showQr !== '0'
         : content.showQrCheckin !== undefined
-        ? Boolean(content.showQrCheckin)
+        ? content.showQrCheckin !== false && content.showQrCheckin !== 'false' && content.showQrCheckin !== 0 && content.showQrCheckin !== '0'
         : true,
   };
 
