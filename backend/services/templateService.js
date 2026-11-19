@@ -27,6 +27,30 @@ class TemplateService {
       },
     }).catch(() => {});
 
+    // Pastikan template acara umum Burgundy Gala Envelope otomatis terdaftar di DB
+    await Template.findOrCreate({
+      where: { template_code: 'burgundy-gala' },
+      defaults: {
+        name: 'Burgundy Gala Envelope',
+        thumbnail_url: '/images/burgundy-gala/envelope-closed.png',
+        is_active: true,
+        default_content_json: {
+          templateEventType: 'event',
+          eventType: 'event',
+          showSecondEvent: false,
+          showDresscode: false,
+          showDonation: false,
+          showGift: false,
+          styleCategory: 'modern',
+          tag: 'Acara & Gala',
+          judulPembuka: 'SPECIAL EVENT INVITATION',
+          seatPlanTitle: 'Seat Plan & Denah Ruangan',
+          seatPlanCaption:
+            'Silakan periksa posisi meja atau tempat duduk Anda melalui denah di bawah ini. Ketuk gambar untuk memperbesar.',
+        },
+      },
+    }).catch(() => {});
+
     const where = {};
     if (options.isActiveOnly) {
       where.is_active = true;

@@ -223,6 +223,9 @@ export const InvitationDetailPage = ({
     giftWa1Phone: '',
     giftWa2Name: '',
     giftWa2Phone: '',
+    seatPlanImage: '',
+    seatPlanTitle: '',
+    seatPlanCaption: '',
   });
 
   // Media & Assets States
@@ -238,6 +241,7 @@ export const InvitationDetailPage = ({
   const [isUploadingGroom, setIsUploadingGroom] = useState(false);
   const [isUploadingBride, setIsUploadingBride] = useState(false);
   const [isUploadingClosing, setIsUploadingClosing] = useState(false);
+  const [isUploadingSeatPlan, setIsUploadingSeatPlan] = useState(false);
   const [isUploadingBgVideo, setIsUploadingBgVideo] = useState(false);
   const [isUploadingPrewedVideo, setIsUploadingPrewedVideo] = useState(false);
   const [galleryPhotos, setGalleryPhotos] = useState([]);
@@ -250,6 +254,7 @@ export const InvitationDetailPage = ({
   const groomFileInputRef = useRef(null);
   const brideFileInputRef = useRef(null);
   const closingFileInputRef = useRef(null);
+  const seatPlanFileInputRef = useRef(null);
   const bgVideoFileInputRef = useRef(null);
   const prewedVideoFileInputRef = useRef(null);
   const galleryFileInputRef = useRef(null);
@@ -324,6 +329,7 @@ export const InvitationDetailPage = ({
     if (type === 'groom') setIsUploadingGroom(true);
     if (type === 'bride') setIsUploadingBride(true);
     if (type === 'closing') setIsUploadingClosing(true);
+    if (type === 'seatplan') setIsUploadingSeatPlan(true);
 
     try {
       const res = await invitationService.uploadPhoto(invitationId, file, type);
@@ -334,6 +340,9 @@ export const InvitationDetailPage = ({
         if (type === 'bride') setFotoWanita(res.data.url);
         if (type === 'closing') {
           setSettingsForm((prev) => ({ ...prev, fotoPenutup: res.data.url }));
+        }
+        if (type === 'seatplan') {
+          setSettingsForm((prev) => ({ ...prev, seatPlanImage: res.data.url }));
         }
         toast.success(`Foto ${type} berhasil diupload ke /uploads/${invitation?.slug}/covers/`);
       }
@@ -346,6 +355,7 @@ export const InvitationDetailPage = ({
       if (type === 'groom') setIsUploadingGroom(false);
       if (type === 'bride') setIsUploadingBride(false);
       if (type === 'closing') setIsUploadingClosing(false);
+      if (type === 'seatplan') setIsUploadingSeatPlan(false);
       e.target.value = '';
     }
   };
@@ -516,6 +526,9 @@ export const InvitationDetailPage = ({
         giftWa1Phone: c.giftWa1Phone || '',
         giftWa2Name: c.giftWa2Name || '',
         giftWa2Phone: c.giftWa2Phone || '',
+        seatPlanImage: c.seatPlanImage || '',
+        seatPlanTitle: c.seatPlanTitle || '',
+        seatPlanCaption: c.seatPlanCaption || '',
       });
 
       // Populate bank accounts
@@ -1246,6 +1259,9 @@ export const InvitationDetailPage = ({
           giftWa1Phone: settingsForm.giftWa1Phone || undefined,
           giftWa2Name: settingsForm.giftWa2Name || undefined,
           giftWa2Phone: settingsForm.giftWa2Phone || undefined,
+          seatPlanImage: settingsForm.seatPlanImage || undefined,
+          seatPlanTitle: settingsForm.seatPlanTitle || undefined,
+          seatPlanCaption: settingsForm.seatPlanCaption || undefined,
           fotoPria: fotoPria || undefined,
           fotoWanita: fotoWanita || undefined,
           fotoCover: fotoCover || undefined,
@@ -3315,6 +3331,13 @@ export const InvitationDetailPage = ({
                 onChange={(e) => handleUploadSinglePhoto(e, 'closing')}
                 className="hidden"
               />
+              <input
+                type="file"
+                ref={seatPlanFileInputRef}
+                accept="image/*"
+                onChange={(e) => handleUploadSinglePhoto(e, 'seatplan')}
+                className="hidden"
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Video Background */}
@@ -3487,6 +3510,75 @@ export const InvitationDetailPage = ({
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Denah Tempat Duduk / Seat Plan (Acara Umum / Gala) */}
+              <div className="p-4 bg-amber-50/40 rounded-2xl border border-amber-200/80 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Denah Tempat Duduk / Seat Plan (Gambar)
+                    </h5>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Upload gambar denah meja atau kursi (PNG/JPG) — tampil di slide bawah setelah informasi acara (misal template Burgundy Gala Envelope).
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      isLoading={isUploadingSeatPlan}
+                      leftIcon={Upload}
+                      onClick={() => seatPlanFileInputRef.current?.click()}
+                    >
+                      {settingsForm.seatPlanImage ? 'Ganti Gambar Seat Plan' : 'Upload Seat Plan'}
+                    </Button>
+                    {settingsForm.seatPlanImage && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-rose-600"
+                        onClick={() =>
+                          setSettingsForm({ ...settingsForm, seatPlanImage: '' })
+                        }
+                      >
+                        Hapus
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Input
+                    label="Judul Bagian Seat Plan (Opsional)"
+                    placeholder="Contoh: Seat Plan & Denah Ruangan"
+                    value={settingsForm.seatPlanTitle || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, seatPlanTitle: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Keterangan Singkat Seat Plan (Opsional)"
+                    placeholder="Contoh: Ketuk gambar untuk memperbesar posisi meja Anda."
+                    value={settingsForm.seatPlanCaption || ''}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, seatPlanCaption: e.target.value })
+                    }
+                  />
+                </div>
+
+                {settingsForm.seatPlanImage && (
+                  <div className="w-full max-w-md rounded-xl overflow-hidden border border-slate-200 bg-white p-2">
+                    <img
+                      src={settingsForm.seatPlanImage}
+                      alt="Preview Seat Plan"
+                      className="w-full max-h-56 object-contain mx-auto rounded-lg"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </Card>
@@ -3860,6 +3952,9 @@ export const InvitationDetailPage = ({
                         giftWa1Phone: settingsForm.giftWa1Phone,
                         giftWa2Name: settingsForm.giftWa2Name,
                         giftWa2Phone: settingsForm.giftWa2Phone,
+                        seatPlanImage: settingsForm.seatPlanImage || undefined,
+                        seatPlanTitle: settingsForm.seatPlanTitle || undefined,
+                        seatPlanCaption: settingsForm.seatPlanCaption || undefined,
                       },
                     }}
                     guest={selectedGuestForPreview}

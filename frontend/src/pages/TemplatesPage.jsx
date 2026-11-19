@@ -59,6 +59,7 @@ const BUILTIN_ENGINE_CODES = [
   'noir-velvet',
   'drapery-pink',
   'sundanese-classic',
+  'burgundy-gala',
 ];
 
 const ENGINE_LAYOUT_OPTIONS = [
@@ -67,6 +68,7 @@ const ENGINE_LAYOUT_OPTIONS = [
     label: 'Custom Dynamic Builder (Ubah Warna, PNG, Frame, Video & Animasi)',
   },
   { value: '__builtin__', label: 'Kerangka JSX Asli Kode Template (Khusus Template Bawaan)' },
+  { value: 'burgundy-gala', label: 'Kerangka Bawaan: Burgundy Gala Envelope (Acara & Seat Plan)' },
   { value: 'drapery-pink', label: 'Kerangka Bawaan: Drapery Pink & Amplop' },
   { value: 'noir-velvet', label: 'Kerangka Bawaan: Noir Velvet Sinematik' },
   { value: 'mildness', label: 'Kerangka Bawaan: Mildness Classic' },

@@ -48,6 +48,16 @@ const THEME_STYLES = {
     icon: Crown,
     eyebrow: 'The Royal Celebration',
   },
+  'burgundy-gala': {
+    bgGradient: 'from-[#1C040A] via-[#3F0B19] to-[#190309]',
+    accentColor: '#D4AF6A',
+    secondaryColor: '#F3DFA8',
+    badgeBg: 'bg-[#D4AF6A]/20 text-[#F3DFA8] border-[#D4AF6A]/40',
+    glass: 'bg-[#1C040A]/80 border-[#D4AF6A]/30',
+    titleFont: 'font-cinzel',
+    icon: Crown,
+    eyebrow: 'Special Event & Gala Invitation',
+  },
   sunda: {
     bgGradient: 'from-[#0A2216] via-[#103824] to-[#06180F]',
     accentColor: '#D4AF37',
@@ -167,6 +177,8 @@ export const DesktopSidePanel = ({
   isOpened = false,
   isModalView = false,
   alwaysVisible = false,
+  hidePhotos = false,
+  hideCountdown = false,
 }) => {
   // Jangan tampilkan jika di dalam modal preview sempit
   if (isModalView) return null;
@@ -228,12 +240,12 @@ export const DesktopSidePanel = ({
 
   // Auto rotate foto setiap 6 detik
   useEffect(() => {
-    if (photos.length <= 1) return;
+    if (hidePhotos || photos.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % photos.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [photos.length]);
+  }, [hidePhotos, photos.length]);
 
   const handlePrev = (e) => {
     e.stopPropagation();
@@ -252,35 +264,49 @@ export const DesktopSidePanel = ({
         isOpened || alwaysVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'
       }`}
     >
-      {/* Background Slideshow Foto Prewedding */}
+      {/* Background Slideshow Foto Prewedding (atau Gradient Polos Elegan saat hidePhotos) */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
-        {photos.map((src, idx) => {
-          const isActive = idx === currentSlide;
-          return (
-            <div
-              key={idx}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-              }`}
-            >
-              <img
-                src={src}
-                alt={`Prewedding ${idx + 1}`}
-                className={`h-full w-full object-cover object-center transition-transform duration-[8000ms] ease-out ${
-                  isActive ? 'scale-105' : 'scale-100'
+        {!hidePhotos &&
+          photos.map((src, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <div
+                key={idx}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
-              />
-            </div>
-          );
-        })}
+              >
+                <img
+                  src={src}
+                  alt={`Prewedding ${idx + 1}`}
+                  className={`h-full w-full object-cover object-center transition-transform duration-[8000ms] ease-out ${
+                    isActive ? 'scale-105' : 'scale-100'
+                  }`}
+                />
+              </div>
+            );
+          })}
 
         {/* Dynamic Dark Gradient Overlay */}
         <div
-          className={`absolute inset-0 z-20 bg-gradient-to-t ${style.bgGradient} opacity-85 backdrop-blur-[2px] transition-opacity duration-500 ${
-            isPhotoCollapsed ? 'opacity-35' : 'opacity-80'
+          className={`absolute inset-0 z-20 bg-gradient-to-t ${style.bgGradient} transition-opacity duration-500 ${
+            hidePhotos
+              ? 'opacity-100'
+              : isPhotoCollapsed
+                ? 'opacity-35 backdrop-blur-[2px]'
+                : 'opacity-80 backdrop-blur-[2px]'
           }`}
         />
-        <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/80 via-black/40 to-black/85 pointer-events-none" />
+        {hidePhotos ? (
+          <div
+            className="pointer-events-none absolute inset-0 z-20 opacity-40"
+            style={{
+              background: `radial-gradient(circle at 30% 35%, ${style.accentColor}30 0%, transparent 60%)`,
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/80 via-black/40 to-black/85 pointer-events-none" />
+        )}
       </div>
 
       {/* Top Bar: Eyebrow & Toggle Collapse Foto */}
@@ -304,24 +330,26 @@ export const DesktopSidePanel = ({
         </div>
 
         {/* Tombol Collapse / Expand Info Foto */}
-        <button
-          type="button"
-          onClick={() => setIsPhotoCollapsed(!isPhotoCollapsed)}
-          className="flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/75 hover:border-white/40 active:scale-95 cursor-pointer"
-          title={isPhotoCollapsed ? 'Tampilkan Informasi Lengkap' : 'Lihat Foto Penuh (Collapse Info)'}
-        >
-          {isPhotoCollapsed ? (
-            <>
-              <Minimize2 className="h-3.5 w-3.5 text-amber-300" />
-              <span>Tampilkan Info</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="h-3.5 w-3.5 text-amber-300" />
-              <span>Lihat Foto Penuh</span>
-            </>
-          )}
-        </button>
+        {!hidePhotos && (
+          <button
+            type="button"
+            onClick={() => setIsPhotoCollapsed(!isPhotoCollapsed)}
+            className="flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md transition-all hover:bg-black/75 hover:border-white/40 active:scale-95 cursor-pointer"
+            title={isPhotoCollapsed ? 'Tampilkan Informasi Lengkap' : 'Lihat Foto Penuh (Collapse Info)'}
+          >
+            {isPhotoCollapsed ? (
+              <>
+                <Minimize2 className="h-3.5 w-3.5 text-amber-300" />
+                <span>Tampilkan Info</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="h-3.5 w-3.5 text-amber-300" />
+                <span>Lihat Foto Penuh</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Main Content Area (Bisa di-collapse untuk melihat foto prewedding secara penuh) */}
@@ -375,41 +403,43 @@ export const DesktopSidePanel = ({
           </div>
 
           {/* Countdown Pernikahan Desktop */}
-          <div className="pt-2">
-            <p
-              className="mb-3 text-[11px] font-sans uppercase tracking-[0.3em] font-medium"
-              style={{ color: style.secondaryColor }}
-            >
-              Menghitung Hari Bahagia
-            </p>
-            <div className="flex items-center gap-3">
-              {[
-                { label: 'HARI', val: safeTimeLeft.days },
-                { label: 'JAM', val: safeTimeLeft.hours },
-                { label: 'MENIT', val: safeTimeLeft.minutes },
-                { label: 'DETIK', val: safeTimeLeft.seconds },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center justify-center rounded-2xl border px-4 py-3 min-w-[70px] shadow-2xl backdrop-blur-md"
-                  style={{
-                    borderColor: `${style.accentColor}35`,
-                    background: 'rgba(0,0,0,0.55)',
-                  }}
-                >
-                  <span
-                    className="text-2xl font-bold font-serif-theme leading-none"
-                    style={{ color: style.accentColor }}
+          {!hideCountdown && (
+            <div className="pt-2">
+              <p
+                className="mb-3 text-[11px] font-sans uppercase tracking-[0.3em] font-medium"
+                style={{ color: style.secondaryColor }}
+              >
+                Menghitung Hari Bahagia
+              </p>
+              <div className="flex items-center gap-3">
+                {[
+                  { label: 'HARI', val: safeTimeLeft.days },
+                  { label: 'JAM', val: safeTimeLeft.hours },
+                  { label: 'MENIT', val: safeTimeLeft.minutes },
+                  { label: 'DETIK', val: safeTimeLeft.seconds },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center justify-center rounded-2xl border px-4 py-3 min-w-[70px] shadow-2xl backdrop-blur-md"
+                    style={{
+                      borderColor: `${style.accentColor}35`,
+                      background: 'rgba(0,0,0,0.55)',
+                    }}
                   >
-                    {String(item.val || 0).padStart(2, '0')}
-                  </span>
-                  <span className="mt-1 text-[9px] font-sans tracking-widest text-stone-300 font-semibold">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className="text-2xl font-bold font-serif-theme leading-none"
+                      style={{ color: style.accentColor }}
+                    >
+                      {String(item.val || 0).padStart(2, '0')}
+                    </span>
+                    <span className="mt-1 text-[9px] font-sans tracking-widest text-stone-300 font-semibold">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Kutipan Ayat */}
           {ayatQuote && (
@@ -424,55 +454,59 @@ export const DesktopSidePanel = ({
       </div>
 
       {/* Bottom Bar: Slider Navigation & Thumbnails */}
-      <div className="relative z-30 flex items-center justify-between p-8 sm:p-10 border-t border-white/10 bg-black/40 backdrop-blur-md">
-        {/* Indikator Slider & Thumbnail Foto */}
-        <div className="flex items-center gap-2">
-          {photos.slice(0, 5).map((src, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-11 w-11 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                currentSlide === idx
-                  ? 'border-white scale-110 shadow-lg'
-                  : 'border-transparent opacity-60 hover:opacity-100'
-              }`}
-            >
-              <img src={src} alt="Thumb" className="h-full w-full object-cover" />
-            </button>
-          ))}
-          {photos.length > 5 && (
-            <span className="text-[10px] text-stone-400 font-sans pl-1">
-              +{photos.length - 5}
-            </span>
+      {!hidePhotos ? (
+        <div className="relative z-30 flex items-center justify-between p-8 sm:p-10 border-t border-white/10 bg-black/40 backdrop-blur-md">
+          {/* Indikator Slider & Thumbnail Foto */}
+          <div className="flex items-center gap-2">
+            {photos.slice(0, 5).map((src, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                className={`h-11 w-11 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                  currentSlide === idx
+                    ? 'border-white scale-110 shadow-lg'
+                    : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={src} alt="Thumb" className="h-full w-full object-cover" />
+              </button>
+            ))}
+            {photos.length > 5 && (
+              <span className="text-[10px] text-stone-400 font-sans pl-1">
+                +{photos.length - 5}
+              </span>
+            )}
+          </div>
+
+          {/* Panah Navigasi Slider */}
+          {photos.length > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Foto Sebelumnya"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-md transition-all hover:bg-white hover:text-black active:scale-90 cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-xs font-sans text-stone-300 font-medium px-1">
+                {currentSlide + 1} / {photos.length}
+              </span>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Foto Selanjutnya"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-md transition-all hover:bg-white hover:text-black active:scale-90 cursor-pointer"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
-
-        {/* Panah Navigasi Slider */}
-        {photos.length > 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrev}
-              aria-label="Foto Sebelumnya"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-md transition-all hover:bg-white hover:text-black active:scale-90 cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs font-sans text-stone-300 font-medium px-1">
-              {currentSlide + 1} / {photos.length}
-            </span>
-            <button
-              type="button"
-              onClick={handleNext}
-              aria-label="Foto Selanjutnya"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-md transition-all hover:bg-white hover:text-black active:scale-90 cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="p-6" />
+      )}
     </aside>
   );
 };

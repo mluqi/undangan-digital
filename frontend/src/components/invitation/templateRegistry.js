@@ -11,6 +11,7 @@ import { ForestTropicalTheme } from './templates/ForestTropicalTheme';
 import { KembarMayangTheme } from './templates/KembarMayangTheme';
 import { NoirVelvetTheme } from './templates/NoirVelvetTheme';
 import { DraperyPinkTheme } from './templates/DraperyPinkTheme';
+import { BurgundyGalaTheme } from './templates/BurgundyGalaTheme';
 import { CustomThemeBuilder } from './templates/CustomThemeBuilder';
 
 /**
@@ -167,6 +168,11 @@ export const TEMPLATE_REGISTRY = {
     code: 'sundanese-classic',
     name: 'Sundanese Classic Emerald',
     component: SundaneseTheme,
+  },
+  'burgundy-gala': {
+    code: 'burgundy-gala',
+    name: 'Burgundy Gala Envelope',
+    component: BurgundyGalaTheme,
   },
   'custom-builder': {
     code: 'custom-builder',
