@@ -32,6 +32,7 @@ export const BurgundyGalaTheme = (props) => {
   const d = useInvitationData(props);
 
   const [openPhase, setOpenPhase] = useState(defaultOpened ? 'opened' : 'closed');
+  const [qrModalOpen, setQrModalOpen] = useState(false);
   const [seatPlanLightboxOpen, setSeatPlanLightboxOpen] = useState(false);
   const [seatPlanZoom, setSeatPlanZoom] = useState(1);
   const timersRef = useRef([]);
@@ -541,43 +542,17 @@ export const BurgundyGalaTheme = (props) => {
               </Reveal>
             )}
 
-            {/* Inline Guest QR / Barcode Check-In (Di Bawah Informasi Acara) */}
+            {/* Button QR Check-In (Di Bawah Informasi Acara) */}
             {d.showQr && d.qrValue && (
-              <Reveal
-                variant="zoom-in"
-                duration={800}
-                className="max-w-sm mx-auto rounded-3xl p-6 border border-[#D4AF6A]/45 bg-gradient-to-b from-[#3B0A18]/90 to-[#22040C]/95 shadow-2xl space-y-4"
-              >
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D4AF6A]/40 bg-[#2A0610]/80 text-[10px] uppercase tracking-[0.26em] text-[#F3DFA8]">
-                    <QrCode className="w-3 h-3 text-[#D4AF6A]" />
-                    <span>QR Check-In Tamu</span>
-                  </div>
-                  {d.guestName && (
-                    <p className="font-cinzel text-base font-bold text-[#FDF8F2] pt-1">
-                      {d.guestName}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-[#E6C98B]/85">
-                    <span>{d.guestCategory}</span>
-                    <span>•</span>
-                    <span>{d.guestPax} Tamu</span>
-                  </div>
-                </div>
-
-                <div className="inline-block p-3.5 rounded-2xl bg-white shadow-xl border-2 border-[#D4AF6A]/65">
-                  <QRCodeSVG
-                    value={d.qrValue}
-                    size={172}
-                    level="M"
-                    bgColor="#ffffff"
-                    fgColor="#1F040B"
-                  />
-                </div>
-
-                <p className="text-[11px] leading-relaxed text-[#FDF8F2]/75 max-w-[260px] mx-auto">
-                  Tunjukkan QR Code ini kepada petugas registrasi saat memasuki lokasi acara.
-                </p>
+              <Reveal variant="fade-up" duration={750} className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setQrModalOpen(true)}
+                  className="btn-sheen inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-xs font-bold uppercase tracking-[0.18em] shadow-[0_14px_34px_rgba(0,0,0,0.45)] transition-transform hover:scale-[1.03] active:scale-95 cursor-pointer bg-gradient-to-r from-[#C89B4B] via-[#E8C984] to-[#C89B4B] text-[#2B0610]"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>Tampilkan QR Check-In</span>
+                </button>
               </Reveal>
             )}
           </section>
@@ -691,6 +666,70 @@ export const BurgundyGalaTheme = (props) => {
                   maxWidth: seatPlanZoom === 1 ? '100%' : 'none',
                 }}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Full-Screen High-Contrast Fast-Scan QR Check-In Modal */}
+        {qrModalOpen && d.showQr && d.qrValue && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="QR Check-In Tamu"
+            className="fixed inset-0 z-[80] bg-white text-black flex flex-col justify-between p-5 sm:p-8 select-none"
+          >
+            {/* Header Info */}
+            <div className="flex items-start justify-between gap-3 shrink-0">
+              <div className="text-left min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#6B1228]">
+                  QR Check-In Tamu
+                </p>
+                {d.guestName && (
+                  <h3 className="font-cinzel text-lg sm:text-xl font-bold text-black truncate mt-0.5">
+                    {d.guestName}
+                  </h3>
+                )}
+                <p className="text-xs font-semibold text-neutral-600 mt-0.5">
+                  {d.guestCategory} • {d.guestPax} Tamu
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQrModalOpen(false)}
+                aria-label="Tutup QR Check-In"
+                className="p-2.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-black transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Huge Full-Width High-Contrast QR Code (Fast Scan Optimized) */}
+            <div className="flex-1 flex flex-col items-center justify-center py-4">
+              <div className="w-full max-w-[420px] flex items-center justify-center p-3 sm:p-5 bg-white">
+                <QRCodeSVG
+                  value={d.qrValue}
+                  size={380}
+                  level="L"
+                  includeMargin={true}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                  style={{ width: '100%', height: 'auto', maxHeight: '62vh' }}
+                />
+              </div>
+              <p className="text-xs text-neutral-600 text-center max-w-xs mt-2">
+                Arahkan QR Code ini ke scanner petugas registrasi di pintu masuk.
+              </p>
+            </div>
+
+            {/* Bottom Close Action */}
+            <div className="shrink-0 flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => setQrModalOpen(false)}
+                className="w-full max-w-xs py-3 rounded-full bg-[#3B0A17] hover:bg-[#521022] text-white text-xs font-bold uppercase tracking-[0.2em] transition-colors cursor-pointer"
+              >
+                Tutup QR Code
+              </button>
             </div>
           </div>
         )}
