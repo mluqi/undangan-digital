@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Calendar,
   MapPin,
   Clock,
   Sparkles,
+  QrCode,
   ZoomIn,
   ZoomOut,
   X,
@@ -536,6 +538,46 @@ export const BurgundyGalaTheme = (props) => {
                     {d.resepsi.alamat}
                   </p>
                 )}
+              </Reveal>
+            )}
+
+            {/* Inline Guest QR / Barcode Check-In (Di Bawah Informasi Acara) */}
+            {d.showQr && d.qrValue && (
+              <Reveal
+                variant="zoom-in"
+                duration={800}
+                className="max-w-sm mx-auto rounded-3xl p-6 border border-[#D4AF6A]/45 bg-gradient-to-b from-[#3B0A18]/90 to-[#22040C]/95 shadow-2xl space-y-4"
+              >
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D4AF6A]/40 bg-[#2A0610]/80 text-[10px] uppercase tracking-[0.26em] text-[#F3DFA8]">
+                    <QrCode className="w-3 h-3 text-[#D4AF6A]" />
+                    <span>QR Check-In Tamu</span>
+                  </div>
+                  {d.guestName && (
+                    <p className="font-cinzel text-base font-bold text-[#FDF8F2] pt-1">
+                      {d.guestName}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest text-[#E6C98B]/85">
+                    <span>{d.guestCategory}</span>
+                    <span>•</span>
+                    <span>{d.guestPax} Tamu</span>
+                  </div>
+                </div>
+
+                <div className="inline-block p-3.5 rounded-2xl bg-white shadow-xl border-2 border-[#D4AF6A]/65">
+                  <QRCodeSVG
+                    value={d.qrValue}
+                    size={172}
+                    level="M"
+                    bgColor="#ffffff"
+                    fgColor="#1F040B"
+                  />
+                </div>
+
+                <p className="text-[11px] leading-relaxed text-[#FDF8F2]/75 max-w-[260px] mx-auto">
+                  Tunjukkan QR Code ini kepada petugas registrasi saat memasuki lokasi acara.
+                </p>
               </Reveal>
             )}
           </section>
