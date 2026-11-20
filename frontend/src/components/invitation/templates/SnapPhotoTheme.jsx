@@ -80,19 +80,11 @@ export const SnapPhotoTheme = ({
     (bride ? String(bride).split(',')[0].trim().split(' ')[0] : '') ||
     'Aminah';
   const groomFather =
-    content.ayahPria !== undefined
-      ? content.ayahPria
-      : showSecondPerson
-        ? 'Bpk. H. Abdurrahman'
-        : '';
+    content.ayahPria !== undefined ? content.ayahPria : '';
   const groomMother =
-    content.ibuPria !== undefined
-      ? content.ibuPria
-      : showSecondPerson
-        ? 'Ibu Hj. Maryam'
-        : '';
-  const brideFather = content.ayahWanita || 'Bpk. H. Ahmad Dahlan';
-  const brideMother = content.ibuWanita || 'Ibu Hj. Fatimah';
+    content.ibuPria !== undefined ? content.ibuPria : '';
+  const brideFather = content.ayahWanita || '';
+  const brideMother = content.ibuWanita || '';
   const displayTitle = showSecondPerson ? `${groomShort} & ${brideShort}` : groomShort;
   const coverSubtitle =
     eventType === 'wedding'

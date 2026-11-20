@@ -259,19 +259,11 @@ export const TimelessSnapshotTheme = ({
   const groom = content.mempelaiPria || "Ahmad Fajar, S.T.";
   const bride = content.mempelaiWanita || "Siti Aminah, S.Pd.";
   const groomFather =
-    content.ayahPria !== undefined
-      ? content.ayahPria
-      : showSecondPerson
-        ? "Bpk. H. Abdurrahman"
-        : "";
+    content.ayahPria !== undefined ? content.ayahPria : "";
   const groomMother =
-    content.ibuPria !== undefined
-      ? content.ibuPria
-      : showSecondPerson
-        ? "Ibu Hj. Maryam"
-        : "";
-  const brideFather = content.ayahWanita || "Bpk. H. Ahmad Dahlan";
-  const brideMother = content.ibuWanita || "Ibu Hj. Fatimah";
+    content.ibuPria !== undefined ? content.ibuPria : "";
+  const brideFather = content.ayahWanita || "";
+  const brideMother = content.ibuWanita || "";
 
   const akad = content.akad || {
     tanggal: "Minggu, 15 November 2026",

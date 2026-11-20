@@ -468,12 +468,12 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
     setShowQrCheckin(true);
     setGroomName('Ahmad Fajar, S.T.');
     setGroomNickname('Ahmad');
-    setGroomFather('Bpk. H. Abdurrahman');
-    setGroomMother('Ibu Hj. Maryam');
+    setGroomFather('');
+    setGroomMother('');
     setBrideName('Siti Aminah, S.Pd.');
     setBrideNickname('Aminah');
-    setBrideFather('Bpk. H. Ahmad Dahlan');
-    setBrideMother('Ibu Hj. Fatimah');
+    setBrideFather('');
+    setBrideMother('');
     setAyatQuote('QS. Ar-Rum: 21');
     setClosingText(
       'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.'
@@ -504,12 +504,12 @@ export const InvitationsPage = ({ onManageGuests, initialSelectedId, onSelectInv
       showQr: true,
       mempelaiPria: 'Ahmad Fajar, S.T.',
       panggilanPria: 'Ahmad',
-      ayahPria: 'Bpk. H. Abdurrahman',
-      ibuPria: 'Ibu Hj. Maryam',
+      ayahPria: '',
+      ibuPria: '',
       mempelaiWanita: 'Siti Aminah, S.Pd.',
       panggilanWanita: 'Aminah',
-      ayahWanita: 'Bpk. H. Ahmad Dahlan',
-      ibuWanita: 'Ibu Hj. Fatimah',
+      ayahWanita: '',
+      ibuWanita: '',
       ayat: 'QS. Ar-Rum: 21',
       teksPenutup:
         'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.',

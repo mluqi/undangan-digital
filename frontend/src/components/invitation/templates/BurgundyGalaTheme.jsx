@@ -4,14 +4,12 @@ import {
   MapPin,
   Clock,
   Sparkles,
-  QrCode,
   ZoomIn,
   ZoomOut,
   X,
   LayoutGrid,
   Award,
 } from 'lucide-react';
-import { InvitationFloatingControls } from '../InvitationFloatingControls';
 import { DesktopSidePanel } from '../DesktopSidePanel';
 import { MusicVinylPlayer } from '../MusicVinylPlayer';
 import { Reveal } from '../Reveal';
@@ -28,11 +26,10 @@ const GOLD_DUST = Array.from({ length: 14 }, (_, i) => ({
 }));
 
 export const BurgundyGalaTheme = (props) => {
-  const { invitation, guest, isModalView = false, defaultOpened = false } = props;
+  const { invitation, isModalView = false, defaultOpened = false } = props;
   const d = useInvitationData(props);
 
   const [openPhase, setOpenPhase] = useState(defaultOpened ? 'opened' : 'closed');
-  const [qrModalOpen, setQrModalOpen] = useState(false);
   const [seatPlanLightboxOpen, setSeatPlanLightboxOpen] = useState(false);
   const [seatPlanZoom, setSeatPlanZoom] = useState(1);
   const timersRef = useRef([]);
@@ -541,20 +538,6 @@ export const BurgundyGalaTheme = (props) => {
                 )}
               </Reveal>
             )}
-
-            {/* QR Guest Pass Button */}
-            {d.showQr && (
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={() => setQrModalOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold border border-[#D4AF6A]/55 bg-[#2A0610]/80 text-[#F3DFA8] hover:bg-[#D4AF6A]/15 transition-colors cursor-pointer"
-                >
-                  <QrCode className="w-4 h-4 text-[#D4AF6A]" />
-                  <span>Tampilkan Kartu QR Akses Tamu</span>
-                </button>
-              </div>
-            )}
           </section>
 
           {/* ============================================================ */}
@@ -670,7 +653,7 @@ export const BurgundyGalaTheme = (props) => {
           </div>
         )}
 
-        {/* Audio & Floating Controls */}
+        {/* Audio Player */}
         <audio ref={d.audioRef} src={d.musicUrl} loop preload="auto" />
 
         {isOverlayHidden && (
@@ -684,20 +667,6 @@ export const BurgundyGalaTheme = (props) => {
             accentColor="#D4AF6A"
           />
         )}
-
-        <InvitationFloatingControls
-          isOpened={isOverlayHidden}
-          guest={guest}
-          guestName={d.guestName}
-          guestCategory={d.guestCategory}
-          guestPax={d.guestPax}
-          qrValue={d.qrValue}
-          showQr={d.showQr}
-          accentColor="#D4AF6A"
-          theme="gold"
-          isOpen={qrModalOpen}
-          onOpenChange={setQrModalOpen}
-        />
       </main>
     </div>
   );
