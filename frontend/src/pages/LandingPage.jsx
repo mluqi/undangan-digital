@@ -278,6 +278,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
     ],
   });
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activePackageTier, setActivePackageTier] = useState('all');
   const [activeMode, setActiveMode] = useState('qrsync');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -314,6 +315,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               dJson.eventType ||
               'wedding'
             ).toLowerCase();
+            const packageTier = (dJson.packageTier || 'all').toLowerCase();
             const styleCategory = dJson.styleCategory || meta.category;
             const tag = dJson.tag || meta.tag;
             const fallbackImg =
@@ -327,6 +329,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               name: t.name,
               category: styleCategory,
               eventCategory,
+              packageTier,
               tag,
               image: t.thumbnail_url || fallbackImg,
             };
@@ -362,7 +365,13 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
     };
   }, []);
 
-  const filteredTemplates =
+  const PACKAGE_TIER_META = {
+    intimate: { code: '01', label: 'Intimate' },
+    signature: { code: '02', label: 'Signature' },
+    bespoke: { code: '03', label: 'Bespoke' },
+  };
+
+  const categoryFilteredTemplates =
     activeCategory === 'all'
       ? templates
       : ['wedding', 'engagement', 'birthday', 'event'].includes(activeCategory)
@@ -372,6 +381,15 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             t.eventCategory === 'all'
         )
       : templates.filter((t) => t.category === activeCategory);
+
+  const filteredTemplates =
+    activePackageTier === 'all'
+      ? categoryFilteredTemplates
+      : categoryFilteredTemplates.filter(
+          (t) =>
+            (t.packageTier || 'all') === 'all' ||
+            (t.packageTier || 'all') === activePackageTier
+        );
 
   const eventCategoryTabs = [
     { id: 'engagement', label: 'Lamaran' },
@@ -696,10 +714,53 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                 ))}
               </div>
             </div>
+
+            {/* Filter Tipe Paket Tema */}
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.2em]">
+              <span className="text-[#633A2C]/80 mr-1">Tipe Paket:</span>
+              {[
+                { id: 'all', label: 'Semua Paket' },
+                { id: 'intimate', label: '01 / Intimate' },
+                { id: 'signature', label: '02 / Signature' },
+                { id: 'bespoke', label: '03 / Bespoke' },
+              ].map((pkg) => (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  onClick={() => setActivePackageTier(pkg.id)}
+                  className={`px-3 py-1.5 border transition-all cursor-pointer ${
+                    activePackageTier === pkg.id
+                      ? 'bg-[#3B1010] text-[#E6D2BE] border-[#3B1010] font-semibold'
+                      : 'bg-transparent text-[#633A2C] border-[#C9A98B] hover:border-[#3B1010] hover:text-[#2B0C0C]'
+                  }`}
+                >
+                  {pkg.label}
+                </button>
+              ))}
+            </div>
           </Reveal>
 
+          {filteredTemplates.length === 0 ? (
+            <div className="mt-12 py-16 px-6 border border-[#C9A98B] text-center space-y-3">
+              <p className="text-sm text-[#633A2C]">
+                Belum ada tema pada kombinasi filter kategori &amp; tipe paket ini.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory('all');
+                  setActivePackageTier('all');
+                }}
+                className="inline-flex items-center px-4 py-2 text-[10px] uppercase tracking-[0.22em] border border-[#3B1010] text-[#3B1010] hover:bg-[#3B1010] hover:text-[#E6D2BE] transition-colors cursor-pointer"
+              >
+                Tampilkan Semua Tema
+              </button>
+            </div>
+          ) : (
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTemplates.map((tpl, idx) => (
+            {filteredTemplates.map((tpl, idx) => {
+              const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
+              return (
               <Reveal key={tpl.code} delay={idx * 70}>
                 <a href={`/preview/${tpl.code}`} className="group block">
                   <div className="relative aspect-[3/4] overflow-hidden bg-[#2B0C0C] border border-[#C9A98B]">
@@ -718,9 +779,16 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     <span className="absolute top-4 left-4 text-[10px] font-mono tracking-widest text-[#E6D2BE]">
                       /{tpl.no}
                     </span>
-                    <span className="absolute top-4 right-4 px-2.5 py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[9px] uppercase tracking-[0.22em] text-[#E6D2BE]">
-                      {tpl.tag}
-                    </span>
+                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                      {pkgInfo && (
+                        <span className="px-2.5 py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[9px] font-semibold uppercase tracking-[0.2em]">
+                          {pkgInfo.label}
+                        </span>
+                      )}
+                      <span className="px-2.5 py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[9px] uppercase tracking-[0.22em] text-[#E6D2BE]">
+                        {tpl.tag}
+                      </span>
+                    </div>
 
                     <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-[#E6D2BE]">
                       <h3
@@ -739,8 +807,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   </div>
                 </a>
               </Reveal>
-            ))}
+              );
+            })}
           </div>
+          )}
         </div>
       </section>
 
@@ -818,16 +888,32 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     {pkg.note}
                   </p>
 
-                  <div className="my-7 py-5 border-y border-[#633A2C] flex items-baseline gap-1.5">
-                    <span className="text-xs uppercase tracking-widest text-[#C9A98B]">
-                      IDR
-                    </span>
-                    <span
-                      className="text-5xl font-normal text-[#E6D2BE]"
-                      style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-                    >
-                      {pkg.price}
-                    </span>
+                  <div className="my-7 py-5 border-y border-[#633A2C] space-y-1.5">
+                    {(pkg.originalPrice || pkg.discountBadge) && (
+                      <div className="flex flex-wrap items-center gap-2 min-h-[22px]">
+                        {pkg.originalPrice && (
+                          <span className="text-xs sm:text-sm text-[#C9A98B]/75 line-through decoration-[#C9A98B]/80 tracking-wide">
+                            IDR {pkg.originalPrice}
+                          </span>
+                        )}
+                        {pkg.discountBadge && (
+                          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] bg-[#E6D2BE]/15 border border-[#C9A98B]/50 text-[#F3DFA8]">
+                            {pkg.discountBadge}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-xs uppercase tracking-widest text-[#C9A98B]">
+                        IDR
+                      </span>
+                      <span
+                        className="text-5xl font-normal text-[#E6D2BE]"
+                        style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                      >
+                        {pkg.price}
+                      </span>
+                    </div>
                   </div>
 
                   <ul className="space-y-2.5 text-xs text-[#D8BFA6]">

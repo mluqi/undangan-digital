@@ -55,6 +55,8 @@ const DEFAULT_LANDING_CMS = {
       tier: '01 / Intimate',
       name: 'Undangan Saja',
       price: '149K',
+      originalPrice: '',
+      discountBadge: '',
       note: 'Cocok untuk acara intimate tanpa sistem QR check-in di lokasi.',
       items: [
         'Akses semua tema katalog',
@@ -69,6 +71,8 @@ const DEFAULT_LANDING_CMS = {
       tier: '02 / Signature',
       name: 'Undangan + QR Sync',
       price: '299K',
+      originalPrice: '',
+      discountBadge: '',
       note: 'Cocok untuk acara yang terhubung dengan sistem QR eksternal atau manajemen tamu terstruktur.',
       items: [
         'Semua fitur paket Intimate',
@@ -83,6 +87,8 @@ const DEFAULT_LANDING_CMS = {
       tier: '03 / Bespoke',
       name: 'Custom Atelier',
       price: '599K+',
+      originalPrice: '',
+      discountBadge: '',
       note: 'Desain dan penyesuaian alur khusus sesuai permintaan klien maupun vendor.',
       items: [
         'Custom layout & palet warna',

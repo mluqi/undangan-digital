@@ -42,6 +42,7 @@ class TemplateService {
           showDonation: false,
           showGift: false,
           styleCategory: "modern",
+          packageTier: "signature",
           tag: "Acara & Gala",
           judulPembuka: "SPECIAL EVENT INVITATION",
           seatPlanTitle: "Seat Plan & Denah Ruangan",

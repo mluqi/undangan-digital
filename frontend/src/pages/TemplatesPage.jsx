@@ -370,6 +370,40 @@ const TEMPLATE_STYLE_OPTIONS = [
   { value: 'rustic', label: 'Rustic & Botanical' },
 ];
 
+const TEMPLATE_PACKAGE_TIERS = [
+  {
+    value: 'all',
+    label: 'Semua Paket (Intimate & Signature)',
+    shortLabel: 'Semua Paket',
+    badgeClass: 'bg-slate-700/90 text-white',
+  },
+  {
+    value: 'intimate',
+    label: '01 / Intimate — Undangan Saja',
+    shortLabel: 'Intimate',
+    badgeClass: 'bg-amber-600/90 text-white',
+  },
+  {
+    value: 'signature',
+    label: '02 / Signature — Undangan + QR Sync',
+    shortLabel: 'Signature',
+    badgeClass: 'bg-indigo-600/90 text-white',
+  },
+  {
+    value: 'bespoke',
+    label: '03 / Bespoke — Custom Atelier',
+    shortLabel: 'Bespoke',
+    badgeClass: 'bg-rose-700/90 text-white',
+  },
+];
+
+const getTemplatePackageTier = (tmpl) =>
+  (tmpl?.default_content_json?.packageTier || 'all').toLowerCase();
+
+const getTemplatePackageMeta = (tier) =>
+  TEMPLATE_PACKAGE_TIERS.find((p) => p.value === tier) ||
+  TEMPLATE_PACKAGE_TIERS[0];
+
 const getTemplateEventCategory = (tmpl) =>
   (
     tmpl?.default_content_json?.templateEventType ||
@@ -384,6 +418,7 @@ export const TemplatesPage = () => {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('templates'); // 'templates' | 'landing-cms'
   const [filterEventCategory, setFilterEventCategory] = useState('all_filter');
+  const [filterPackageTier, setFilterPackageTier] = useState('all_pkg');
   const [templates, setTemplates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -1179,56 +1214,105 @@ export const TemplatesPage = () => {
       {/* TAB 1: MASTER TEMPLATES & LANDING SHOWCASE PHOTO UPLOAD        */}
       {/* ============================================================== */}
       {activeTab === 'templates' && (() => {
-        const visibleTemplates =
-          filterEventCategory === 'all_filter'
-            ? templates
-            : templates.filter(
-                (t) => getTemplateEventCategory(t) === filterEventCategory
-              );
+        const visibleTemplates = templates.filter((t) => {
+          const matchCategory =
+            filterEventCategory === 'all_filter' ||
+            getTemplateEventCategory(t) === filterEventCategory;
+          const matchPkg =
+            filterPackageTier === 'all_pkg' ||
+            getTemplatePackageTier(t) === filterPackageTier;
+          return matchCategory && matchPkg;
+        });
 
         return (
         <>
-          {/* Filter Kategori Acara Template */}
+          {/* Filter Kategori Acara & Tipe Paket Template */}
           {!isLoading && templates.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {[
-                { id: 'all_filter', label: 'Semua Kategori' },
-                ...TEMPLATE_EVENT_CATEGORIES.map((c) => ({
-                  id: c.value,
-                  label: c.shortLabel,
-                })),
-              ].map((tab) => {
-                const count =
-                  tab.id === 'all_filter'
-                    ? templates.length
-                    : templates.filter(
-                        (t) => getTemplateEventCategory(t) === tab.id
-                      ).length;
-                const active = filterEventCategory === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setFilterEventCategory(tab.id)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                      active
-                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+            <div className="space-y-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { id: 'all_filter', label: 'Semua Kategori' },
+                  ...TEMPLATE_EVENT_CATEGORIES.map((c) => ({
+                    id: c.value,
+                    label: c.shortLabel,
+                  })),
+                ].map((tab) => {
+                  const count =
+                    tab.id === 'all_filter'
+                      ? templates.length
+                      : templates.filter(
+                          (t) => getTemplateEventCategory(t) === tab.id
+                        ).length;
+                  const active = filterEventCategory === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setFilterEventCategory(tab.id)}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
                         active
-                          ? 'bg-white/20 text-white'
-                          : 'bg-slate-100 text-slate-500'
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
                       }`}
                     >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span>{tab.label}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                          active
+                            ? 'bg-white/20 text-white'
+                            : 'bg-slate-100 text-slate-500'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-500 mr-1">
+                  Tipe Paket:
+                </span>
+                {[
+                  { id: 'all_pkg', label: 'Semua Tipe' },
+                  ...TEMPLATE_PACKAGE_TIERS.map((p) => ({
+                    id: p.value,
+                    label: p.shortLabel,
+                  })),
+                ].map((pkg) => {
+                  const count =
+                    pkg.id === 'all_pkg'
+                      ? templates.length
+                      : templates.filter(
+                          (t) => getTemplatePackageTier(t) === pkg.id
+                        ).length;
+                  const active = filterPackageTier === pkg.id;
+                  return (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => setFilterPackageTier(pkg.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition cursor-pointer ${
+                        active
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <span>{pkg.label}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                          active
+                            ? 'bg-white/20 text-white'
+                            : 'bg-slate-100 text-slate-500'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -1247,18 +1331,21 @@ export const TemplatesPage = () => {
             <Card className="p-10 text-center space-y-3 text-slate-500">
               <Palette className="w-9 h-9 mx-auto text-slate-300" />
               <p className="text-sm font-medium text-slate-700">
-                Belum ada template khusus untuk kategori ini.
+                Belum ada template untuk kombinasi filter kategori &amp; tipe paket ini.
               </p>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Anda dapat mengedit salah satu template atau menambah template baru lalu memilih peruntukan kategori acara di pengaturannya.
+                Anda dapat mengedit salah satu template atau menambah template baru lalu memilih kategori acara dan tipe paketnya di pengaturannya.
               </p>
               <div>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setFilterEventCategory('all_filter')}
+                  onClick={() => {
+                    setFilterEventCategory('all_filter');
+                    setFilterPackageTier('all_pkg');
+                  }}
                 >
-                  Tampilkan Semua Kategori
+                  Tampilkan Semua Template
                 </Button>
               </div>
             </Card>
@@ -1267,6 +1354,9 @@ export const TemplatesPage = () => {
               {visibleTemplates.map((tmpl) => {
                 const catMeta = getTemplateCategoryMeta(
                   getTemplateEventCategory(tmpl)
+                );
+                const pkgMeta = getTemplatePackageMeta(
+                  getTemplatePackageTier(tmpl)
                 );
                 return (
                 <Card
@@ -1301,11 +1391,16 @@ export const TemplatesPage = () => {
                       </Button>
                     </div>
 
-                    <div className="absolute top-3 left-3 z-10">
+                    <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-1.5 max-w-[60%]">
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-xs ${catMeta.badgeClass}`}
                       >
                         {catMeta.shortLabel}
+                      </span>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-xs ${pkgMeta.badgeClass}`}
+                      >
+                        {pkgMeta.shortLabel}
                       </span>
                     </div>
 
@@ -1548,6 +1643,8 @@ export const TemplatesPage = () => {
                           tier: `${num} / Paket Baru`,
                           name: 'Nama Paket',
                           price: '199K',
+                          originalPrice: '',
+                          discountBadge: '',
                           note: 'Deskripsi singkat paket.',
                           items: ['Fitur unggulan 1', 'Fitur unggulan 2'],
                           ctaLabel: 'Pilih Paket',
@@ -1643,12 +1740,35 @@ export const TemplatesPage = () => {
                     />
                     <div className="grid grid-cols-2 gap-2.5">
                       <Input
-                        label="Harga (IDR)"
+                        label="Harga Jual (IDR)"
                         placeholder="149K"
                         value={pkg.price || ''}
                         onChange={(e) => {
                           const next = [...cmsConfig.pricelist];
                           next[idx] = { ...next[idx], price: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                      />
+                      <Input
+                        label="Harga Coret (Opsional)"
+                        placeholder="Contoh: 249K"
+                        value={pkg.originalPrice || ''}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], originalPrice: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <Input
+                        label="Label Promo (Opsional)"
+                        placeholder="Contoh: Hemat 40%"
+                        value={pkg.discountBadge || ''}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], discountBadge: e.target.value };
                           setCmsConfig({ ...cmsConfig, pricelist: next });
                         }}
                       />
@@ -1941,6 +2061,19 @@ export const TemplatesPage = () => {
                           }))
                         }
                         helperText="Grup filter visual di halaman katalog Landing Page"
+                      />
+
+                      <Select
+                        label="Tipe Paket Tema (Pricelist)"
+                        options={TEMPLATE_PACKAGE_TIERS}
+                        value={defaultContent.packageTier || 'all'}
+                        onChange={(val) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            packageTier: val,
+                          }))
+                        }
+                        helperText="Menentukan paket pricelist yang mencakup tema ini (tampil di badge & filter katalog Landing Page)"
                       />
 
                       <Input
