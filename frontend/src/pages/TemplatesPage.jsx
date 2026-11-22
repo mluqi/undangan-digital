@@ -458,44 +458,50 @@ export const TemplatesPage = () => {
           'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&auto=format&fit=crop&q=80',
       },
     ],
+    pricelistTitle: 'Pricelist & Custom',
+    pricelistSubtitle:
+      'Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.',
     pricelist: [
       {
         tier: '01 / Intimate',
         name: 'Undangan Saja',
         price: '149K',
-        note: 'Tanpa sistem QR Check-In',
+        note: 'Cocok untuk acara intimate tanpa sistem QR check-in di lokasi.',
         items: [
-          'Semua tema katalog',
-          'Tamu tanpa batas (Excel)',
+          'Akses semua tema katalog',
+          'Tamu tanpa batas (import Excel)',
           'RSVP & ucapan real-time',
-          'Amplop & kado (hide/show)',
+          'Amplop digital & info kado (hide/show)',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: false,
       },
       {
         tier: '02 / Signature',
         name: 'Undangan + QR Sync',
         price: '299K',
-        note: 'Konek QR sistem luar / mandiri',
+        note: 'Cocok untuk acara yang terhubung dengan sistem QR eksternal atau manajemen tamu terstruktur.',
         items: [
-          'Semua fitur Intimate',
-          'Sync Link/ID QR sistem luar',
-          'Kategori VVIP, VIP, Reguler & Grup',
-          'Private Guest Lock (Aktif 12 bln)',
+          'Semua fitur paket Intimate',
+          'Sync link / ID QR sistem luar',
+          'Kategori tamu VVIP, VIP, Reguler & Grup',
+          'Private guest lock (aktif 12 bulan)',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: true,
       },
       {
         tier: '03 / Bespoke',
         name: 'Custom Atelier',
         price: '599K+',
-        note: 'Desain & sistem sesuai request',
+        note: 'Desain dan penyesuaian alur khusus sesuai permintaan klien maupun vendor.',
         items: [
-          'Custom layout & warna',
+          'Custom layout & palet warna',
           'Custom ornamen / ilustrasi',
-          'Adaptasi format vendor WO',
-          'Pendampingan penuh tim',
+          'Penyesuaian format kebutuhan WO / vendor',
+          'Pendampingan penuh tim Samskara',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: false,
       },
     ],
@@ -1515,70 +1521,236 @@ export const TemplatesPage = () => {
           </Card>
 
           {/* 3 Pricelist Tiers CMS */}
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <Card className="p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   3. Pricelist &amp; Paket Landing Page
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Atur nama paket, harga, dan catatan singkat yang tampil pada seksi
-                  Pricelist.
+                  Atur judul, subjudul, harga, deskripsi, poin fitur, teks tombol CTA, dan paket unggulan pada seksi Pricelist.
                 </p>
               </div>
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                leftIcon={Save}
-                isLoading={isSavingCms}
-              >
-                Simpan Semua Perubahan CMS
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  leftIcon={Plus}
+                  onClick={() => {
+                    const current = cmsConfig.pricelist || [];
+                    const num = String(current.length + 1).padStart(2, '0');
+                    setCmsConfig({
+                      ...cmsConfig,
+                      pricelist: [
+                        ...current,
+                        {
+                          tier: `${num} / Paket Baru`,
+                          name: 'Nama Paket',
+                          price: '199K',
+                          note: 'Deskripsi singkat paket.',
+                          items: ['Fitur unggulan 1', 'Fitur unggulan 2'],
+                          ctaLabel: 'Pilih Paket',
+                          featured: false,
+                        },
+                      ],
+                    });
+                  }}
+                >
+                  Tambah Paket
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  leftIcon={Save}
+                  isLoading={isSavingCms}
+                >
+                  Simpan Semua Perubahan CMS
+                </Button>
+              </div>
+            </div>
+
+            {/* Header Bagian Pricelist */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100">
+              <Input
+                label="Judul Header Bagian"
+                placeholder="Pricelist & Custom"
+                value={cmsConfig.pricelistTitle || ''}
+                onChange={(e) =>
+                  setCmsConfig({ ...cmsConfig, pricelistTitle: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul Header Bagian"
+                placeholder="Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda."
+                value={cmsConfig.pricelistSubtitle || ''}
+                onChange={(e) =>
+                  setCmsConfig({ ...cmsConfig, pricelistSubtitle: e.target.value })
+                }
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {(cmsConfig.pricelist || []).map((pkg, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3"
+                  className={`p-4 rounded-2xl border space-y-3 flex flex-col justify-between ${
+                    pkg.featured
+                      ? 'border-indigo-300 bg-indigo-50/30 ring-1 ring-indigo-200'
+                      : 'border-slate-200 bg-slate-50/60'
+                  }`}
                 >
-                  <Input
-                    label="Label Tier"
-                    value={pkg.tier}
-                    onChange={(e) => {
-                      const next = [...cmsConfig.pricelist];
-                      next[idx] = { ...next[idx], tier: e.target.value };
-                      setCmsConfig({ ...cmsConfig, pricelist: next });
-                    }}
-                  />
-                  <Input
-                    label="Nama Paket"
-                    value={pkg.name}
-                    onChange={(e) => {
-                      const next = [...cmsConfig.pricelist];
-                      next[idx] = { ...next[idx], name: e.target.value };
-                      setCmsConfig({ ...cmsConfig, pricelist: next });
-                    }}
-                  />
-                  <Input
-                    label="Harga (IDR)"
-                    value={pkg.price}
-                    onChange={(e) => {
-                      const next = [...cmsConfig.pricelist];
-                      next[idx] = { ...next[idx], price: e.target.value };
-                      setCmsConfig({ ...cmsConfig, pricelist: next });
-                    }}
-                  />
-                  <Input
-                    label="Catatan Singkat"
-                    value={pkg.note}
-                    onChange={(e) => {
-                      const next = [...cmsConfig.pricelist];
-                      next[idx] = { ...next[idx], note: e.target.value };
-                      setCmsConfig({ ...cmsConfig, pricelist: next });
-                    }}
-                  />
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/70">
+                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Paket #{idx + 1}
+                      </span>
+                      {(cmsConfig.pricelist || []).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = cmsConfig.pricelist.filter((_, i) => i !== idx);
+                            setCmsConfig({ ...cmsConfig, pricelist: next });
+                          }}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Hapus Paket
+                        </button>
+                      )}
+                    </div>
+
+                    <Input
+                      label="Label Tier"
+                      placeholder="01 / Intimate"
+                      value={pkg.tier || ''}
+                      onChange={(e) => {
+                        const next = [...cmsConfig.pricelist];
+                        next[idx] = { ...next[idx], tier: e.target.value };
+                        setCmsConfig({ ...cmsConfig, pricelist: next });
+                      }}
+                    />
+                    <Input
+                      label="Nama Paket"
+                      placeholder="Undangan Saja"
+                      value={pkg.name || ''}
+                      onChange={(e) => {
+                        const next = [...cmsConfig.pricelist];
+                        next[idx] = { ...next[idx], name: e.target.value };
+                        setCmsConfig({ ...cmsConfig, pricelist: next });
+                      }}
+                    />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <Input
+                        label="Harga (IDR)"
+                        placeholder="149K"
+                        value={pkg.price || ''}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], price: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                      />
+                      <Input
+                        label="Teks Tombol CTA"
+                        placeholder="Pilih Paket"
+                        value={pkg.ctaLabel || 'Pilih Paket'}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], ctaLabel: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Deskripsi Singkat Paket
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={pkg.note || ''}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], note: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                        placeholder="Cocok untuk acara intimate tanpa sistem QR check-in di lokasi."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 focus:border-indigo-500 focus:outline-hidden"
+                      />
+                    </div>
+
+                    {/* Poin Fitur Editor */}
+                    <div className="space-y-2 pt-2 border-t border-slate-200/70">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Poin Fitur ({(pkg.items || []).length})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = [...cmsConfig.pricelist];
+                            const nextItems = [...(next[idx].items || []), ''];
+                            next[idx] = { ...next[idx], items: nextItems };
+                            setCmsConfig({ ...cmsConfig, pricelist: next });
+                          }}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                          Tambah Poin
+                        </button>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {(pkg.items || []).map((itemText, itemIdx) => (
+                          <div key={itemIdx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={itemText}
+                              placeholder={`Poin fitur #${itemIdx + 1}`}
+                              onChange={(e) => {
+                                const next = [...cmsConfig.pricelist];
+                                const nextItems = [...(next[idx].items || [])];
+                                nextItems[itemIdx] = e.target.value;
+                                next[idx] = { ...next[idx], items: nextItems };
+                                setCmsConfig({ ...cmsConfig, pricelist: next });
+                              }}
+                              className="flex-1 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-indigo-500 focus:outline-hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = [...cmsConfig.pricelist];
+                                const nextItems = (next[idx].items || []).filter(
+                                  (_, i) => i !== itemIdx
+                                );
+                                next[idx] = { ...next[idx], items: nextItems };
+                                setCmsConfig({ ...cmsConfig, pricelist: next });
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Hapus poin fitur"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-200/70">
+                    <Switch
+                      checked={Boolean(pkg.featured)}
+                      onChange={(checked) => {
+                        const next = [...cmsConfig.pricelist];
+                        next[idx] = { ...next[idx], featured: checked };
+                        setCmsConfig({ ...cmsConfig, pricelist: next });
+                      }}
+                      label="Highlight Paket Unggulan"
+                      helperText="Tampil dengan warna sorotan di Landing Page"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

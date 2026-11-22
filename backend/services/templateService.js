@@ -1,4 +1,4 @@
-const { Template, Invitation } = require('../models');
+const { Template, Invitation } = require("../models");
 
 class TemplateService {
   /**
@@ -9,44 +9,44 @@ class TemplateService {
   async getAllTemplates(options = {}) {
     // Pastikan template baru (seperti drapery-pink) otomatis terdaftar di DB jika belum ada
     await Template.findOrCreate({
-      where: { template_code: 'drapery-pink' },
+      where: { template_code: "drapery-pink" },
       defaults: {
-        name: 'Drapery Pink & Vintage Lace',
-        thumbnail_url: '/images/drapery-pink/demo-couple-1.jpg',
+        name: "Drapery Pink & Vintage Lace",
+        thumbnail_url: "/images/drapery-pink/demo-couple-1.jpg",
         is_active: true,
         default_content_json: {
-          judulPembuka: 'The Wedding Of',
-          judulGaleri: 'Momen Bahagia Kami',
-          judulKisah: 'Kisah Cinta Kami',
-          judulKado: 'Kirim Hadiah',
-          dresscodeTitle: 'Dress Code',
+          judulPembuka: "The Wedding Of",
+          judulGaleri: "Momen Bahagia Kami",
+          judulKisah: "Kisah Cinta Kami",
+          judulKado: "Kirim Hadiah",
+          dresscodeTitle: "Dress Code",
           dresscodeText:
-            'Kami dengan hormat menganjurkan para tamu kami untuk mengenakan warna-warna ini untuk hari istimewa kami.',
-          dresscodeColors: ['#fdf9f6', '#a96d79', '#68333e'],
+            "Kami dengan hormat menganjurkan para tamu kami untuk mengenakan warna-warna ini untuk hari istimewa kami.",
+          dresscodeColors: ["#fdf9f6", "#a96d79", "#68333e"],
         },
       },
     }).catch(() => {});
 
     // Pastikan template acara umum Burgundy Gala Envelope otomatis terdaftar di DB
     await Template.findOrCreate({
-      where: { template_code: 'burgundy-gala' },
+      where: { template_code: "burgundy-gala" },
       defaults: {
-        name: 'Burgundy Gala Envelope',
-        thumbnail_url: '/images/burgundy-gala/envelope-closed.png',
+        name: "Burgundy Gala Envelope",
+        thumbnail_url: "/images/burgundy-gala/envelope-closed.png",
         is_active: true,
         default_content_json: {
-          templateEventType: 'event',
-          eventType: 'event',
+          templateEventType: "event",
+          eventType: "event",
           showSecondEvent: false,
           showDresscode: false,
           showDonation: false,
           showGift: false,
-          styleCategory: 'modern',
-          tag: 'Acara & Gala',
-          judulPembuka: 'SPECIAL EVENT INVITATION',
-          seatPlanTitle: 'Seat Plan & Denah Ruangan',
+          styleCategory: "modern",
+          tag: "Acara & Gala",
+          judulPembuka: "SPECIAL EVENT INVITATION",
+          seatPlanTitle: "Seat Plan & Denah Ruangan",
           seatPlanCaption:
-            'Silakan periksa posisi meja atau tempat duduk Anda melalui denah di bawah ini. Ketuk gambar untuk memperbesar.',
+            "Silakan periksa posisi meja atau tempat duduk Anda melalui denah di bawah ini. Ketuk gambar untuk memperbesar.",
         },
       },
     }).catch(() => {});
@@ -58,7 +58,7 @@ class TemplateService {
 
     return await Template.findAll({
       where,
-      order: [['created_at', 'DESC']],
+      order: [["created_at", "DESC"]],
     });
   }
 
@@ -71,14 +71,14 @@ class TemplateService {
       include: [
         {
           model: Invitation,
-          as: 'invitations',
-          attributes: ['id', 'slug', 'client_name'],
+          as: "invitations",
+          attributes: ["id", "slug", "client_name"],
         },
       ],
     });
 
     if (!template) {
-      const error = new Error('Template tidak ditemukan.');
+      const error = new Error("Template tidak ditemukan.");
       error.statusCode = 404;
       throw error;
     }
@@ -96,7 +96,9 @@ class TemplateService {
     });
 
     if (!template) {
-      const error = new Error(`Template dengan kode "${templateCode}" tidak ditemukan.`);
+      const error = new Error(
+        `Template dengan kode "${templateCode}" tidak ditemukan.`,
+      );
       error.statusCode = 404;
       throw error;
     }
@@ -109,12 +111,20 @@ class TemplateService {
    * @param {Object} data
    */
   async createTemplate(data) {
-    const { template_code, name, thumbnail_url, is_active, default_content_json } = data;
+    const {
+      template_code,
+      name,
+      thumbnail_url,
+      is_active,
+      default_content_json,
+    } = data;
 
     // Cek duplikasi template_code
     const existing = await Template.findOne({ where: { template_code } });
     if (existing) {
-      const error = new Error(`Kode template "${template_code}" sudah digunakan.`);
+      const error = new Error(
+        `Kode template "${template_code}" sudah digunakan.`,
+      );
       error.statusCode = 409;
       throw error;
     }
@@ -136,7 +146,7 @@ class TemplateService {
   async updateTemplate(id, data) {
     const template = await Template.findByPk(id);
     if (!template) {
-      const error = new Error('Template tidak ditemukan.');
+      const error = new Error("Template tidak ditemukan.");
       error.statusCode = 404;
       throw error;
     }
@@ -147,7 +157,9 @@ class TemplateService {
         where: { template_code: data.template_code },
       });
       if (existing) {
-        const error = new Error(`Kode template "${data.template_code}" sudah digunakan.`);
+        const error = new Error(
+          `Kode template "${data.template_code}" sudah digunakan.`,
+        );
         error.statusCode = 409;
         throw error;
       }
@@ -164,7 +176,7 @@ class TemplateService {
   async deleteTemplate(id) {
     const template = await Template.findByPk(id);
     if (!template) {
-      const error = new Error('Template tidak ditemukan.');
+      const error = new Error("Template tidak ditemukan.");
       error.statusCode = 404;
       throw error;
     }
@@ -176,14 +188,14 @@ class TemplateService {
 
     if (invitationCount > 0) {
       const error = new Error(
-        `Template tidak dapat dihapus karena sedang digunakan oleh ${invitationCount} undangan.`
+        `Template tidak dapat dihapus karena sedang digunakan oleh ${invitationCount} undangan.`,
       );
       error.statusCode = 400;
       throw error;
     }
 
     await template.destroy();
-    return { message: 'Template berhasil dihapus.' };
+    return { message: "Template berhasil dihapus." };
   }
 }
 

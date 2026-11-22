@@ -229,44 +229,50 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
     heroSubtitle:
       'Undangan pernikahan digital. Mandiri, terkoneksi QR Check-In sistem luar, atau dirancang custom.',
     systemModes: SYSTEM_MODES,
+    pricelistTitle: 'Pricelist & Custom',
+    pricelistSubtitle:
+      'Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.',
     pricelist: [
       {
         tier: '01 / Intimate',
         name: 'Undangan Saja',
         price: '149K',
-        note: 'Tanpa sistem QR Check-In',
+        note: 'Cocok untuk acara intimate tanpa sistem QR check-in di lokasi.',
         items: [
-          'Semua tema katalog',
-          'Tamu tanpa batas (Excel)',
+          'Akses semua tema katalog',
+          'Tamu tanpa batas (import Excel)',
           'RSVP & ucapan real-time',
-          'Amplop & kado (hide/show)',
+          'Amplop digital & info kado (hide/show)',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: false,
       },
       {
         tier: '02 / Signature',
         name: 'Undangan + QR Sync',
         price: '299K',
-        note: 'Konek QR sistem luar / mandiri',
+        note: 'Cocok untuk acara yang terhubung dengan sistem QR eksternal atau manajemen tamu terstruktur.',
         items: [
-          'Semua fitur Intimate',
-          'Sync Link/ID QR sistem luar',
-          'Kategori VVIP, VIP, Reguler & Grup',
-          'Private Guest Lock (Aktif 12 bln)',
+          'Semua fitur paket Intimate',
+          'Sync link / ID QR sistem luar',
+          'Kategori tamu VVIP, VIP, Reguler & Grup',
+          'Private guest lock (aktif 12 bulan)',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: true,
       },
       {
         tier: '03 / Bespoke',
         name: 'Custom Atelier',
         price: '599K+',
-        note: 'Desain & sistem sesuai request',
+        note: 'Desain dan penyesuaian alur khusus sesuai permintaan klien maupun vendor.',
         items: [
-          'Custom layout & warna',
+          'Custom layout & palet warna',
           'Custom ornamen / ilustrasi',
-          'Adaptasi format vendor WO',
-          'Pendampingan penuh tim',
+          'Penyesuaian format kebutuhan WO / vendor',
+          'Pendampingan penuh tim Samskara',
         ],
+        ctaLabel: 'Pilih Paket',
         featured: false,
       },
     ],
@@ -756,26 +762,46 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   className="text-4xl sm:text-5xl font-normal text-[#E6D2BE]"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
-                  Pricelist &amp; <span className="italic text-[#C9A98B]">Custom</span>
+                  {(() => {
+                    const titleText = (cms.pricelistTitle || 'Pricelist & Custom').trim();
+                    const parts = titleText.split(' ');
+                    if (parts.length <= 1) return titleText;
+                    const lastWord = parts.pop();
+                    return (
+                      <>
+                        {parts.join(' ')}{' '}
+                        <span className="italic text-[#C9A98B]">{lastWord}</span>
+                      </>
+                    );
+                  })()}
                 </h2>
               </div>
-              <p className="text-xs text-[#D8BFA6] tracking-wide">
-                Pilih mode mandiri, integrasi QR luar, atau custom penuh.
+              <p className="text-xs text-[#D8BFA6] tracking-wide max-w-sm sm:text-right">
+                {cms.pricelistSubtitle ||
+                  'Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.'}
               </p>
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-[#633A2C] border-b border-[#633A2C]">
+          <div
+            className={`grid grid-cols-1 ${
+              (cms.pricelist || []).length === 2
+                ? 'lg:grid-cols-2'
+                : 'lg:grid-cols-3'
+            } divide-y lg:divide-y-0 lg:divide-x divide-[#633A2C] border-b border-[#633A2C]`}
+          >
             {(cms.pricelist || []).map((pkg, idx) => (
               <Reveal
-                key={pkg.tier}
+                key={`${pkg.tier}-${idx}`}
                 delay={idx * 120}
                 className={`py-10 ${
                   idx === 0
                     ? 'lg:pr-10'
-                    : idx === 1
-                    ? 'lg:px-10 bg-[#4A1515]/70'
-                    : 'lg:pl-10'
+                    : idx === (cms.pricelist || []).length - 1
+                    ? 'lg:pl-10'
+                    : 'lg:px-10'
+                } ${
+                  pkg.featured ? 'bg-[#4A1515]/70 px-6 lg:px-10' : ''
                 } flex flex-col justify-between`}
               >
                 <div>
@@ -788,7 +814,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   >
                     {pkg.name}
                   </h3>
-                  <p className="text-xs text-[#D8BFA6] mt-1">{pkg.note}</p>
+                  <p className="text-xs text-[#D8BFA6] leading-relaxed mt-2 lg:min-h-[40px]">
+                    {pkg.note}
+                  </p>
 
                   <div className="my-7 py-5 border-y border-[#633A2C] flex items-baseline gap-1.5">
                     <span className="text-xs uppercase tracking-widest text-[#C9A98B]">
@@ -803,12 +831,14 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   </div>
 
                   <ul className="space-y-2.5 text-xs text-[#D8BFA6]">
-                    {pkg.items.map((it) => (
-                      <li key={it} className="flex items-center gap-2.5">
-                        <span className="text-[#C9A98B]">—</span>
-                        <span>{it}</span>
-                      </li>
-                    ))}
+                    {(pkg.items || [])
+                      .filter((it) => String(it || '').trim() !== '')
+                      .map((it, itemIdx) => (
+                        <li key={`${it}-${itemIdx}`} className="flex items-start gap-2.5">
+                          <span className="text-[#C9A98B] shrink-0">—</span>
+                          <span>{it}</span>
+                        </li>
+                      ))}
                   </ul>
                 </div>
 
@@ -821,7 +851,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                       : 'border border-[#C9A98B] hover:bg-[#E6D2BE] hover:text-[#2B0C0C] text-[#E6D2BE]'
                   }`}
                 >
-                  Pilih Paket
+                  {pkg.ctaLabel || 'Pilih Paket'}
                 </button>
               </Reveal>
             ))}
