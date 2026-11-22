@@ -1642,9 +1642,8 @@ export const TemplatesPage = () => {
                         {
                           tier: `${num} / Paket Baru`,
                           name: 'Nama Paket',
-                          price: '199K',
+                          price: '129K',
                           originalPrice: '',
-                          discountBadge: '',
                           note: 'Deskripsi singkat paket.',
                           items: ['Fitur unggulan 1', 'Fitur unggulan 2'],
                           ctaLabel: 'Pilih Paket',
@@ -1740,18 +1739,8 @@ export const TemplatesPage = () => {
                     />
                     <div className="grid grid-cols-2 gap-2.5">
                       <Input
-                        label="Harga Jual (IDR)"
-                        placeholder="149K"
-                        value={pkg.price || ''}
-                        onChange={(e) => {
-                          const next = [...cmsConfig.pricelist];
-                          next[idx] = { ...next[idx], price: e.target.value };
-                          setCmsConfig({ ...cmsConfig, pricelist: next });
-                        }}
-                      />
-                      <Input
                         label="Harga Coret (Opsional)"
-                        placeholder="Contoh: 249K"
+                        placeholder="Contoh: 149K"
                         value={pkg.originalPrice || ''}
                         onChange={(e) => {
                           const next = [...cmsConfig.pricelist];
@@ -1759,30 +1748,40 @@ export const TemplatesPage = () => {
                           setCmsConfig({ ...cmsConfig, pricelist: next });
                         }}
                       />
+                      <Input
+                        label="Harga Normal (IDR)"
+                        placeholder="Contoh: 129K"
+                        value={pkg.price || ''}
+                        onChange={(e) => {
+                          const next = [...cmsConfig.pricelist];
+                          next[idx] = { ...next[idx], price: e.target.value };
+                          setCmsConfig({ ...cmsConfig, pricelist: next });
+                        }}
+                      />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <Input
-                        label="Label Promo (Opsional)"
-                        placeholder="Contoh: Hemat 40%"
-                        value={pkg.discountBadge || ''}
-                        onChange={(e) => {
-                          const next = [...cmsConfig.pricelist];
-                          next[idx] = { ...next[idx], discountBadge: e.target.value };
-                          setCmsConfig({ ...cmsConfig, pricelist: next });
-                        }}
-                      />
-                      <Input
-                        label="Teks Tombol CTA"
-                        placeholder="Pilih Paket"
-                        value={pkg.ctaLabel || 'Pilih Paket'}
-                        onChange={(e) => {
-                          const next = [...cmsConfig.pricelist];
-                          next[idx] = { ...next[idx], ctaLabel: e.target.value };
-                          setCmsConfig({ ...cmsConfig, pricelist: next });
-                        }}
-                      />
-                    </div>
+                    {pkg.originalPrice && (
+                      <div className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 flex items-baseline gap-2 text-xs">
+                        <span className="text-slate-400">Preview:</span>
+                        <span className="text-slate-400 line-through">
+                          IDR {pkg.originalPrice}
+                        </span>
+                        <span className="font-bold text-slate-900">
+                          IDR {pkg.price || '-'}
+                        </span>
+                      </div>
+                    )}
+
+                    <Input
+                      label="Teks Tombol CTA"
+                      placeholder="Pilih Paket"
+                      value={pkg.ctaLabel || 'Pilih Paket'}
+                      onChange={(e) => {
+                        const next = [...cmsConfig.pricelist];
+                        next[idx] = { ...next[idx], ctaLabel: e.target.value };
+                        setCmsConfig({ ...cmsConfig, pricelist: next });
+                      }}
+                    />
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">

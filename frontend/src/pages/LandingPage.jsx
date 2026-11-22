@@ -888,19 +888,12 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     {pkg.note}
                   </p>
 
-                  <div className="my-7 py-5 border-y border-[#633A2C] space-y-1.5">
-                    {(pkg.originalPrice || pkg.discountBadge) && (
-                      <div className="flex flex-wrap items-center gap-2 min-h-[22px]">
-                        {pkg.originalPrice && (
-                          <span className="text-xs sm:text-sm text-[#C9A98B]/75 line-through decoration-[#C9A98B]/80 tracking-wide">
-                            IDR {pkg.originalPrice}
-                          </span>
-                        )}
-                        {pkg.discountBadge && (
-                          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] bg-[#E6D2BE]/15 border border-[#C9A98B]/50 text-[#F3DFA8]">
-                            {pkg.discountBadge}
-                          </span>
-                        )}
+                  <div className="my-7 py-5 border-y border-[#633A2C] space-y-1">
+                    {pkg.originalPrice && (
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-sm text-[#C9A98B]/80 line-through decoration-[#E6D2BE]/80 tracking-wide">
+                          IDR {pkg.originalPrice}
+                        </span>
                       </div>
                     )}
                     <div className="flex items-baseline gap-1.5">
