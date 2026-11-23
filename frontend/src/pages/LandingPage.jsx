@@ -1,7 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowUpRight, ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Menu, X, Plus, Minus, Mail } from 'lucide-react';
 import { DelleaLogo } from '../components/ui/DelleaLogo';
 import { templateService } from '../services/templateService';
+
+const DEFAULT_FAQS = [
+  {
+    question:
+      'Apa perbedaan paket Intimate (Undangan Saja) dan Signature (Undangan + QR Sync)?',
+    answer:
+      'Paket Intimate berfokus pada undangan digital mandiri tanpa sistem scan QR di lokasi (tamu tak terbatas, RSVP, ucapan, dan amplop digital). Paket Signature dilengkapi sinkronisasi kode/link QR dari vendor buku tamu eksternal, kategori tamu (VVIP, VIP, Reguler, Grup), serta fitur Private Guest Lock.',
+  },
+  {
+    question: 'Apakah jumlah tamu yang diundang dibatasi?',
+    answer:
+      'Tidak ada batasan jumlah tamu. Anda dapat menambahkan tamu satu per satu atau mengimpor ratusan hingga ribuan daftar tamu sekaligus menggunakan file Excel, lengkap dengan link personal untuk masing-masing tamu.',
+  },
+  {
+    question: 'Bagaimana cara kerja sinkronisasi QR Check-In sistem luar?',
+    answer:
+      'Jika Anda atau Wedding Organizer menggunakan sistem buku tamu atau scanner eksternal, cukup masukkan link atau ID QR dari vendor tersebut pada file Excel daftar tamu. Sistem Samskara akan otomatis menampilkan tombol QR Check-In layar penuh yang cepat dipindai di kartu undangan tiap tamu.',
+  },
+  {
+    question: 'Apakah data acara, foto, dan teks bisa direvisi setelah undangan aktif?',
+    answer:
+      'Ya. Anda dapat memperbarui jadwal acara, lokasi Google Maps, galeri foto, musik latar, hingga daftar tamu kapan saja melalui panel dashboard secara real-time tanpa biaya tambahan.',
+  },
+  {
+    question: 'Berapa lama masa aktif undangan digital?',
+    answer:
+      'Undangan digital aktif selama 12 bulan sejak tanggal aktivasi, sehingga keluarga dan tamu tetap dapat membuka kembali galeri foto maupun doa serta ucapan dengan nyaman.',
+  },
+  {
+    question: 'Apakah fitur amplop digital, kado, atau QR bisa disembunyikan?',
+    answer:
+      'Bisa. Seluruh bagian seperti Amplop Digital/Rekening, Info Kado, RSVP, hingga tombol QR Check-In dapat diaktifkan atau disembunyikan (hide/show) sesuai kebutuhan dan preferensi keluarga.',
+  },
+  {
+    question: 'Apakah undangan hanya tersedia untuk acara pernikahan saja?',
+    answer:
+      'Tidak. Selain pernikahan (modern, adat Jawa, Sunda, botanical, maupun gala), tersedia juga tema untuk lamaran, ulang tahun, hingga acara umum atau korporat yang dapat dipilih di katalog.',
+  },
+  {
+    question: 'Berapa lama proses pengerjaan untuk paket Custom Atelier?',
+    answer:
+      'Untuk tema katalog, undangan dapat aktif di hari yang sama. Untuk paket Custom Atelier (penyesuaian layout, palet warna, atau ornamen adat khusus), estimasi pengerjaan adalah 3–7 hari kerja bersama tim Samskara.',
+  },
+];
 
 const TEMPLATE_META_BY_CODE = {
   mildness: { category: 'modern', tag: 'Earthy Sage' },
@@ -276,10 +320,15 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
         featured: false,
       },
     ],
+    faqTitle: 'Pertanyaan Umum',
+    faqSubtitle:
+      'Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.',
+    faqs: DEFAULT_FAQS,
   });
   const [activeCategory, setActiveCategory] = useState('all');
   const [activePackageTier, setActivePackageTier] = useState('all');
   const [activeMode, setActiveMode] = useState('qrsync');
+  const [openFaqIdx, setOpenFaqIdx] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -355,6 +404,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               Array.isArray(res.data.pricelist) && res.data.pricelist.length > 0
                 ? res.data.pricelist
                 : prev.pricelist,
+            faqs:
+              Array.isArray(res.data.faqs) && res.data.faqs.length > 0
+                ? res.data.faqs
+                : prev.faqs,
           }));
         }
       })
@@ -455,6 +508,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             <a href="#pricelist" className="hover:text-[#E6D2BE] transition-colors">
               Pricelist
             </a>
+            <a href="#faq" className="hover:text-[#E6D2BE] transition-colors">
+              FAQ
+            </a>
           </nav>
 
           <div className="hidden md:flex items-center gap-5">
@@ -488,6 +544,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </a>
               <a href="#pricelist" onClick={() => setMobileMenuOpen(false)}>
                 Pricelist
+              </a>
+              <a href="#faq" onClick={() => setMobileMenuOpen(false)}>
+                FAQ
               </a>
             </div>
             <button
@@ -757,7 +816,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </button>
             </div>
           ) : (
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
             {filteredTemplates.map((tpl, idx) => {
               const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
               return (
@@ -776,32 +835,32 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2B0C0C]/85 via-transparent to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
 
-                    <span className="absolute top-4 left-4 text-[10px] font-mono tracking-widest text-[#E6D2BE]">
+                    <span className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 text-[9px] sm:text-[10px] font-mono tracking-widest text-[#E6D2BE]">
                       /{tpl.no}
                     </span>
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                    <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-1.5">
                       {pkgInfo && (
-                        <span className="px-2.5 py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[9px] font-semibold uppercase tracking-[0.2em]">
+                        <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em]">
                           {pkgInfo.label}
                         </span>
                       )}
-                      <span className="px-2.5 py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[9px] uppercase tracking-[0.22em] text-[#E6D2BE]">
+                      <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.22em] text-[#E6D2BE]">
                         {tpl.tag}
                       </span>
                     </div>
 
-                    <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-[#E6D2BE]">
+                    <div className="absolute inset-x-3 bottom-3 sm:inset-x-5 sm:bottom-5 flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-3 text-[#E6D2BE]">
                       <h3
-                        className="text-2xl sm:text-3xl italic font-normal leading-tight"
+                        className="text-base sm:text-3xl italic font-normal leading-tight line-clamp-2"
                         style={{
                           fontFamily: "'Cormorant Garamond', Georgia, serif",
                         }}
                       >
                         {tpl.name}
                       </h3>
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.22em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
+                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.22em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
                         <span>Demo</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
+                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </span>
                     </div>
                   </div>
@@ -939,12 +998,167 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
       </section>
 
       {/* ============================================================== */}
+      {/* FAQ / PERTANYAAN UMUM (#E6D2BE CHAMPAGNE)                      */}
+      {/* ============================================================== */}
+      <section
+        id="faq"
+        className="bg-[#E6D2BE] text-[#2B0C0C] border-b border-[#C9A98B] py-20 sm:py-28 px-6 sm:px-10"
+      >
+        <div className="max-w-5xl mx-auto">
+          <Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-10 border-b border-[#C9A98B]">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.32em] text-[#633A2C] mb-2">
+                  FAQ
+                </p>
+                <h2
+                  className="text-4xl sm:text-5xl font-normal text-[#2B0C0C]"
+                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                >
+                  {(() => {
+                    const titleText = (cms.faqTitle || 'Pertanyaan Umum').trim();
+                    const parts = titleText.split(' ');
+                    if (parts.length <= 1) return titleText;
+                    const lastWord = parts.pop();
+                    return (
+                      <>
+                        {parts.join(' ')}{' '}
+                        <span className="italic text-[#633A2C]">{lastWord}</span>
+                      </>
+                    );
+                  })()}
+                </h2>
+              </div>
+              <p className="text-xs text-[#633A2C] tracking-wide max-w-sm sm:text-right">
+                {cms.faqSubtitle ||
+                  'Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.'}
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="divide-y divide-[#C9A98B] border-b border-[#C9A98B]">
+            {(cms.faqs || DEFAULT_FAQS).map((item, idx) => {
+              const isOpen = openFaqIdx === idx;
+              return (
+                <Reveal key={`${item.question}-${idx}`} delay={idx * 45}>
+                  <div className="py-5 sm:py-6">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqIdx(isOpen ? -1 : idx)}
+                      aria-expanded={isOpen}
+                      className="w-full flex items-start justify-between gap-4 text-left group cursor-pointer"
+                    >
+                      <div className="flex items-baseline gap-4 sm:gap-6 min-w-0">
+                        <span className="text-[11px] font-mono tracking-widest text-[#633A2C]/80 shrink-0">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span
+                          className="text-xl sm:text-2xl font-normal text-[#2B0C0C] group-hover:text-[#4A1515] transition-colors leading-snug"
+                          style={{
+                            fontFamily: "'Cormorant Garamond', Georgia, serif",
+                          }}
+                        >
+                          {item.question}
+                        </span>
+                      </div>
+                      <span className="mt-1 w-7 h-7 shrink-0 border border-[#C9A98B] group-hover:border-[#3B1010] flex items-center justify-center text-[#3B1010] transition-colors">
+                        {isOpen ? (
+                          <Minus className="w-3.5 h-3.5" />
+                        ) : (
+                          <Plus className="w-3.5 h-3.5" />
+                        )}
+                      </span>
+                    </button>
+
+                    {isOpen && (
+                      <div className="mt-3.5 pl-9 sm:pl-12 pr-8 sm:pr-12">
+                        <p className="text-xs sm:text-sm text-[#4A2520] leading-relaxed">
+                          {item.answer}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
       {/* MINIMALIST FOOTER (#2B0C0C)                                    */}
       {/* ============================================================== */}
       <footer className="bg-[#2B0C0C] text-[#E6D2BE] py-16 px-6 sm:px-10">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
           <Reveal>
             <DelleaLogo variant="stacked" theme="light" size="md" />
+          </Reveal>
+
+          <Reveal delay={90}>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs tracking-wide">
+              <a
+                href="https://instagram.com/samskara.createed"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#633A2C]/70 hover:border-[#C9A98B] hover:bg-[#3B1010] text-[#E6D2BE] transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5 text-[#C9A98B] shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+                <span>@samskara.createed</span>
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@samskara_created"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#633A2C]/70 hover:border-[#C9A98B] hover:bg-[#3B1010] text-[#E6D2BE] transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5 text-[#C9A98B] fill-current shrink-0"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1Z" />
+                </svg>
+                <span>@samskara_created</span>
+              </a>
+
+              <a
+                href="mailto:samskara.id00@gmail.com"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#633A2C]/70 hover:border-[#C9A98B] hover:bg-[#3B1010] text-[#E6D2BE] transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#C9A98B]" />
+                <span>samskara.id00@gmail.com</span>
+              </a>
+
+              <a
+                href="https://wa.me/628570254446?text=Halo%20Samskara%2C%20saya%20ingin%20konsultasi%20tentang%20undangan%20digital."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-[#633A2C]/70 hover:border-[#C9A98B] hover:bg-[#3B1010] text-[#E6D2BE] transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5 text-[#C9A98B] fill-current shrink-0"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.46 0 .1 5.36.1 11.96c0 2.11.55 4.17 1.6 5.98L0 24l6.22-1.63a11.9 11.9 0 0 0 5.84 1.49h.01c6.6 0 11.96-5.36 11.96-11.96 0-3.2-1.25-6.2-3.51-8.42ZM12.07 21.84h-.01a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.69.97.99-3.6-.24-.37a9.89 9.89 0 0 1-1.52-5.29c0-5.47 4.45-9.92 9.93-9.92 2.65 0 5.14 1.03 7.01 2.91a9.86 9.86 0 0 1 2.9 7.02c0 5.47-4.45 9.87-9.96 9.87Zm5.44-7.43c-.3-.15-1.76-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.21 5.09 4.5.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35Z" />
+                </svg>
+                <span>0857-0254-4446</span>
+              </a>
+            </div>
           </Reveal>
 
           <div className="mt-10 pt-8 border-t border-[#4A1515] w-full flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.24em] text-[#C9A98B]">
@@ -960,6 +1174,28 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
           </div>
         </div>
       </footer>
+
+      {/* ============================================================== */}
+      {/* FLOATING WHATSAPP BUTTON                                       */}
+      {/* ============================================================== */}
+      <a
+        href="https://wa.me/628570254446?text=Halo%20Samskara%2C%20saya%20ingin%20konsultasi%20tentang%20undangan%20digital."
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat WhatsApp Samskara"
+        className="fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-40 group inline-flex items-center gap-2.5 rounded-full bg-[#4A1515] hover:bg-[#3B1010] text-[#E6D2BE] px-4 py-3 sm:px-5 sm:py-3.5 border border-[#C9A98B]/80 hover:border-[#E6D2BE] shadow-[0_12px_32px_rgba(43,12,12,0.42)] ring-1 ring-[#E6D2BE]/30 transition-all duration-300 hover:scale-105 active:scale-95"
+      >
+        <svg
+          className="w-5 h-5 text-[#E6D2BE] fill-current shrink-0"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.46 0 .1 5.36.1 11.96c0 2.11.55 4.17 1.6 5.98L0 24l6.22-1.63a11.9 11.9 0 0 0 5.84 1.49h.01c6.6 0 11.96-5.36 11.96-11.96 0-3.2-1.25-6.2-3.51-8.42ZM12.07 21.84h-.01a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.69.97.99-3.6-.24-.37a9.89 9.89 0 0 1-1.52-5.29c0-5.47 4.45-9.92 9.93-9.92 2.65 0 5.14 1.03 7.01 2.91a9.86 9.86 0 0 1 2.9 7.02c0 5.47-4.45 9.87-9.96 9.87Zm5.44-7.43c-.3-.15-1.76-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.21 5.09 4.5.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35Z" />
+        </svg>
+        <span className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#E6D2BE] hidden sm:inline">
+          Chat WhatsApp
+        </span>
+      </a>
     </div>
   );
 };

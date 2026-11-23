@@ -97,6 +97,52 @@ const DEFAULT_LANDING_CMS = {
       featured: false,
     },
   ],
+  faqTitle: 'Pertanyaan Umum',
+  faqSubtitle:
+    'Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.',
+  faqs: [
+    {
+      question:
+        'Apa perbedaan paket Intimate (Undangan Saja) dan Signature (Undangan + QR Sync)?',
+      answer:
+        'Paket Intimate berfokus pada undangan digital mandiri tanpa sistem scan QR di lokasi (tamu tak terbatas, RSVP, ucapan, dan amplop digital). Paket Signature dilengkapi sinkronisasi kode/link QR dari vendor buku tamu eksternal, kategori tamu (VVIP, VIP, Reguler, Grup), serta fitur Private Guest Lock.',
+    },
+    {
+      question: 'Apakah jumlah tamu yang diundang dibatasi?',
+      answer:
+        'Tidak ada batasan jumlah tamu. Anda dapat menambahkan tamu satu per satu atau mengimpor ratusan hingga ribuan daftar tamu sekaligus menggunakan file Excel, lengkap dengan link personal untuk masing-masing tamu.',
+    },
+    {
+      question: 'Bagaimana cara kerja sinkronisasi QR Check-In sistem luar?',
+      answer:
+        'Jika Anda atau Wedding Organizer menggunakan sistem buku tamu atau scanner eksternal, cukup masukkan link atau ID QR dari vendor tersebut pada file Excel daftar tamu. Sistem Samskara akan otomatis menampilkan tombol QR Check-In layar penuh yang cepat dipindai di kartu undangan tiap tamu.',
+    },
+    {
+      question: 'Apakah data acara, foto, dan teks bisa direvisi setelah undangan aktif?',
+      answer:
+        'Ya. Anda dapat memperbarui jadwal acara, lokasi Google Maps, galeri foto, musik latar, hingga daftar tamu kapan saja melalui panel dashboard secara real-time tanpa biaya tambahan.',
+    },
+    {
+      question: 'Berapa lama masa aktif undangan digital?',
+      answer:
+        'Undangan digital aktif selama 12 bulan sejak tanggal aktivasi, sehingga keluarga dan tamu tetap dapat membuka kembali galeri foto maupun doa serta ucapan dengan nyaman.',
+    },
+    {
+      question: 'Apakah fitur amplop digital, kado, atau QR bisa disembunyikan?',
+      answer:
+        'Bisa. Seluruh bagian seperti Amplop Digital/Rekening, Info Kado, RSVP, hingga tombol QR Check-In dapat diaktifkan atau disembunyikan (hide/show) sesuai kebutuhan dan preferensi keluarga.',
+    },
+    {
+      question: 'Apakah undangan hanya tersedia untuk acara pernikahan saja?',
+      answer:
+        'Tidak. Selain pernikahan (modern, adat Jawa, Sunda, botanical, maupun gala), tersedia juga tema untuk lamaran, ulang tahun, hingga acara umum atau korporat yang dapat dipilih di katalog.',
+    },
+    {
+      question: 'Berapa lama proses pengerjaan untuk paket Custom Atelier?',
+      answer:
+        'Untuk tema katalog, undangan dapat aktif di hari yang sama. Untuk paket Custom Atelier (penyesuaian layout, palet warna, atau ornamen adat khusus), estimasi pengerjaan adalah 3–7 hari kerja bersama tim Samskara.',
+    },
+  ],
 };
 
 // @desc    Get all templates

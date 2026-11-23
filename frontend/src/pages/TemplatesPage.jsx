@@ -1874,6 +1874,125 @@ export const TemplatesPage = () => {
               ))}
             </div>
           </Card>
+
+          {/* 4. FAQ Landing Page CMS */}
+          <Card className="p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  4. FAQ (Pertanyaan Umum) Landing Page
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Kelola daftar pertanyaan yang sering ditanyakan beserta jawabannya pada seksi FAQ Landing Page.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  leftIcon={Plus}
+                  onClick={() => {
+                    const current = cmsConfig.faqs || [];
+                    setCmsConfig({
+                      ...cmsConfig,
+                      faqs: [
+                        ...current,
+                        {
+                          question: 'Pertanyaan baru...',
+                          answer: 'Tuliskan jawaban singkat dan jelas di sini.',
+                        },
+                      ],
+                    });
+                  }}
+                >
+                  Tambah FAQ
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  leftIcon={Save}
+                  isLoading={isSavingCms}
+                >
+                  Simpan Semua Perubahan CMS
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100">
+              <Input
+                label="Judul Header FAQ"
+                placeholder="Pertanyaan Umum"
+                value={cmsConfig.faqTitle || ''}
+                onChange={(e) =>
+                  setCmsConfig({ ...cmsConfig, faqTitle: e.target.value })
+                }
+              />
+              <Input
+                label="Subjudul Header FAQ"
+                placeholder="Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in."
+                value={cmsConfig.faqSubtitle || ''}
+                onChange={(e) =>
+                  setCmsConfig({ ...cmsConfig, faqSubtitle: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-3">
+              {(cmsConfig.faqs || []).map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/70">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      FAQ #{String(idx + 1).padStart(2, '0')}
+                    </span>
+                    {(cmsConfig.faqs || []).length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = (cmsConfig.faqs || []).filter((_, i) => i !== idx);
+                          setCmsConfig({ ...cmsConfig, faqs: next });
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    label="Pertanyaan"
+                    placeholder="Contoh: Apakah jumlah tamu yang diundang dibatasi?"
+                    value={faq.question || ''}
+                    onChange={(e) => {
+                      const next = [...(cmsConfig.faqs || [])];
+                      next[idx] = { ...next[idx], question: e.target.value };
+                      setCmsConfig({ ...cmsConfig, faqs: next });
+                    }}
+                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Jawaban
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={faq.answer || ''}
+                      onChange={(e) => {
+                        const next = [...(cmsConfig.faqs || [])];
+                        next[idx] = { ...next[idx], answer: e.target.value };
+                        setCmsConfig({ ...cmsConfig, faqs: next });
+                      }}
+                      placeholder="Tuliskan jawaban lengkap untuk pertanyaan ini..."
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 focus:border-indigo-500 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </form>
       )}
 
