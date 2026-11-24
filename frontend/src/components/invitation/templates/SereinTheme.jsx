@@ -288,13 +288,13 @@ export const SereinTheme = ({
       : "Wassalamu’alaikum Warahmatullahi Wabarakatuh";
   const photoCover =
     content.fotoCover ||
-    "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80";
+    "/images/defaults/couple-cover.jpg";
   const photoGroom =
     content.fotoPria ||
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80";
+    "/images/defaults/groom.jpg";
   const photoBride =
     content.fotoWanita ||
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80";
+    "/images/defaults/bride.jpg";
 
   const loveStories = content.kisah || [
     {
@@ -321,11 +321,11 @@ export const SereinTheme = ({
     content.galeri && content.galeri.length > 0
       ? content.galeri
       : [
-          "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=800&auto=format&fit=crop&q=80",
-          "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80",
-          "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop&q=80",
-          "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80",
-          "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&auto=format&fit=crop&q=80",
+          "/images/defaults/couple-cover.jpg",
+          "/images/defaults/gallery-hands.jpg",
+          "/images/defaults/gallery-bouquet.jpg",
+          "/images/defaults/bride.jpg",
+          "/images/defaults/groom.jpg",
         ];
 
   const musicUrl =

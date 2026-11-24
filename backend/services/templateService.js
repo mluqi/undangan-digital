@@ -27,6 +27,43 @@ class TemplateService {
       },
     }).catch(() => {});
 
+    // Pastikan template Forest Tropical terdaftar & masuk ke tipe paket Intimate (Undangan Saja)
+    const [forestTmpl] = await Template.findOrCreate({
+      where: { template_code: "forest-tropical" },
+      defaults: {
+        name: "Forest Tropical & Botanical Luxury",
+        thumbnail_url: "/images/forest-gate-frame.jpg",
+        is_active: true,
+        default_content_json: {
+          templateEventType: "wedding",
+          eventType: "wedding",
+          styleCategory: "rustic",
+          packageTier: "intimate",
+          showQr: false,
+          introVideoUrl: "/videos/forest-intro.mp4",
+          tag: "Botanical",
+        },
+      },
+    }).catch(() => [null]);
+
+    if (forestTmpl && !forestTmpl.default_content_json?.packageTier) {
+      await forestTmpl
+        .update({
+          default_content_json: {
+            ...(forestTmpl.default_content_json || {}),
+            packageTier: "intimate",
+            showQr:
+              forestTmpl.default_content_json?.showQr !== undefined
+                ? forestTmpl.default_content_json.showQr
+                : false,
+            introVideoUrl:
+              forestTmpl.default_content_json?.introVideoUrl ||
+              "/videos/forest-intro.mp4",
+          },
+        })
+        .catch(() => {});
+    }
+
     // Pastikan template acara umum Burgundy Gala Envelope otomatis terdaftar di DB
     await Template.findOrCreate({
       where: { template_code: "burgundy-gala" },

@@ -167,8 +167,7 @@ const renderOpenGraphHtml = (invitation, req) => {
     photoCover = content.galeri[0];
   }
   if (!photoCover) {
-    photoCover =
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80';
+    photoCover = '/images/defaults/couple-cover.jpg';
   }
 
   // Pastikan URL foto absolut (WhatsApp WAJIB diawali http:// atau https://)
@@ -185,12 +184,16 @@ const renderOpenGraphHtml = (invitation, req) => {
     `${protocol}://${host}`
   ).replace(/\/+$/, '');
 
+  const frontendBase = (
+    process.env.FRONTEND_URL || `${protocol}://${host}`
+  ).replace(/\/+$/, '');
+
   const uploadsIndex = photoCover.indexOf('/uploads/');
   if (uploadsIndex !== -1) {
     const relativeUploadsPath = photoCover.substring(uploadsIndex);
     photoCover = `${backendPublicOrigin}${relativeUploadsPath}`;
   } else if (photoCover.startsWith('/')) {
-    photoCover = `${backendPublicOrigin}${photoCover}`;
+    photoCover = `${frontendBase}${photoCover}`;
   }
 
   const lowerCover = photoCover.toLowerCase();
@@ -200,9 +203,6 @@ const renderOpenGraphHtml = (invitation, req) => {
     ? 'image/webp'
     : 'image/jpeg';
 
-  const frontendBase = (
-    process.env.FRONTEND_URL || `${protocol}://${host}`
-  ).replace(/\/+$/, '');
   const targetUrl = `${frontendBase}/invitation/${invitation.slug}${
     req.originalUrl && req.originalUrl.includes('?')
       ? '?' + req.originalUrl.split('?')[1]

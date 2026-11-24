@@ -666,4 +666,129 @@ describe('Custom Template Builder Suite', () => {
       assert.doesNotMatch(html, /Kedua Mempelai/);
     });
   });
+
+  describe('6. Opening Video Transition, Gate Curtains, Intimate Tier & Builder Enhancements', () => {
+    it('exports forest-opening-video preset mapped to intimate (Undangan Saja) & /videos/forest-intro.mp4', () => {
+      const preset = CUSTOM_THEME_PRESETS['forest-opening-video'];
+      assert.ok(preset);
+      assert.equal(preset.defaultContentPatch.introVideoUrl, '/videos/forest-intro.mp4');
+      assert.equal(preset.defaultContentPatch.packageTier, 'intimate');
+      assert.equal(preset.defaultContentPatch.showQr, false);
+      assert.equal(preset.theme.coverStyle, 'gate-curtain');
+      assert.equal(preset.theme.cardStyle, 'glass');
+    });
+
+    it('renders Opening Video (#t=0.001) and parting gate curtains on cover when introVideoUrl is set', () => {
+      const preset = CUSTOM_THEME_PRESETS['forest-opening-video'];
+      const html = renderTheme({
+        invitation: makeInvitation({
+          customTheme: preset.theme,
+          defaultOverrides: preset.defaultContentPatch,
+        }),
+        isModalView: true,
+        defaultOpened: false,
+      });
+
+      assert.match(html, /src="\/videos\/forest-intro\.mp4#t=0\.001"/);
+      assert.match(html, /src="\/images\/forest-foliage-left\.png"/);
+      assert.match(html, /src="\/images\/forest-foliage-right\.png"/);
+      assert.match(html, /cb-firefly-item/);
+      // Intimate tier ("Undangan Saja") hides QR Check-in button by default
+      assert.doesNotMatch(html, /Tampilkan Kartu QR Tamu/);
+    });
+
+    it('automatically hides QR Check-in when packageTier is intimate even without explicit showQr', () => {
+      const html = renderTheme({
+        invitation: makeInvitation({
+          defaultOverrides: {
+            packageTier: 'intimate',
+          },
+        }),
+        defaultOpened: true,
+      });
+      assert.doesNotMatch(html, /Tampilkan Kartu QR Tamu/);
+    });
+
+    it('supports carousel gallery layout, glass card style, and section toggles', () => {
+      const html = renderTheme({
+        invitation: makeInvitation({
+          customTheme: {
+            cardStyle: 'glass',
+            galleryStyle: 'carousel',
+          },
+          defaultOverrides: {
+            showCountdown: false,
+            showLoveStory: false,
+            showSeatPlan: true,
+            seatPlanImage: '/images/test-seatplan.png',
+          },
+        }),
+        defaultOpened: true,
+      });
+
+      assert.match(html, /snap-x snap-mandatory/);
+      assert.match(html, /backdrop-blur-md/);
+      assert.match(html, /src="\/images\/test-seatplan\.png"/);
+      assert.doesNotMatch(html, /Timeline/);
+    });
+
+    it('renders all 6 heroLayoutStyle options and all 5 bodyStyleMode options cleanly', () => {
+      const heroMatchers = {
+        'arch-frame': /rounded-t-\[150px\]/,
+        'fullscreen-photo': /cb-hero-fullscreen/,
+        'cameo-royal': /cb-hero-cameo/,
+        'polaroid-collage': /cb-hero-polaroid/,
+        'magazine-split': /cb-hero-magazine/,
+        'minimal-typographic': /cb-hero-typographic/,
+      };
+
+      for (const [heroStyle, regex] of Object.entries(heroMatchers)) {
+        const html = renderTheme({
+          invitation: makeInvitation({
+            customTheme: { heroLayoutStyle: heroStyle },
+          }),
+          defaultOpened: true,
+        });
+        assert.match(html, regex, `Expected heroLayoutStyle=${heroStyle} to match`);
+      }
+
+      const photoBackdropHtml = renderTheme({
+        invitation: makeInvitation({
+          customTheme: { bodyStyleMode: 'photo-backdrop' },
+          contentOverrides: { backgroundVideoUrl: 'none' },
+        }),
+        defaultOpened: true,
+      });
+      assert.match(photoBackdropHtml, /cb-photo-backdrop/);
+
+      const slideshowBackdropHtml = renderTheme({
+        invitation: makeInvitation({
+          customTheme: { bodyStyleMode: 'slideshow-backdrop' },
+          contentOverrides: { backgroundVideoUrl: 'none' },
+        }),
+        defaultOpened: true,
+      });
+      assert.match(slideshowBackdropHtml, /cb-slideshow-backdrop/);
+
+      const ornateFrameHtml = renderTheme({
+        invitation: makeInvitation({
+          customTheme: { bodyStyleMode: 'ornate-frame' },
+        }),
+        defaultOpened: true,
+      });
+      assert.match(ornateFrameHtml, /cb-ornate-page-frame/);
+
+      const cleanEditorialHtml = renderTheme({
+        invitation: makeInvitation({
+          customTheme: {
+            bodyStyleMode: 'clean-editorial',
+            assets: { bodyBgImage: '/should-not-render.jpg' },
+          },
+          contentOverrides: { backgroundVideoUrl: 'none' },
+        }),
+        defaultOpened: true,
+      });
+      assert.doesNotMatch(cleanEditorialHtml, /should-not-render\.jpg/);
+    });
+  });
 });

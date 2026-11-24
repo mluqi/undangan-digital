@@ -231,7 +231,9 @@ export const DesktopSidePanel = ({
     return list.length > 0
       ? list
       : [
-          'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80',
+          '/images/defaults/couple-cover.jpg',
+          '/images/defaults/gallery-hands.jpg',
+          '/images/defaults/gallery-bouquet.jpg',
         ];
   }, [photoCover, photoGroom, photoBride, gallery]);
 

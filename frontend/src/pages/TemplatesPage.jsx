@@ -22,6 +22,7 @@ import {
   Upload,
   Layout,
   Save,
+  Copy as CopyIcon,
 } from 'lucide-react';
 import { InvitationTemplateModal } from '../components/invitation/InvitationTemplateModal';
 import { getTemplateComponent } from '../components/invitation/templateRegistry';
@@ -42,10 +43,33 @@ import {
 import {
   DEFAULT_CUSTOM_THEME,
   CUSTOM_THEME_PRESETS,
+  mergeCustomTheme,
 } from '../components/invitation/templates/CustomThemeBuilder';
 
 const BUILTIN_ENGINE_CODES = [
   'mildness',
+  'snap-photo',
+  'timeless-snapshot',
+  'serein',
+  'jawa-keraton',
+  'javanese-heritage',
+  'sunda-priangan',
+  'sundanese-classic',
+  'rustic-wood',
+  'royal-gold',
+  'elegant-gold',
+  'crimson-rose',
+  'simple-rustic-4',
+  'forest-tropical',
+  'tropical',
+  'tropical-forest',
+  'jawa-kembar-mayang',
+  'kembar-mayang',
+  'noir-velvet',
+  'simpul-kisah',
+  'drapery-pink',
+  'lynk-drapery-pink',
+  'burgundy-gala',
   'botanical-elegance',
   'crimson-gold',
   'lavender-mist',
@@ -55,24 +79,20 @@ const BUILTIN_ENGINE_CODES = [
   'minimalist-white',
   'classic-serif',
   'emerald-royal',
-  'kembar-mayang',
-  'noir-velvet',
-  'drapery-pink',
-  'sundanese-classic',
-  'burgundy-gala',
 ];
 
 const ENGINE_LAYOUT_OPTIONS = [
   {
     value: 'custom-builder',
-    label: 'Custom Dynamic Builder (Ubah Warna, PNG, Frame, Video & Animasi)',
+    label: 'Custom Dynamic Builder (Ubah Warna, PNG, Opening Video, Frame & Animasi)',
   },
   { value: '__builtin__', label: 'Kerangka JSX Asli Kode Template (Khusus Template Bawaan)' },
+  { value: 'forest-tropical', label: 'Kerangka Bawaan: Forest Tropical (Opening Video Hutan)' },
   { value: 'burgundy-gala', label: 'Kerangka Bawaan: Burgundy Gala Envelope (Acara & Seat Plan)' },
   { value: 'drapery-pink', label: 'Kerangka Bawaan: Drapery Pink & Amplop' },
   { value: 'noir-velvet', label: 'Kerangka Bawaan: Noir Velvet Sinematik' },
   { value: 'mildness', label: 'Kerangka Bawaan: Mildness Classic' },
-  { value: 'kembar-mayang', label: 'Kerangka Bawaan: Kembar Mayang Jawa' },
+  { value: 'jawa-kembar-mayang', label: 'Kerangka Bawaan: Kembar Mayang Jawa' },
   { value: 'sundanese-classic', label: 'Kerangka Bawaan: Sundanese Emerald' },
 ];
 
@@ -81,13 +101,45 @@ const CUSTOM_STUDIO_TABS = [
   { id: 'style', label: 'Gaya & Warna', icon: BuilderPaletteIcon },
   { id: 'assets', label: 'Ornamen PNG', icon: BuilderImageIcon },
   { id: 'animations', label: 'Animasi', icon: BuilderSparklesIcon },
+  { id: 'sections', label: 'Seksi & Fitur', icon: Layout },
   { id: 'media', label: 'Video & Teks', icon: BuilderVideoIcon },
 ];
 
 const CUSTOM_COVER_STYLES = [
+  { value: 'gate-curtain', label: 'Gerbang Semak / Tirai Menyibak (Forest Gate + Video)' },
   { value: 'envelope', label: 'Amplop Vintage Interaktif (Tap to Open)' },
-  { value: 'arch-curtain', label: 'Tirai / Gerbang Arch Romantis' },
+  { value: 'arch-curtain', label: 'Tirai / Gerbang Arch Foto Romantis' },
   { value: 'cinematic', label: 'Full Screen Sinematik (Foto / Video)' },
+];
+
+const CUSTOM_HERO_LAYOUT_STYLES = [
+  { value: 'arch-frame', label: '1. Bingkai Kubah Klasik (Arch Frame + PNG Overlay)' },
+  { value: 'fullscreen-photo', label: '2. Full Background Foto Editorial + Gradasi Halus' },
+  { value: 'cameo-royal', label: '3. Bingkai Oval / Cameo Mewah + Monogram Inisial' },
+  { value: 'polaroid-collage', label: '4. Kolase 2 Foto Polaroid Bertumpuk (Scrapbook)' },
+  { value: 'magazine-split', label: '5. Editorial Majalah (Banner Lengkung + Kartu Melayang)' },
+  { value: 'minimal-typographic', label: '6. Tipografi Fokus Latar (Tanpa Kotak Foto Hero)' },
+];
+
+const CUSTOM_BODY_STYLE_MODES = [
+  { value: 'texture-default', label: 'Tekstur Kertas / Gambar Latar Bawaan' },
+  { value: 'photo-backdrop', label: 'Background Foto Utama Menempel (Parallax Glass)' },
+  { value: 'slideshow-backdrop', label: 'Background Slideshow Foto Galeri Otomatis' },
+  { value: 'ornate-frame', label: 'Lembar Undangan Berbingkai Garis Ganda Klasik' },
+  { value: 'clean-editorial', label: 'Polos Bersih Kontras Minimalis (Tanpa Tekstur)' },
+];
+
+const CUSTOM_CARD_STYLES = [
+  { value: 'soft-solid', label: 'Kartu Solid Lembut (Soft Card)' },
+  { value: 'glass', label: 'Kaca Transparan Blur (Glassmorphism)' },
+  { value: 'editorial-flat', label: 'Editorial Minimalis (Garis Tanpa Kotak)' },
+  { value: 'double-border', label: 'Bingkai Klasik Garis Ganda (Royal)' },
+];
+
+const CUSTOM_GALLERY_STYLES = [
+  { value: 'editorial', label: 'Editorial Mix (1 Foto Lebar + 2 Potret)' },
+  { value: 'grid-2', label: 'Grid 2 Kolom Simetris' },
+  { value: 'carousel', label: 'Slide Geser Horizontal (Carousel)' },
 ];
 
 const CUSTOM_FRAME_SHAPES = [
@@ -139,6 +191,7 @@ const CUSTOM_COLOR_FIELDS = [
 const CUSTOM_PARTICLE_OPTIONS = [
   { value: 'petals', label: 'Kelopak Bunga Jatuh (Petals)' },
   { value: 'sparkles', label: 'Kilau Bintang Berkedip (Sparkles)' },
+  { value: 'fireflies', label: 'Kunang-Kunang Cahaya Hutan (Fireflies)' },
   { value: 'leaves', label: 'Dedaunan Melayang (Botanical)' },
   { value: 'snow', label: 'Salju / Cahaya Lembut (Soft Bokeh)' },
   { value: 'none', label: 'Nonaktif (Tanpa Partikel)' },
@@ -172,7 +225,7 @@ const CUSTOM_ASSET_SLOTS = [
   {
     key: 'coverBgImage',
     label: 'Background Layar Cover (PNG/JPG)',
-    hint: 'Melapisi halaman depan sebelum tamu menekan Buka Undangan.',
+    hint: 'Melapisi halaman depan (atau poster awal sebelum Opening Video diputar).',
     positions: [
       { value: 'center', label: 'Tengah Penuh (Center)' },
       { value: 'top', label: 'Fokus Atas (Top)' },
@@ -180,6 +233,7 @@ const CUSTOM_ASSET_SLOTS = [
       { value: 'contain-center', label: 'Utuh Tanpa Terpotong' },
     ],
     presets: [
+      { label: 'Pasangan Sage Default', url: '/images/defaults/couple-cover.jpg' },
       { label: 'Drapery Pink Satin', url: '/images/drapery-pink/bg-drapery-main.png' },
       { label: 'Kertas Cream Hangat', url: '/images/drapery-pink/bg-paper-cream.jpg' },
       { label: 'Cover Klasik Jawa', url: '/images/kembar-cover.jpg' },
@@ -189,7 +243,7 @@ const CUSTOM_ASSET_SLOTS = [
   {
     key: 'bodyBgImage',
     label: 'Tekstur Background Halaman Isi',
-    hint: 'Tekstur kertas/marble halus pada keseluruhan isi undangan.',
+    hint: 'Tekstur kertas/marble/hutan pada keseluruhan isi undangan.',
     positions: [
       { value: 'repeat-y', label: 'Berulang Vertikal' },
       { value: 'cover-fixed', label: 'Penuh Tetap (Fixed)' },
@@ -198,8 +252,28 @@ const CUSTOM_ASSET_SLOTS = [
     ],
     presets: [
       { label: 'Tekstur Kertas Panjang', url: '/images/drapery-pink/bg-paper-long.jpg' },
+      { label: 'Latar Hutan Tropis', url: '/images/forest-tropical-bg.webp' },
       { label: 'Kertas Cream Hangat', url: '/images/drapery-pink/bg-paper-cream.jpg' },
       { label: 'Perkamen Klasik Jawa', url: '/images/kembar-paper-bg.jpg' },
+    ],
+  },
+  {
+    key: 'gateLeftImage',
+    label: 'Gerbang / Semak Menyibak Sisi Kiri (PNG)',
+    hint: 'Menyibak ke samping kiri saat tombol Buka Undangan ditekan (gaya Forest Gate).',
+    presets: [
+      { label: 'Semak Hutan Kiri', url: '/images/forest-foliage-left.png' },
+      { label: 'Tirai Daun Rimba', url: '/images/forest-foliage-curtain.png' },
+      { label: 'Buket Mawar Kiri', url: '/images/drapery-pink/floral-bouquet-left.png' },
+    ],
+  },
+  {
+    key: 'gateRightImage',
+    label: 'Gerbang / Semak Menyibak Sisi Kanan (PNG)',
+    hint: 'Menyibak ke samping kanan saat Buka Undangan ditekan (kosongkan untuk otomatis cermin dari kiri).',
+    presets: [
+      { label: 'Semak Hutan Kanan', url: '/images/forest-foliage-right.png' },
+      { label: 'Tirai Daun Rimba', url: '/images/forest-foliage-curtain.png' },
     ],
   },
   {
@@ -442,12 +516,20 @@ export const TemplatesPage = () => {
   const [previewRenderKey, setPreviewRenderKey] = useState(0);
   const [mobileBuilderPane, setMobileBuilderPane] = useState('editor');
   const [uploadingCustomAssetKey, setUploadingCustomAssetKey] = useState(null);
+  const [uploadingDefaultPhotoKey, setUploadingDefaultPhotoKey] = useState(null);
+  const [isUploadingDefaultGallery, setIsUploadingDefaultGallery] = useState(false);
+  const [newDefaultGalleryUrl, setNewDefaultGalleryUrl] = useState('');
+  const [isUploadingIntroVideo, setIsUploadingIntroVideo] = useState(false);
   const [isUploadingTemplateVideo, setIsUploadingTemplateVideo] = useState(false);
   const [isUploadingTemplatePrewedVideo, setIsUploadingTemplatePrewedVideo] = useState(false);
   const [isUploadingTemplateMusic, setIsUploadingTemplateMusic] = useState(false);
+  const [isUploadingSeatPlan, setIsUploadingSeatPlan] = useState(false);
+  const modalIntroVideoRef = useRef(null);
   const modalBgVideoRef = useRef(null);
   const modalPrewedVideoRef = useRef(null);
   const modalMusicRef = useRef(null);
+  const modalSeatPlanRef = useRef(null);
+  const modalDefaultGalleryRef = useRef(null);
 
   // Landing Page CMS states
   const [cmsConfig, setCmsConfig] = useState({
@@ -842,67 +924,49 @@ export const TemplatesPage = () => {
         : 'custom-builder';
   const isCustomBuilderActive = effectiveBaseLayout === 'custom-builder';
 
-  const currentCustomTheme = {
-    ...DEFAULT_CUSTOM_THEME,
-    ...(defaultContent.customTheme || {}),
-    colors: {
-      ...DEFAULT_CUSTOM_THEME.colors,
-      ...(defaultContent.customTheme?.colors || {}),
-    },
-    typography: {
-      ...DEFAULT_CUSTOM_THEME.typography,
-      ...(defaultContent.customTheme?.typography || {}),
-    },
-    assets: {
-      ...DEFAULT_CUSTOM_THEME.assets,
-      ...(defaultContent.customTheme?.assets || {}),
-    },
-    assetPositions: {
-      ...DEFAULT_CUSTOM_THEME.assetPositions,
-      ...(defaultContent.customTheme?.assetPositions || {}),
-    },
-    animations: {
-      ...DEFAULT_CUSTOM_THEME.animations,
-      ...(defaultContent.customTheme?.animations || {}),
-    },
-  };
+  const currentCustomTheme = mergeCustomTheme(defaultContent.customTheme || {}, {});
 
   const updateCustomThemeField = (key, value) => {
     setDefaultContent((prev) => ({
       ...prev,
       baseLayout: prev.baseLayout || 'custom-builder',
       customTheme: {
-        ...DEFAULT_CUSTOM_THEME,
-        ...(prev.customTheme || {}),
+        ...mergeCustomTheme(prev.customTheme || {}, {}),
         [key]: value,
       },
     }));
   };
 
   const updateCustomThemeSection = (section, patch) => {
-    setDefaultContent((prev) => ({
-      ...prev,
-      baseLayout: prev.baseLayout || 'custom-builder',
-      customTheme: {
-        ...DEFAULT_CUSTOM_THEME,
-        ...(prev.customTheme || {}),
-        [section]: {
-          ...DEFAULT_CUSTOM_THEME[section],
-          ...(prev.customTheme?.[section] || {}),
-          ...patch,
+    setDefaultContent((prev) => {
+      const merged = mergeCustomTheme(prev.customTheme || {}, {});
+      return {
+        ...prev,
+        baseLayout: prev.baseLayout || 'custom-builder',
+        customTheme: {
+          ...merged,
+          [section]: {
+            ...DEFAULT_CUSTOM_THEME[section],
+            ...(merged[section] || {}),
+            ...patch,
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   const applyCustomPreset = (presetKey) => {
     const preset = CUSTOM_THEME_PRESETS[presetKey];
     if (!preset) return;
+    const patch = preset.defaultContentPatch || {};
     setDefaultContent((prev) => ({
       ...prev,
+      ...patch,
       baseLayout: 'custom-builder',
       customTheme: JSON.parse(JSON.stringify(preset.theme)),
     }));
+    setPreviewIsOpened(false);
+    setPreviewRenderKey((k) => k + 1);
     toast.success(`Preset "${preset.label}" diterapkan ke draft template`);
   };
 
@@ -911,7 +975,7 @@ export const TemplatesPage = () => {
     if (!file) return;
     setUploadingCustomAssetKey(assetKey);
     try {
-      const res = await templateService.uploadThumbnail(file, editId);
+      const res = await templateService.uploadThumbnail(file, null);
       const assetUrl = res?.data?.data?.url || res?.data?.url || res?.url || '';
       if (!assetUrl) throw new Error('URL upload tidak ditemukan');
       updateCustomThemeSection('assets', { [assetKey]: assetUrl });
@@ -925,6 +989,172 @@ export const TemplatesPage = () => {
     } finally {
       setUploadingCustomAssetKey(null);
       e.target.value = '';
+    }
+  };
+
+  const handleUploadSeatPlan = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setIsUploadingSeatPlan(true);
+    try {
+      const res = await templateService.uploadThumbnail(file, null);
+      const assetUrl = res?.data?.data?.url || res?.data?.url || res?.url || '';
+      if (!assetUrl) throw new Error('URL denah tidak ditemukan');
+      setDefaultContent((prev) => ({
+        ...prev,
+        showSeatPlan: true,
+        seatPlanImage: assetUrl,
+      }));
+      toast.success('Gambar denah / seat plan berhasil diunggah!');
+    } catch (error) {
+      toast.error(error.message || 'Gagal mengunggah gambar denah');
+    } finally {
+      setIsUploadingSeatPlan(false);
+    }
+  };
+
+  const handleUploadDefaultPhoto = async (e, field) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingDefaultPhotoKey(field);
+    try {
+      const res = await templateService.uploadThumbnail(file, null);
+      const assetUrl = res?.data?.data?.url || res?.data?.url || res?.url || '';
+      if (!assetUrl) throw new Error('URL foto tidak ditemukan');
+      setDefaultContent((prev) => ({
+        ...prev,
+        [field]: assetUrl,
+      }));
+      toast.success('Foto default berhasil diunggah!');
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Gagal mengunggah foto default');
+    } finally {
+      setUploadingDefaultPhotoKey(null);
+    }
+  };
+
+  const handleUploadDefaultGallery = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+    setIsUploadingDefaultGallery(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        const res = await templateService.uploadThumbnail(file, null);
+        const assetUrl = res?.data?.data?.url || res?.data?.url || res?.url || '';
+        if (assetUrl) uploadedUrls.push(assetUrl);
+      }
+      if (uploadedUrls.length === 0) throw new Error('URL foto galeri tidak ditemukan');
+      setDefaultContent((prev) => ({
+        ...prev,
+        galeri: [...(Array.isArray(prev.galeri) ? prev.galeri : []), ...uploadedUrls],
+      }));
+      toast.success(`${uploadedUrls.length} foto galeri default berhasil ditambahkan!`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Gagal mengunggah foto galeri');
+    } finally {
+      setIsUploadingDefaultGallery(false);
+    }
+  };
+
+  const handleAddDefaultGalleryUrl = () => {
+    const url = newDefaultGalleryUrl.trim();
+    if (!url) return;
+    setDefaultContent((prev) => ({
+      ...prev,
+      galeri: [...(Array.isArray(prev.galeri) ? prev.galeri : []), url],
+    }));
+    setNewDefaultGalleryUrl('');
+  };
+
+  const handleRemoveDefaultGalleryPhoto = (idx) => {
+    setDefaultContent((prev) => {
+      const current = Array.isArray(prev.galeri) ? prev.galeri : [];
+      return {
+        ...prev,
+        galeri: current.filter((_, i) => i !== idx),
+      };
+    });
+  };
+
+  const handleCopyThemeJson = async () => {
+    try {
+      const payload = JSON.stringify(
+        {
+          customTheme: currentCustomTheme,
+          introVideoUrl: defaultContent.introVideoUrl || '',
+          backgroundVideoUrl: defaultContent.backgroundVideoUrl || '',
+          packageTier: defaultContent.packageTier || 'intimate',
+          showQr: defaultContent.showQr,
+          showCountdown: defaultContent.showCountdown,
+          showLoveStory: defaultContent.showLoveStory,
+          showGallery: defaultContent.showGallery,
+          showDresscode: defaultContent.showDresscode,
+          dresscodeColors: defaultContent.dresscodeColors,
+          showDonation: defaultContent.showDonation,
+          showGift: defaultContent.showGift,
+          showRsvp: defaultContent.showRsvp,
+        },
+        null,
+        2
+      );
+      await navigator.clipboard.writeText(payload);
+      toast.success('Konfigurasi JSON desain tema berhasil disalin ke clipboard!');
+    } catch {
+      toast.error('Gagal menyalin JSON tema.');
+    }
+  };
+
+  const handlePasteThemeJson = async () => {
+    const raw = window.prompt(
+      'Tempel (Paste) JSON konfigurasi desain tema yang sudah disalin sebelumnya:'
+    );
+    if (!raw || !raw.trim()) return;
+    try {
+      const parsed = JSON.parse(raw);
+      const nextTheme = parsed.customTheme || parsed;
+      setDefaultContent((prev) => ({
+        ...prev,
+        baseLayout: 'custom-builder',
+        ...(parsed.introVideoUrl !== undefined
+          ? { introVideoUrl: parsed.introVideoUrl }
+          : {}),
+        ...(parsed.backgroundVideoUrl !== undefined
+          ? { backgroundVideoUrl: parsed.backgroundVideoUrl }
+          : {}),
+        ...(parsed.packageTier !== undefined
+          ? { packageTier: parsed.packageTier }
+          : {}),
+        ...(parsed.showQr !== undefined ? { showQr: parsed.showQr } : {}),
+        ...(parsed.showCountdown !== undefined
+          ? { showCountdown: parsed.showCountdown }
+          : {}),
+        ...(parsed.showLoveStory !== undefined
+          ? { showLoveStory: parsed.showLoveStory }
+          : {}),
+        ...(parsed.showGallery !== undefined
+          ? { showGallery: parsed.showGallery }
+          : {}),
+        ...(parsed.showDresscode !== undefined
+          ? { showDresscode: parsed.showDresscode }
+          : {}),
+        ...(Array.isArray(parsed.dresscodeColors)
+          ? { dresscodeColors: parsed.dresscodeColors }
+          : {}),
+        ...(parsed.showDonation !== undefined
+          ? { showDonation: parsed.showDonation }
+          : {}),
+        ...(parsed.showGift !== undefined ? { showGift: parsed.showGift } : {}),
+        ...(parsed.showRsvp !== undefined ? { showRsvp: parsed.showRsvp } : {}),
+        customTheme: mergeCustomTheme(nextTheme, {}),
+      }));
+      setPreviewRenderKey((k) => k + 1);
+      toast.success('Konfigurasi JSON tema berhasil diterapkan!');
+    } catch {
+      toast.error('Format JSON tidak valid. Pastikan JSON utuh.');
     }
   };
 
@@ -1009,6 +1239,8 @@ export const TemplatesPage = () => {
       baseLayout: 'custom-builder',
       templateEventType: 'wedding',
       eventType: 'wedding',
+      packageTier: 'intimate',
+      showQr: false,
       showSecondEvent: true,
       styleCategory: 'modern',
       customTheme: JSON.parse(JSON.stringify(DEFAULT_CUSTOM_THEME)),
@@ -1018,6 +1250,41 @@ export const TemplatesPage = () => {
     setPreviewRenderKey((k) => k + 1);
     setMobileBuilderPane('editor');
     setIsModalOpen(true);
+  };
+
+  const handleDuplicateTemplate = (tmpl) => {
+    let parsedDefaults = tmpl.default_content_json || {};
+    if (typeof parsedDefaults === 'string') {
+      try {
+        parsedDefaults = JSON.parse(parsedDefaults);
+      } catch {
+        parsedDefaults = {};
+      }
+    }
+    const baseCode = String(tmpl.template_code || 'custom').toLowerCase().trim();
+    const inferredLayout =
+      parsedDefaults.baseLayout !== undefined
+        ? parsedDefaults.baseLayout
+        : BUILTIN_ENGINE_CODES.includes(baseCode)
+          ? baseCode
+          : 'custom-builder';
+
+    setIsEditing(false);
+    setEditId(null);
+    setTemplateCode(`${baseCode}-copy`);
+    setName(`${tmpl.name} (Copy)`);
+    setThumbnailUrl(tmpl.thumbnail_url || '');
+    setIsActive(true);
+    setDefaultContent({
+      ...JSON.parse(JSON.stringify(parsedDefaults)),
+      baseLayout: inferredLayout,
+    });
+    setStudioTab('general');
+    setPreviewIsOpened(false);
+    setPreviewRenderKey((k) => k + 1);
+    setMobileBuilderPane('editor');
+    setIsModalOpen(true);
+    toast.info(`Draft salinan "${tmpl.name}" siap diedit & disimpan.`);
   };
 
   const handleOpenEdit = (tmpl) => {
@@ -1047,6 +1314,7 @@ export const TemplatesPage = () => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
+    if (field === 'introVideoUrl') setIsUploadingIntroVideo(true);
     if (field === 'backgroundVideoUrl') setIsUploadingTemplateVideo(true);
     if (field === 'preweddingVideoUrl') setIsUploadingTemplatePrewedVideo(true);
     try {
@@ -1054,11 +1322,20 @@ export const TemplatesPage = () => {
       const uploadedUrl = res?.data?.url;
       if (uploadedUrl) {
         setDefaultContent((prev) => ({ ...prev, [field]: uploadedUrl }));
-        toast.success('Video bawaan template berhasil diunggah!');
+        if (field === 'introVideoUrl') {
+          setPreviewIsOpened(false);
+          setPreviewRenderKey((k) => k + 1);
+        }
+        toast.success(
+          field === 'introVideoUrl'
+            ? 'Opening video transisi berhasil diunggah!'
+            : 'Video bawaan template berhasil diunggah!'
+        );
       }
     } catch (err) {
       toast.error(err.message || 'Gagal mengunggah video template.');
     } finally {
+      if (field === 'introVideoUrl') setIsUploadingIntroVideo(false);
       if (field === 'backgroundVideoUrl') setIsUploadingTemplateVideo(false);
       if (field === 'preweddingVideoUrl') setIsUploadingTemplatePrewedVideo(false);
     }
@@ -1464,6 +1741,14 @@ export const TemplatesPage = () => {
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDuplicateTemplate(tmpl)}
+                          title="Duplikat Template ke Studio Builder"
+                        >
+                          <CopyIcon className="w-3.5 h-3.5 text-amber-600" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -2093,6 +2378,7 @@ export const TemplatesPage = () => {
                     (tab) =>
                       isCustomBuilderActive ||
                       tab.id === 'general' ||
+                      tab.id === 'sections' ||
                       tab.id === 'media'
                   ).map((tab) => {
                     const TabIcon = tab.icon;
@@ -2184,14 +2470,19 @@ export const TemplatesPage = () => {
                       <Select
                         label="Tipe Paket Tema (Pricelist)"
                         options={TEMPLATE_PACKAGE_TIERS}
-                        value={defaultContent.packageTier || 'all'}
+                        value={defaultContent.packageTier || 'intimate'}
                         onChange={(val) =>
                           setDefaultContent((prev) => ({
                             ...prev,
                             packageTier: val,
+                            ...(val === 'intimate'
+                              ? { showQr: false }
+                              : val === 'signature'
+                                ? { showQr: true }
+                                : {}),
                           }))
                         }
-                        helperText="Menentukan paket pricelist yang mencakup tema ini (tampil di badge & filter katalog Landing Page)"
+                        helperText="Paket 01 / Intimate (Undangan Saja) otomatis mematikan QR Check-In bawaan; Paket 02 / Signature mengaktifkannya."
                       />
 
                       <Input
@@ -2225,7 +2516,7 @@ export const TemplatesPage = () => {
                               : {}),
                           }));
                         }}
-                        helperText="Gunakan Custom Dynamic Builder untuk bebas mengatur PNG/GIF, bingkai, warna, font, video & animasi dari sidebar."
+                        helperText="Gunakan Custom Dynamic Builder untuk bebas mengatur PNG/GIF, Opening Video, bingkai, warna, font & animasi dari sidebar."
                       />
                     </div>
 
@@ -2336,14 +2627,117 @@ export const TemplatesPage = () => {
                           switchPreviewOpened(false);
                         }}
                       />
+
+                      <div className="pt-2 border-t border-slate-200/80 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
+                            Tampilan Saat Undangan Dibuka (Isi)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => switchPreviewOpened(true)}
+                            className="text-[10px] font-semibold text-indigo-600 hover:underline cursor-pointer"
+                          >
+                            Lihat Isi di HP →
+                          </button>
+                        </div>
+
+                        <Select
+                          label="Bentuk Hero Pembuka Isi Undangan"
+                          options={CUSTOM_HERO_LAYOUT_STYLES}
+                          value={currentCustomTheme.heroLayoutStyle || 'arch-frame'}
+                          onChange={(val) => {
+                            updateCustomThemeField('heroLayoutStyle', val);
+                            switchPreviewOpened(true);
+                          }}
+                          helperText="Pilih mau bentuk full background foto, bingkai cameo/arch, kolase polaroid, majalah, atau tipografi."
+                        />
+
+                        <Select
+                          label="Mode Latar & Bingkai Halaman Isi"
+                          options={CUSTOM_BODY_STYLE_MODES}
+                          value={currentCustomTheme.bodyStyleMode || 'texture-default'}
+                          onChange={(val) => {
+                            updateCustomThemeField('bodyStyleMode', val);
+                            switchPreviewOpened(true);
+                          }}
+                          helperText="Atur latar belakang seluruh isi: foto menempel (parallax), slideshow galeri, bingkai garis klasik, atau tekstur kertas."
+                        />
+                      </div>
+
                       <Select
-                        label="Bentuk Bingkai Foto Utama / Mempelai"
+                        label="Bentuk Bingkai Foto Profil Mempelai"
                         options={CUSTOM_FRAME_SHAPES}
                         value={currentCustomTheme.photoFrameShape}
+                        onChange={(val) => {
+                          updateCustomThemeField('photoFrameShape', val);
+                          switchPreviewOpened(true);
+                        }}
+                      />
+                      <Select
+                        label="Gaya Kartu & Kotak Seksi"
+                        options={CUSTOM_CARD_STYLES}
+                        value={currentCustomTheme.cardStyle || 'soft-solid'}
                         onChange={(val) =>
-                          updateCustomThemeField('photoFrameShape', val)
+                          updateCustomThemeField('cardStyle', val)
                         }
                       />
+                      <Select
+                        label="Tata Letak Galeri Foto"
+                        options={CUSTOM_GALLERY_STYLES}
+                        value={currentCustomTheme.galleryStyle || 'editorial'}
+                        onChange={(val) =>
+                          updateCustomThemeField('galleryStyle', val)
+                        }
+                      />
+
+                      <div className="pt-1 space-y-2.5 border-t border-slate-200/80">
+                        <div>
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 mb-1">
+                            <span>Kegelapan Gradasi Cover</span>
+                            <span className="font-mono text-indigo-600">
+                              {currentCustomTheme.coverOverlayOpacity ?? 55}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={15}
+                            max={85}
+                            step={5}
+                            value={currentCustomTheme.coverOverlayOpacity ?? 55}
+                            onChange={(e) =>
+                              updateCustomThemeField(
+                                'coverOverlayOpacity',
+                                Number(e.target.value)
+                              )
+                            }
+                            className="w-full accent-indigo-600 cursor-pointer"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 mb-1">
+                            <span>Ketebalan Overlay Warna Latar Isi</span>
+                            <span className="font-mono text-indigo-600">
+                              {currentCustomTheme.bgOverlayOpacity ?? 80}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={15}
+                            max={95}
+                            step={5}
+                            value={currentCustomTheme.bgOverlayOpacity ?? 80}
+                            onChange={(e) =>
+                              updateCustomThemeField(
+                                'bgOverlayOpacity',
+                                Number(e.target.value)
+                              )
+                            }
+                            className="w-full accent-indigo-600 cursor-pointer"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3">
@@ -2698,18 +3092,276 @@ export const TemplatesPage = () => {
                   </div>
                 )}
 
+                {/* TAB 3.5: SEKSI & FITUR BAWAAN TEMA */}
+                {studioTab === 'sections' && (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 text-[11px] text-slate-700">
+                      Atur seksi &amp; fitur apa saja yang aktif secara bawaan pada tema ini. Klien tetap bisa menyesuaikan ulang di dashboard undangan mereka.
+                    </div>
+
+                    <input
+                      ref={modalSeatPlanRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      className="hidden"
+                      onChange={handleUploadSeatPlan}
+                    />
+
+                    <div className="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3.5">
+                      <Switch
+                        checked={
+                          defaultContent.showQr !== undefined
+                            ? Boolean(defaultContent.showQr)
+                            : (defaultContent.packageTier || 'intimate') !== 'intimate'
+                        }
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showQr: checked,
+                          }))
+                        }
+                        label="Tombol QR Check-In Tamu"
+                        helperText="Matikan untuk tipe 01 / Intimate (Undangan Saja); aktifkan untuk tipe 02 / Signature"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showCountdown !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showCountdown: checked,
+                          }))
+                        }
+                        label="Hitung Mundur Tanggal (Countdown)"
+                        helperText="Tampilkan kotak Hari, Jam, Menit, Detik"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showSecondEvent !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showSecondEvent: checked,
+                          }))
+                        }
+                        label="Sesi Acara Kedua (Resepsi / Sesi 2)"
+                        helperText="Matikan bila tema ini hanya memiliki 1 sesi acara utama"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showLoveStory !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showLoveStory: checked,
+                          }))
+                        }
+                        label="Timeline Kisah Cinta / Cerita"
+                        helperText="Tampilkan seksi perjalanan kisah (Our Stories)"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showGallery !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showGallery: checked,
+                          }))
+                        }
+                        label="Galeri Foto Momen"
+                        helperText="Tampilkan koleksi foto prewedding / acara"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showDresscode !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showDresscode: checked,
+                          }))
+                        }
+                        label="Seksi Dress Code & Palet Warna Pakaian"
+                        helperText="Panduan warna busana tamu undangan"
+                      />
+
+                      {defaultContent.showDresscode !== false && (
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-slate-700">
+                              Palet Warna Dress Code
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const cur = Array.isArray(defaultContent.dresscodeColors)
+                                  ? defaultContent.dresscodeColors
+                                  : ['#fdf9f6', '#a96d79', '#68333e'];
+                                if (cur.length >= 5) return;
+                                setDefaultContent((prev) => ({
+                                  ...prev,
+                                  dresscodeColors: [...cur, '#d4af37'],
+                                }));
+                              }}
+                              className="text-[10px] font-semibold text-indigo-600 hover:underline cursor-pointer"
+                            >
+                              + Tambah Warna
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {(Array.isArray(defaultContent.dresscodeColors) &&
+                            defaultContent.dresscodeColors.length > 0
+                              ? defaultContent.dresscodeColors
+                              : ['#fdf9f6', '#a96d79', '#68333e']
+                            ).map((col, idx, arr) => (
+                              <div
+                                key={idx}
+                                className="inline-flex items-center gap-1 p-1 rounded-lg bg-white border border-slate-200"
+                              >
+                                <input
+                                  type="color"
+                                  value={col}
+                                  onChange={(e) => {
+                                    const next = [...arr];
+                                    next[idx] = e.target.value;
+                                    setDefaultContent((prev) => ({
+                                      ...prev,
+                                      dresscodeColors: next,
+                                    }));
+                                  }}
+                                  className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+                                />
+                                {arr.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const next = arr.filter((_, i) => i !== idx);
+                                      setDefaultContent((prev) => ({
+                                        ...prev,
+                                        dresscodeColors: next,
+                                      }));
+                                    }}
+                                    className="text-[10px] px-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                                    title="Hapus warna"
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Switch
+                        checked={defaultContent.showDonation !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showDonation: checked,
+                          }))
+                        }
+                        label="Amplop Digital / Rekening Transfer"
+                        helperText="Tampilkan daftar nomor rekening hadiah"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showGift !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showGift: checked,
+                          }))
+                        }
+                        label="Alamat Pengiriman Kado Fisik"
+                        helperText="Tampilkan kartu alamat kado"
+                      />
+
+                      <Switch
+                        checked={defaultContent.showRsvp !== false}
+                        onChange={(checked) =>
+                          setDefaultContent((prev) => ({
+                            ...prev,
+                            showRsvp: checked,
+                          }))
+                        }
+                        label="Form RSVP & Ucapan Doa"
+                        helperText="Form konfirmasi kehadiran & daftar ucapan tamu"
+                      />
+
+                      <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                        <Switch
+                          checked={Boolean(defaultContent.showSeatPlan)}
+                          onChange={(checked) =>
+                            setDefaultContent((prev) => ({
+                              ...prev,
+                              showSeatPlan: checked,
+                            }))
+                          }
+                          label="Denah Lokasi / Seat Plan (Opsional)"
+                          helperText="Tampilkan gambar denah meja atau peta venue yang bisa diperbesar"
+                        />
+
+                        {defaultContent.showSeatPlan && (
+                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-semibold text-slate-700">
+                                Gambar Denah / Seat Plan
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => modalSeatPlanRef.current?.click()}
+                                disabled={isUploadingSeatPlan}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-semibold cursor-pointer"
+                              >
+                                <Upload className="w-3 h-3" />
+                                <span>
+                                  {isUploadingSeatPlan ? 'Uploading...' : 'Upload Denah'}
+                                </span>
+                              </button>
+                            </div>
+                            <Input
+                              placeholder="/images/... atau https://..."
+                              value={defaultContent.seatPlanImage || ''}
+                              onChange={(e) =>
+                                setDefaultContent((prev) => ({
+                                  ...prev,
+                                  seatPlanImage: e.target.value,
+                                }))
+                              }
+                            />
+                            {defaultContent.seatPlanImage && (
+                              <img
+                                src={defaultContent.seatPlanImage}
+                                alt="Seat Plan"
+                                className="w-full h-28 object-contain rounded-lg bg-white border border-slate-200 p-1"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* TAB 4: VIDEO, AUDIO & DATA TEKS */}
                 {studioTab === 'media' && (
                   <div className="space-y-3">
                     <div>
                       <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        Video Latar, Musik &amp; Data Teks Bawaan
+                        Opening Video, Video Latar, Musik &amp; Teks Bawaan
                       </h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Upload video background looping (.mp4), video prewedding, musik latar default, dan teks pembuka/lokasi bawaan tema ini.
+                        Atur video transisi saat tombol Buka Undangan ditekan (seperti tema Forest), video latar looping, musik MP3, dan teks default.
                       </p>
                     </div>
 
+                    <input
+                      ref={modalIntroVideoRef}
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime,video/*"
+                      className="hidden"
+                      onChange={(e) => handleUploadTemplateVideo(e, 'introVideoUrl')}
+                    />
                     <input
                       ref={modalBgVideoRef}
                       type="file"
@@ -2733,10 +3385,106 @@ export const TemplatesPage = () => {
                     />
 
                     <div className="space-y-3">
+                      {/* OPENING TRANSITION VIDEO (FOREST GATE STYLE) */}
+                      <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <label className="text-xs font-bold text-emerald-950 block">
+                              Opening Video Transisi Cover (.mp4)
+                            </label>
+                            <p className="text-[10px] text-emerald-800/80">
+                              Diputar sekali (zoom-in / gerbang terbuka) saat tamu klik &ldquo;Buka Undangan&rdquo;, lalu masuk ke isi undangan.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => modalIntroVideoRef.current?.click()}
+                            disabled={isUploadingIntroVideo}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold shrink-0 cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>{isUploadingIntroVideo ? 'Uploading...' : 'Upload MP4'}</span>
+                          </button>
+                        </div>
+
+                        <Input
+                          placeholder="/videos/forest-intro.mp4 atau https://..."
+                          value={defaultContent.introVideoUrl || ''}
+                          onChange={(e) =>
+                            setDefaultContent((prev) => ({
+                              ...prev,
+                              introVideoUrl: e.target.value,
+                            }))
+                          }
+                        />
+
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDefaultContent((prev) => ({
+                                ...prev,
+                                introVideoUrl: '/videos/forest-intro.mp4',
+                                packageTier: prev.packageTier || 'intimate',
+                              }));
+                              setPreviewIsOpened(false);
+                              setPreviewRenderKey((k) => k + 1);
+                            }}
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-semibold border cursor-pointer ${
+                              defaultContent.introVideoUrl === '/videos/forest-intro.mp4'
+                                ? 'bg-emerald-700 text-white border-emerald-700'
+                                : 'bg-white text-emerald-800 border-emerald-200 hover:border-emerald-400'
+                            }`}
+                          >
+                            Pakai Video Hutan (/videos/forest-intro.mp4)
+                          </button>
+
+                          {defaultContent.introVideoUrl && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPreviewIsOpened(false);
+                                  setPreviewRenderKey((k) => k + 1);
+                                  toast.info(
+                                    'Klik tombol "Buka Undangan" di layar HP kanan untuk menguji Opening Video!'
+                                  );
+                                }}
+                                className="px-2.5 py-1 rounded-md text-[10px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
+                              >
+                                Tes di Layar HP
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDefaultContent((prev) => ({
+                                    ...prev,
+                                    introVideoUrl: '',
+                                  }))
+                                }
+                                className="px-2 py-1 rounded-md text-[10px] font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
+                              >
+                                Kosongkan
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                        {defaultContent.introVideoUrl &&
+                          defaultContent.introVideoUrl !== 'none' && (
+                            <video
+                              src={defaultContent.introVideoUrl}
+                              controls
+                              muted
+                              className="w-full h-24 rounded-lg bg-black object-cover"
+                            />
+                          )}
+                      </div>
+
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-semibold text-slate-700">
-                            Video Background Default (.mp4)
+                            Video Background Looping Isi (.mp4)
                           </label>
                           <button
                             type="button"
@@ -2798,14 +3546,241 @@ export const TemplatesPage = () => {
                     </div>
 
                     <div className="space-y-3">
-                      <Input
-                        label="Foto Cover Default"
-                        placeholder="https://.../cover.webp"
-                        value={defaultContent.fotoCover || ''}
-                        onChange={(e) =>
-                          setDefaultContent((prev) => ({ ...prev, fotoCover: e.target.value }))
-                        }
+                      <input
+                        ref={modalDefaultGalleryRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleUploadDefaultGallery}
                       />
+
+                      {/* Foto Default Mempelai & Galeri Tema */}
+                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                              <ImageIcon className="w-3.5 h-3.5 text-amber-600" />
+                              Foto Default Mempelai &amp; Galeri Tema
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                              Atur foto bawaan Cover, Mempelai Pria/Wanita, dan Galeri khusus untuk template ini. Kosongkan jika ingin memakai foto default global.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 3 Slot Foto Mempelai & Cover */}
+                        <div className="space-y-2">
+                          {[
+                            {
+                              key: 'fotoCover',
+                              label: 'Foto Cover / Pasangan Default',
+                              fallback: '/images/defaults/couple-cover.jpg',
+                              placeholder: '/images/defaults/couple-cover.jpg atau https://...',
+                            },
+                            {
+                              key: 'fotoPria',
+                              label: 'Foto Mempelai Pria Default',
+                              fallback: '/images/defaults/groom.jpg',
+                              placeholder: '/images/defaults/groom.jpg atau https://...',
+                            },
+                            {
+                              key: 'fotoWanita',
+                              label: 'Foto Mempelai Wanita Default',
+                              fallback: '/images/defaults/bride.jpg',
+                              placeholder: '/images/defaults/bride.jpg atau https://...',
+                            },
+                          ].map((slot) => {
+                            const rawVal = String(defaultContent[slot.key] || '').trim();
+                            const isCustom = Boolean(rawVal);
+                            const previewSrc = rawVal || slot.fallback;
+                            const isUploadingThis = uploadingDefaultPhotoKey === slot.key;
+
+                            return (
+                              <div
+                                key={slot.key}
+                                className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-start gap-2.5"
+                              >
+                                <div className="w-12 h-14 rounded-md overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                                  <img
+                                    src={previewSrc}
+                                    alt={slot.label}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0 space-y-1.5">
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span className="text-[11px] font-semibold text-slate-700 truncate">
+                                      {slot.label}
+                                    </span>
+                                    <span
+                                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
+                                        isCustom
+                                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                          : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                      }`}
+                                    >
+                                      {isCustom ? 'Custom' : 'Default Global'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="text"
+                                      value={defaultContent[slot.key] || ''}
+                                      onChange={(e) =>
+                                        setDefaultContent((prev) => ({
+                                          ...prev,
+                                          [slot.key]: e.target.value,
+                                        }))
+                                      }
+                                      placeholder={slot.placeholder}
+                                      className="flex-1 min-w-0 px-2 py-1 text-[11px] bg-slate-50 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-amber-400"
+                                    />
+                                    <label className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 cursor-pointer shrink-0">
+                                      <Upload className="w-3 h-3" />
+                                      <span>{isUploadingThis ? '...' : 'Upload'}</span>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        disabled={isUploadingThis}
+                                        onChange={(e) => handleUploadDefaultPhoto(e, slot.key)}
+                                      />
+                                    </label>
+                                    {isCustom && (
+                                      <button
+                                        type="button"
+                                        title="Reset ke Default Global"
+                                        onClick={() =>
+                                          setDefaultContent((prev) => ({
+                                            ...prev,
+                                            [slot.key]: '',
+                                          }))
+                                        }
+                                        className="p-1 rounded text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 shrink-0"
+                                      >
+                                        <BuilderResetIcon className="w-3 h-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Galeri Foto Default Tema */}
+                        <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-[11px] font-semibold text-slate-700">
+                              Galeri Foto Default Tema{' '}
+                              <span className="text-slate-400 font-normal">
+                                ({Array.isArray(defaultContent.galeri) && defaultContent.galeri.length > 0
+                                  ? `${defaultContent.galeri.length} foto custom`
+                                  : 'Default Global 5 foto'})
+                              </span>
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => modalDefaultGalleryRef.current?.click()}
+                                disabled={isUploadingDefaultGallery}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 disabled:opacity-50"
+                              >
+                                <Upload className="w-3 h-3" />
+                                <span>{isUploadingDefaultGallery ? 'Mengunggah...' : 'Upload Foto'}</span>
+                              </button>
+                              {Array.isArray(defaultContent.galeri) && defaultContent.galeri.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDefaultContent((prev) => ({ ...prev, galeri: [] }))
+                                  }
+                                  className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200"
+                                >
+                                  <BuilderResetIcon className="w-3 h-3" />
+                                  <span>Reset Bawaan</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {Array.isArray(defaultContent.galeri) && defaultContent.galeri.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-2">
+                              {defaultContent.galeri.map((photoUrl, idx) => (
+                                <div
+                                  key={`${photoUrl}-${idx}`}
+                                  className="relative group aspect-square rounded-lg overflow-hidden bg-slate-200 border border-slate-200"
+                                >
+                                  <img
+                                    src={photoUrl}
+                                    alt={`Galeri default ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    title="Hapus foto ini"
+                                    onClick={() => handleRemoveDefaultGalleryPhoto(idx)}
+                                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-90 hover:opacity-100 shadow"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-2.5 bg-white border border-dashed border-slate-300 rounded-lg flex items-center justify-between gap-2 flex-wrap">
+                              <p className="text-[11px] text-slate-500">
+                                Menggunakan 5 foto galeri bawaan global.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDefaultContent((prev) => ({
+                                    ...prev,
+                                    galeri: [
+                                      '/images/defaults/couple-cover.jpg',
+                                      '/images/defaults/groom.jpg',
+                                      '/images/defaults/bride.jpg',
+                                      '/images/defaults/gallery-hands.jpg',
+                                      '/images/defaults/gallery-bouquet.jpg',
+                                    ],
+                                  }))
+                                }
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Muat 5 Foto Bawaan untuk Diedit</span>
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={newDefaultGalleryUrl}
+                              onChange={(e) => setNewDefaultGalleryUrl(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddDefaultGalleryUrl();
+                                }
+                              }}
+                              placeholder="Tambah URL foto galeri (https://...)"
+                              className="flex-1 min-w-0 px-2.5 py-1.5 text-[11px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-400"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddDefaultGalleryUrl}
+                              disabled={!newDefaultGalleryUrl.trim()}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-900 text-white disabled:opacity-40 shrink-0"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Tambah</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Musik Latar Default (.mp3 Upload Langsung) */}
                       <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
@@ -2973,25 +3948,45 @@ export const TemplatesPage = () => {
               </div>
 
               {/* Sticky Sidebar Footer */}
-              <div className="shrink-0 px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+              <div className="shrink-0 px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
                 {isCustomBuilderActive ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDefaultContent((prev) => ({
-                        ...prev,
-                        baseLayout: 'custom-builder',
-                        customTheme: JSON.parse(
-                          JSON.stringify(DEFAULT_CUSTOM_THEME)
-                        ),
-                      }));
-                      toast.success('Desain Studio direset ke tema bawaan awal');
-                    }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <BuilderResetIcon className="w-3.5 h-3.5" />
-                    <span>Reset Tema Default</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDefaultContent((prev) => ({
+                          ...prev,
+                          baseLayout: 'custom-builder',
+                          customTheme: JSON.parse(
+                            JSON.stringify(DEFAULT_CUSTOM_THEME)
+                          ),
+                        }));
+                        toast.success('Desain Studio direset ke tema bawaan awal');
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Reset ke tema awal"
+                    >
+                      <BuilderResetIcon className="w-3.5 h-3.5" />
+                      <span>Reset</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyThemeJson}
+                      className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Salin JSON konfigurasi desain tema"
+                    >
+                      <CopyIcon className="w-3 h-3" />
+                      <span>Copy JSON</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePasteThemeJson}
+                      className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                      title="Tempel JSON konfigurasi desain tema"
+                    >
+                      <span>Import JSON</span>
+                    </button>
+                  </div>
                 ) : (
                   <span className="text-[11px] text-slate-500">
                     Mode Kerangka JSX

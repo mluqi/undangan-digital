@@ -174,13 +174,15 @@ module.exports = {
               cerita: 'Dengan restu kedua orang tua dan keluarga tercinta, kami memantapkan niat suci ini untuk menyempurnakan separuh agama menuju ikatan pernikahan yang berkah.',
             },
           ],
+          fotoCover: '/images/defaults/couple-cover.jpg',
+          fotoPria: '/images/defaults/groom.jpg',
+          fotoWanita: '/images/defaults/bride.jpg',
           galeri: [
-            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=800&auto=format&fit=crop&q=80',
+            '/images/defaults/couple-cover.jpg',
+            '/images/defaults/gallery-hands.jpg',
+            '/images/defaults/gallery-bouquet.jpg',
+            '/images/defaults/bride.jpg',
+            '/images/defaults/groom.jpg',
           ],
           rekening: [
             {

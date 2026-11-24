@@ -570,18 +570,19 @@ export const InvitationDetailPage = ({
       // Populate media states
       setMusicUrl(c.musicUrl || 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=romantic-wedding-113063.mp3');
       setMusicTitle(c.musicTitle || 'Acoustic Wedding - Romantic Bliss');
-      setFotoCover(c.fotoCover || 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80');
+      setFotoCover(c.fotoCover || '/images/defaults/couple-cover.jpg');
       setFotoWhatsapp(c.fotoWhatsapp && c.fotoWhatsapp !== c.fotoCover ? c.fotoWhatsapp : '');
-      setFotoPria(c.fotoPria || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80');
-      setFotoWanita(c.fotoWanita || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80');
+      setFotoPria(c.fotoPria || '/images/defaults/groom.jpg');
+      setFotoWanita(c.fotoWanita || '/images/defaults/bride.jpg');
       setGalleryPhotos(
         c.galeri && Array.isArray(c.galeri) && c.galeri.length > 0
           ? c.galeri
           : [
-              'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop&q=80',
-              'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80',
-              'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80',
-              'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&auto=format&fit=crop&q=80',
+              '/images/defaults/couple-cover.jpg',
+              '/images/defaults/gallery-hands.jpg',
+              '/images/defaults/gallery-bouquet.jpg',
+              '/images/defaults/bride.jpg',
+              '/images/defaults/groom.jpg',
             ]
       );
 
@@ -3087,10 +3088,7 @@ export const InvitationDetailPage = ({
                   </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
-                      src={
-                        fotoCover ||
-                        'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'
-                      }
+                      src={fotoCover || '/images/defaults/couple-cover.jpg'}
                       alt="Cover"
                       className="w-full h-full object-cover"
                     />
@@ -3142,7 +3140,7 @@ export const InvitationDetailPage = ({
                       src={
                         fotoWhatsapp ||
                         fotoCover ||
-                        'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80'
+                        '/images/defaults/couple-cover.jpg'
                       }
                       alt="WhatsApp Thumbnail"
                       className="w-full h-full object-cover"
@@ -3195,10 +3193,7 @@ export const InvitationDetailPage = ({
                   </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
-                      src={
-                        fotoPria ||
-                        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80'
-                      }
+                      src={fotoPria || '/images/defaults/groom.jpg'}
                       alt="Groom"
                       className="w-full h-full object-cover"
                     />
@@ -3247,10 +3242,7 @@ export const InvitationDetailPage = ({
                   </p>
                   <div className="w-full h-44 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden relative group">
                     <img
-                      src={
-                        fotoWanita ||
-                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
-                      }
+                      src={fotoWanita || '/images/defaults/bride.jpg'}
                       alt="Bride"
                       className="w-full h-full object-cover"
                     />

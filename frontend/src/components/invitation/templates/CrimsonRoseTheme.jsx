@@ -693,7 +693,7 @@ export const CrimsonRoseTheme = (props) => {
                       <img
                         src={
                           d.gallery[idx % d.gallery.length] ||
-                          'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80'
+                          '/images/defaults/couple-cover.jpg'
                         }
                         alt={story.judul}
                         className="w-full h-full object-cover"

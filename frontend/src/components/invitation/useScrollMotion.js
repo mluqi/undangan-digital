@@ -16,13 +16,32 @@ const prefersReducedMotion = () =>
 export const useScrollMotion = (rootRef, enabled = true) => {
   // Kunci scroll halaman saat cover undangan masih aktif (!enabled)
   useEffect(() => {
+    const root = rootRef?.current;
+    const isEmbeddedPreview = Boolean(
+      root?.closest?.('.builder-phone-viewport, [data-invitation-preview="true"]') ||
+        (typeof document !== "undefined" &&
+          document.querySelector('.builder-phone-viewport, [data-invitation-preview="true"]')),
+    );
+
+    if (isEmbeddedPreview) {
+      if (root) {
+        root.style.maxHeight = !enabled ? "100%" : "";
+        root.style.overflow = !enabled ? "hidden" : "";
+      }
+      return () => {
+        if (root) {
+          root.style.maxHeight = "";
+          root.style.overflow = "";
+        }
+      };
+    }
+
     if (!enabled) {
       const origBodyOverflow = document.body.style.overflow;
       const origHtmlOverflow = document.documentElement.style.overflow;
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
 
-      const root = rootRef?.current;
       if (root) {
         root.style.maxHeight = "100vh";
         root.style.overflow = "hidden";
@@ -47,7 +66,6 @@ export const useScrollMotion = (rootRef, enabled = true) => {
     } else {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
-      const root = rootRef?.current;
       if (root) {
         root.style.maxHeight = "";
         root.style.overflow = "";

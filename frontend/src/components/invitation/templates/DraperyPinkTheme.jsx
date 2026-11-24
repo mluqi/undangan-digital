@@ -57,10 +57,10 @@ const ASSETS = {
   polaroidCard: '/images/drapery-pink/polaroid-tape-1.png',
   storyBullet: '/images/drapery-pink/story-bullet.svg',
   butterfly: '/images/drapery-pink/butterfly.gif',
-  demoCouple1: '/images/drapery-pink/demo-couple-1.jpg',
-  demoBride: '/images/drapery-pink/demo-bride.jpg',
-  demoGroom: '/images/drapery-pink/demo-groom.jpg',
-  demoClosing: '/images/drapery-pink/demo-closing.jpg',
+  demoCouple1: '/images/defaults/couple-cover.jpg',
+  demoBride: '/images/defaults/bride.jpg',
+  demoGroom: '/images/defaults/groom.jpg',
+  demoClosing: '/images/defaults/gallery-hands.jpg',
 };
 
 const DEFAULT_AR_RUM =

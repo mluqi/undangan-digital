@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useToast } from "../ui/Toast";
 
-const DEFAULT_PHOTOS = {
-  cover:
-    "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80",
-  groom:
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80",
-  bride:
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80",
+export const DEFAULT_PHOTOS = {
+  cover: "/images/defaults/couple-cover.jpg",
+  groom: "/images/defaults/groom.jpg",
+  bride: "/images/defaults/bride.jpg",
+  closing: "/images/defaults/gallery-hands.jpg",
   gallery: [
-    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=800&auto=format&fit=crop&q=80",
+    "/images/defaults/couple-cover.jpg",
+    "/images/defaults/gallery-hands.jpg",
+    "/images/defaults/gallery-bouquet.jpg",
+    "/images/defaults/bride.jpg",
+    "/images/defaults/groom.jpg",
   ],
 };
 
@@ -53,6 +50,7 @@ export const useInvitationData = ({
   rsvps = [],
   onSubmitRsvp,
   defaultOpened = false,
+  isModalView = false,
 }) => {
   const toast = useToast();
   const rawContent = invitation?.content_json || {};
@@ -114,6 +112,16 @@ export const useInvitationData = ({
 
   // Kunci scroll halaman saat cover undangan masih aktif
   useEffect(() => {
+    const isEmbeddedPreview =
+      isModalView ||
+      (typeof document !== "undefined" &&
+        Boolean(
+          document.querySelector(
+            '.builder-phone-viewport, [data-invitation-preview="true"]',
+          ),
+        ));
+    if (isEmbeddedPreview) return undefined;
+
     if (!isOpened) {
       const origBodyOverflow = document.body.style.overflow;
       const origHtmlOverflow = document.documentElement.style.overflow;
@@ -134,7 +142,7 @@ export const useInvitationData = ({
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
     }
-  }, [isOpened]);
+  }, [isOpened, isModalView]);
 
   const eventType = (content.eventType || "wedding").toLowerCase();
   const isCoupleEvent = eventType === "wedding" || eventType === "engagement";
@@ -294,14 +302,39 @@ export const useInvitationData = ({
     photoGroom: content.fotoPria || DEFAULT_PHOTOS.groom,
     photoBride: resolvedPhotoBride,
     photoClosing: content.fotoPenutup || "",
+    introVideoUrl: content.introVideoUrl || "",
     backgroundVideoUrl: content.backgroundVideoUrl || "",
     preweddingVideoUrl: content.preweddingVideoUrl || "",
+    seatPlanImage: content.seatPlanImage || "",
+    seatPlanTitle: content.seatPlanTitle || "Seat Plan & Denah Lokasi",
+    seatPlanCaption:
+      content.seatPlanCaption ||
+      "Silakan periksa posisi meja atau denah lokasi acara di bawah ini.",
+    showSeatPlan:
+      content.showSeatPlan !== undefined
+        ? Boolean(content.showSeatPlan)
+        : Boolean(content.seatPlanImage),
+    showCountdown:
+      content.showCountdown !== undefined ? Boolean(content.showCountdown) : true,
+    showLoveStory:
+      content.showLoveStory !== undefined ? Boolean(content.showLoveStory) : true,
+    showGallery:
+      content.showGallery !== undefined ? Boolean(content.showGallery) : true,
+    showRsvp:
+      content.showRsvp !== undefined ? Boolean(content.showRsvp) : true,
+    packageTier: (content.packageTier || "all").toLowerCase(),
     loveStories:
-      content.kisah && content.kisah.length ? content.kisah : DEFAULT_STORIES,
+      content.showLoveStory === false
+        ? []
+        : content.kisah && content.kisah.length
+          ? content.kisah
+          : DEFAULT_STORIES,
     gallery:
-      content.galeri && content.galeri.length
-        ? content.galeri
-        : DEFAULT_PHOTOS.gallery,
+      content.showGallery === false
+        ? []
+        : content.galeri && content.galeri.length
+          ? content.galeri
+          : DEFAULT_PHOTOS.gallery,
     musicUrl:
       content.musicUrl ||
       "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=romantic-wedding-113063.mp3",
@@ -369,7 +402,9 @@ export const useInvitationData = ({
               content.showQrCheckin !== "false" &&
               content.showQrCheckin !== 0 &&
               content.showQrCheckin !== "0"
-            : true,
+            : (content.packageTier || "").toLowerCase() === "intimate"
+              ? false
+              : true,
   };
 
   // Countdown

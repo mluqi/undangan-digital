@@ -25,7 +25,10 @@ export const InvitationTemplateModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+    <div
+      data-invitation-preview="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto"
+    >
       <div
         className={`relative w-full ${
           isFullScreen ? 'max-w-4xl h-[95vh]' : 'max-w-md h-[90vh]'

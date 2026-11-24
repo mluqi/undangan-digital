@@ -89,7 +89,9 @@ const KenBurnsSlideshow = ({ images = [], intervalMs = 3400, overlayClassName = 
     return valid.length > 0
       ? valid
       : [
-          'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80',
+          '/images/defaults/couple-cover.jpg',
+          '/images/defaults/gallery-hands.jpg',
+          '/images/defaults/gallery-bouquet.jpg',
         ];
   }, [images]);
 

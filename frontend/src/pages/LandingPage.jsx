@@ -1,241 +1,262 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowUpRight, ArrowRight, Menu, X, Plus, Minus, Mail } from 'lucide-react';
-import { DelleaLogo } from '../components/ui/DelleaLogo';
-import { templateService } from '../services/templateService';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Menu,
+  X,
+  Plus,
+  Minus,
+  Mail,
+} from "lucide-react";
+import { DelleaLogo } from "../components/ui/DelleaLogo";
+import { templateService } from "../services/templateService";
 
 const DEFAULT_FAQS = [
   {
     question:
-      'Apa perbedaan paket Intimate (Undangan Saja) dan Signature (Undangan + QR Sync)?',
+      "Apa perbedaan paket Intimate (Undangan Saja) dan Signature (Undangan + QR Sync)?",
     answer:
-      'Paket Intimate berfokus pada undangan digital mandiri tanpa sistem scan QR di lokasi (tamu tak terbatas, RSVP, ucapan, dan amplop digital). Paket Signature dilengkapi sinkronisasi kode/link QR dari vendor buku tamu eksternal, kategori tamu (VVIP, VIP, Reguler, Grup), serta fitur Private Guest Lock.',
+      "Paket Intimate berfokus pada undangan digital mandiri tanpa sistem scan QR di lokasi (tamu tak terbatas, RSVP, ucapan, dan amplop digital). Paket Signature dilengkapi sinkronisasi kode/link QR dari vendor buku tamu eksternal, kategori tamu (VVIP, VIP, Reguler, Grup), serta fitur Private Guest Lock.",
   },
   {
-    question: 'Apakah jumlah tamu yang diundang dibatasi?',
+    question: "Apakah jumlah tamu yang diundang dibatasi?",
     answer:
-      'Tidak ada batasan jumlah tamu. Anda dapat menambahkan tamu satu per satu atau mengimpor ratusan hingga ribuan daftar tamu sekaligus menggunakan file Excel, lengkap dengan link personal untuk masing-masing tamu.',
+      "Tidak ada batasan jumlah tamu. Anda dapat menambahkan tamu satu per satu atau mengimpor ratusan hingga ribuan daftar tamu sekaligus menggunakan file Excel, lengkap dengan link personal untuk masing-masing tamu.",
   },
   {
-    question: 'Bagaimana cara kerja sinkronisasi QR Check-In sistem luar?',
+    question: "Bagaimana cara kerja sinkronisasi QR Check-In sistem luar?",
     answer:
-      'Jika Anda atau Wedding Organizer menggunakan sistem buku tamu atau scanner eksternal, cukup masukkan link atau ID QR dari vendor tersebut pada file Excel daftar tamu. Sistem Samskara akan otomatis menampilkan tombol QR Check-In layar penuh yang cepat dipindai di kartu undangan tiap tamu.',
+      "Jika Anda atau Wedding Organizer menggunakan sistem buku tamu atau scanner eksternal, cukup masukkan link atau ID QR dari vendor tersebut pada file Excel daftar tamu. Sistem Samskara akan otomatis menampilkan tombol QR Check-In layar penuh yang cepat dipindai di kartu undangan tiap tamu.",
   },
   {
-    question: 'Apakah data acara, foto, dan teks bisa direvisi setelah undangan aktif?',
+    question:
+      "Apakah data acara, foto, dan teks bisa direvisi setelah undangan aktif?",
     answer:
-      'Ya. Anda dapat memperbarui jadwal acara, lokasi Google Maps, galeri foto, musik latar, hingga daftar tamu kapan saja melalui panel dashboard secara real-time tanpa biaya tambahan.',
+      "Ya. Anda dapat memperbarui jadwal acara, lokasi Google Maps, galeri foto, musik latar, hingga daftar tamu kapan saja melalui panel dashboard secara real-time tanpa biaya tambahan.",
   },
   {
-    question: 'Berapa lama masa aktif undangan digital?',
+    question: "Berapa lama masa aktif undangan digital?",
     answer:
-      'Undangan digital aktif selama 12 bulan sejak tanggal aktivasi, sehingga keluarga dan tamu tetap dapat membuka kembali galeri foto maupun doa serta ucapan dengan nyaman.',
+      "Undangan digital aktif selama 12 bulan sejak tanggal aktivasi, sehingga keluarga dan tamu tetap dapat membuka kembali galeri foto maupun doa serta ucapan dengan nyaman.",
   },
   {
-    question: 'Apakah fitur amplop digital, kado, atau QR bisa disembunyikan?',
+    question: "Apakah fitur amplop digital, kado, atau QR bisa disembunyikan?",
     answer:
-      'Bisa. Seluruh bagian seperti Amplop Digital/Rekening, Info Kado, RSVP, hingga tombol QR Check-In dapat diaktifkan atau disembunyikan (hide/show) sesuai kebutuhan dan preferensi keluarga.',
+      "Bisa. Seluruh bagian seperti Amplop Digital/Rekening, Info Kado, RSVP, hingga tombol QR Check-In dapat diaktifkan atau disembunyikan (hide/show) sesuai kebutuhan dan preferensi keluarga.",
   },
   {
-    question: 'Apakah undangan hanya tersedia untuk acara pernikahan saja?',
+    question: "Apakah undangan hanya tersedia untuk acara pernikahan saja?",
     answer:
-      'Tidak. Selain pernikahan (modern, adat Jawa, Sunda, botanical, maupun gala), tersedia juga tema untuk lamaran, ulang tahun, hingga acara umum atau korporat yang dapat dipilih di katalog.',
+      "Tidak. Selain pernikahan (modern, adat Jawa, Sunda, botanical, maupun gala), tersedia juga tema untuk lamaran, ulang tahun, hingga acara umum atau korporat yang dapat dipilih di katalog.",
   },
   {
-    question: 'Berapa lama proses pengerjaan untuk paket Custom Atelier?',
+    question: "Berapa lama proses pengerjaan untuk paket Custom Atelier?",
     answer:
-      'Untuk tema katalog, undangan dapat aktif di hari yang sama. Untuk paket Custom Atelier (penyesuaian layout, palet warna, atau ornamen adat khusus), estimasi pengerjaan adalah 3–7 hari kerja bersama tim Samskara.',
+      "Untuk tema katalog, undangan dapat aktif di hari yang sama. Untuk paket Custom Atelier (penyesuaian layout, palet warna, atau ornamen adat khusus), estimasi pengerjaan adalah 3–7 hari kerja bersama tim Samskara.",
   },
 ];
 
 const TEMPLATE_META_BY_CODE = {
-  mildness: { category: 'modern', tag: 'Earthy Sage' },
-  'snap-photo': { category: 'modern', tag: 'Darkroom' },
-  'timeless-snapshot': { category: 'rustic', tag: 'Archival' },
-  serein: { category: 'modern', tag: 'Editorial' },
-  'rustic-wood': { category: 'rustic', tag: 'Wood & Leaf' },
-  'elegant-gold': { category: 'modern', tag: 'Royal Gold' },
-  'royal-gold': { category: 'modern', tag: 'Royal Gold' },
-  'jawa-keraton': { category: 'tradisional', tag: 'Adat Jawa' },
-  'sunda-priangan': { category: 'tradisional', tag: 'Adat Sunda' },
-  'crimson-rose': { category: 'modern', tag: 'Signature' },
-  'forest-tropical': { category: 'rustic', tag: 'Botanical' },
-  'jawa-kembar-mayang': { category: 'tradisional', tag: 'Heritage' },
-  'noir-velvet': { category: 'modern', tag: 'Cinematic Video' },
-  'drapery-pink': { category: 'modern', tag: 'Romantic Lace' },
+  mildness: { category: "modern", tag: "Earthy Sage" },
+  "snap-photo": { category: "modern", tag: "Darkroom" },
+  "timeless-snapshot": { category: "rustic", tag: "Archival" },
+  serein: { category: "modern", tag: "Editorial" },
+  "rustic-wood": { category: "rustic", tag: "Wood & Leaf" },
+  "elegant-gold": { category: "modern", tag: "Royal Gold" },
+  "royal-gold": { category: "modern", tag: "Royal Gold" },
+  "jawa-keraton": { category: "tradisional", tag: "Adat Jawa" },
+  "sunda-priangan": { category: "tradisional", tag: "Adat Sunda" },
+  "crimson-rose": { category: "modern", tag: "Signature" },
+  "forest-tropical": { category: "rustic", tag: "Botanical" },
+  "jawa-kembar-mayang": { category: "tradisional", tag: "Heritage" },
+  "noir-velvet": { category: "modern", tag: "Cinematic Video" },
+  "drapery-pink": { category: "modern", tag: "Romantic Lace" },
 };
 
 const DEFAULT_DB_TEMPLATES = [
   {
     id: 1,
-    no: '01',
-    code: 'mildness',
-    name: 'Mildness Earthy Sage & Luxury Ivory',
-    category: 'modern',
-    tag: 'Earthy Sage',
+    no: "01",
+    code: "mildness",
+    name: "Mildness Earthy Sage & Luxury Ivory",
+    category: "modern",
+    tag: "Earthy Sage",
     image:
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 2,
-    no: '02',
-    code: 'snap-photo',
-    name: 'Snap Photo Cinematic Dark',
-    category: 'modern',
-    tag: 'Darkroom',
+    no: "02",
+    code: "snap-photo",
+    name: "Snap Photo Cinematic Dark",
+    category: "modern",
+    tag: "Darkroom",
     image:
-      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 3,
-    no: '03',
-    code: 'timeless-snapshot',
-    name: 'Timeless Snapshot Vintage Polaroid',
-    category: 'rustic',
-    tag: 'Archival',
+    no: "03",
+    code: "timeless-snapshot",
+    name: "Timeless Snapshot Vintage Polaroid",
+    category: "rustic",
+    tag: "Archival",
     image:
-      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 4,
-    no: '04',
-    code: 'serein',
-    name: 'Serein Minimalist Luxury',
-    category: 'modern',
-    tag: 'Editorial',
+    no: "04",
+    code: "serein",
+    name: "Serein Minimalist Luxury",
+    category: "modern",
+    tag: "Editorial",
     image:
-      'https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 5,
-    no: '05',
-    code: 'rustic-wood',
-    name: 'Rustic Wood & Botanical',
-    category: 'rustic',
-    tag: 'Wood & Leaf',
+    no: "05",
+    code: "rustic-wood",
+    name: "Rustic Wood & Botanical",
+    category: "rustic",
+    tag: "Wood & Leaf",
     image:
-      'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 6,
-    no: '06',
-    code: 'elegant-gold',
-    name: 'Royal Gold & Black Velvet',
-    category: 'modern',
-    tag: 'Royal Gold',
+    no: "06",
+    code: "elegant-gold",
+    name: "Royal Gold & Black Velvet",
+    category: "modern",
+    tag: "Royal Gold",
     image:
-      'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 7,
-    no: '07',
-    code: 'jawa-keraton',
-    name: 'Keraton Jawa Sogan & Emas',
-    category: 'tradisional',
-    tag: 'Adat Jawa',
+    no: "07",
+    code: "jawa-keraton",
+    name: "Keraton Jawa Sogan & Emas",
+    category: "tradisional",
+    tag: "Adat Jawa",
     image:
-      'https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 8,
-    no: '08',
-    code: 'sunda-priangan',
-    name: 'Priangan Hijau Sunda',
-    category: 'tradisional',
-    tag: 'Adat Sunda',
+    no: "08",
+    code: "sunda-priangan",
+    name: "Priangan Hijau Sunda",
+    category: "tradisional",
+    tag: "Adat Sunda",
     image:
-      'https://images.unsplash.com/photo-1470058869958-2a77ade41c02?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 9,
-    no: '09',
-    code: 'crimson-rose',
-    name: 'Crimson Rose & Pure Elegance',
-    category: 'modern',
-    tag: 'Signature',
+    no: "09",
+    code: "crimson-rose",
+    name: "Crimson Rose & Pure Elegance",
+    category: "modern",
+    tag: "Signature",
     image:
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 10,
-    no: '10',
-    code: 'forest-tropical',
-    name: 'Forest Tropical & Botanical Luxury',
-    category: 'rustic',
-    tag: 'Botanical',
+    no: "10",
+    code: "forest-tropical",
+    name: "Forest Tropical & Botanical Luxury",
+    category: "rustic",
+    packageTier: "intimate",
+    tag: "Botanical",
     image:
-      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 11,
-    no: '11',
-    code: 'jawa-kembar-mayang',
-    name: 'Kembar Mayang Javanese Heritage',
-    category: 'tradisional',
-    tag: 'Heritage',
-    image: '/images/templates/kembar-mayang-thumb.png',
+    no: "11",
+    code: "jawa-kembar-mayang",
+    name: "Kembar Mayang Javanese Heritage",
+    category: "tradisional",
+    tag: "Heritage",
+    image: "/images/templates/kembar-mayang-thumb.png",
   },
   {
     id: 12,
-    no: '12',
-    code: 'noir-velvet',
-    name: 'Noir Velvet Motion',
-    category: 'modern',
-    tag: 'Cinematic Video',
+    no: "12",
+    code: "noir-velvet",
+    name: "Noir Velvet Motion",
+    category: "modern",
+    tag: "Cinematic Video",
     image:
-      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80",
   },
   {
     id: 13,
-    no: '13',
-    code: 'drapery-pink',
-    name: 'Drapery Pink & Vintage Lace',
-    category: 'modern',
-    tag: 'Romantic Lace',
-    image: '/images/drapery-pink/demo-couple-1.jpg',
+    no: "13",
+    code: "drapery-pink",
+    name: "Drapery Pink & Vintage Lace",
+    category: "modern",
+    tag: "Romantic Lace",
+    image: "/images/drapery-pink/demo-couple-1.jpg",
   },
 ];
 
 const SYSTEM_MODES = [
   {
-    id: 'standalone',
-    num: '01',
-    label: 'Hanya Undangan',
-    title: 'Undangan Digital Murni.',
-    caption: 'Tanpa tampilan QR Check-In. Bersih, intim, siap sebar via WhatsApp.',
-    tags: ['Tamu Tak Terbatas', 'RSVP & Doa', 'Amplop Digital', 'Mode Tanpa QR'],
-    image:
-      'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80',
-  },
-  {
-    id: 'qrsync',
-    num: '02',
-    label: 'Konek QR Luar',
-    title: 'Sinkronisasi QR Sistem Eksternal.',
+    id: "standalone",
+    num: "01",
+    label: "Hanya Undangan",
+    title: "Undangan Digital Murni.",
     caption:
-      'Impor link/kode QR dari vendor buku tamu luar via Excel. Otomatis menjadi kartu akses tiap tamu.',
+      "Tanpa tampilan QR Check-In. Bersih, intim, siap sebar via WhatsApp.",
     tags: [
-      'Sync QR Vendor Luar',
-      'VVIP • VIP • Reguler',
-      'Grup Otomatis Tanpa QR',
-      'Guest Lock',
+      "Tamu Tak Terbatas",
+      "RSVP & Doa",
+      "Amplop Digital",
+      "Mode Tanpa QR",
     ],
     image:
-      'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80",
   },
   {
-    id: 'custom',
-    num: '03',
-    label: 'Custom Atelier',
-    title: 'Desain & Alur Eksklusif.',
+    id: "qrsync",
+    num: "02",
+    label: "Konek QR Luar",
+    title: "Sinkronisasi QR Sistem Eksternal.",
     caption:
-      'Dirancang khusus mengikuti moodboard pernikahan, ornamen adat, atau sistem WO Anda.',
-    tags: ['Custom Layout', 'Ilustrasi Adat', 'Format Vendor WO', 'Full Support'],
+      "Impor link/kode QR dari vendor buku tamu luar via Excel. Otomatis menjadi kartu akses tiap tamu.",
+    tags: [
+      "Sync QR Vendor Luar",
+      "VVIP • VIP • Reguler",
+      "Grup Otomatis Tanpa QR",
+      "Guest Lock",
+    ],
     image:
-      'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&auto=format&fit=crop&q=80',
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "custom",
+    num: "03",
+    label: "Custom Atelier",
+    title: "Desain & Alur Eksklusif.",
+    caption:
+      "Dirancang khusus mengikuti moodboard pernikahan, ornamen adat, atau sistem WO Anda.",
+    tags: [
+      "Custom Layout",
+      "Ilustrasi Adat",
+      "Format Vendor WO",
+      "Full Support",
+    ],
+    image:
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&auto=format&fit=crop&q=80",
   },
 ];
 
-function Reveal({ children, delay = 0, className = '' }) {
+function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -249,7 +270,7 @@ function Reveal({ children, delay = 0, className = '' }) {
           io.disconnect();
         }
       },
-      { threshold: 0.14 }
+      { threshold: 0.14 },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -258,7 +279,7 @@ function Reveal({ children, delay = 0, className = '' }) {
   return (
     <div
       ref={ref}
-      data-reveal={visible ? 'visible' : 'hidden'}
+      data-reveal={visible ? "visible" : "hidden"}
       style={{ transitionDelay: `${delay}ms` }}
       className={`dellea-reveal ${className}`}
     >
@@ -271,71 +292,71 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
   const [templates, setTemplates] = useState(DEFAULT_DB_TEMPLATES);
   const [cms, setCms] = useState({
     heroSubtitle:
-      'Undangan pernikahan digital. Mandiri, terkoneksi QR Check-In sistem luar, atau dirancang custom.',
+      "Undangan pernikahan digital. Mandiri, terkoneksi QR Check-In sistem luar, atau dirancang custom.",
     systemModes: SYSTEM_MODES,
-    pricelistTitle: 'Pricelist & Custom',
+    pricelistTitle: "Pricelist & Custom",
     pricelistSubtitle:
-      'Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.',
+      "Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.",
     pricelist: [
       {
-        tier: '01 / Intimate',
-        name: 'Undangan Saja',
-        price: '149K',
-        note: 'Cocok untuk acara intimate tanpa sistem QR check-in di lokasi.',
+        tier: "01 / Intimate",
+        name: "Undangan Saja",
+        price: "149K",
+        note: "Cocok untuk acara intimate tanpa sistem QR check-in di lokasi.",
         items: [
-          'Akses semua tema katalog',
-          'Tamu tanpa batas (import Excel)',
-          'RSVP & ucapan real-time',
-          'Amplop digital & info kado (hide/show)',
+          "Akses semua tema katalog",
+          "Tamu tanpa batas (import Excel)",
+          "RSVP & ucapan real-time",
+          "Amplop digital & info kado (hide/show)",
         ],
-        ctaLabel: 'Pilih Paket',
+        ctaLabel: "Pilih Paket",
         featured: false,
       },
       {
-        tier: '02 / Signature',
-        name: 'Undangan + QR Sync',
-        price: '299K',
-        note: 'Cocok untuk acara yang terhubung dengan sistem QR eksternal atau manajemen tamu terstruktur.',
+        tier: "02 / Signature",
+        name: "Undangan + QR Sync",
+        price: "299K",
+        note: "Cocok untuk acara yang terhubung dengan sistem QR eksternal atau manajemen tamu terstruktur.",
         items: [
-          'Semua fitur paket Intimate',
-          'Sync link / ID QR sistem luar',
-          'Kategori tamu VVIP, VIP, Reguler & Grup',
-          'Private guest lock (aktif 12 bulan)',
+          "Semua fitur paket Intimate",
+          "Sync link / ID QR sistem luar",
+          "Kategori tamu VVIP, VIP, Reguler & Grup",
+          "Private guest lock (aktif 12 bulan)",
         ],
-        ctaLabel: 'Pilih Paket',
+        ctaLabel: "Pilih Paket",
         featured: true,
       },
       {
-        tier: '03 / Bespoke',
-        name: 'Custom Atelier',
-        price: '599K+',
-        note: 'Desain dan penyesuaian alur khusus sesuai permintaan klien maupun vendor.',
+        tier: "03 / Bespoke",
+        name: "Custom Atelier",
+        price: "599K+",
+        note: "Desain dan penyesuaian alur khusus sesuai permintaan klien maupun vendor.",
         items: [
-          'Custom layout & palet warna',
-          'Custom ornamen / ilustrasi',
-          'Penyesuaian format kebutuhan WO / vendor',
-          'Pendampingan penuh tim Samskara',
+          "Custom layout & palet warna",
+          "Custom ornamen / ilustrasi",
+          "Penyesuaian format kebutuhan WO / vendor",
+          "Pendampingan penuh tim Samskara",
         ],
-        ctaLabel: 'Pilih Paket',
+        ctaLabel: "Pilih Paket",
         featured: false,
       },
     ],
-    faqTitle: 'Pertanyaan Umum',
+    faqTitle: "Pertanyaan Umum",
     faqSubtitle:
-      'Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.',
+      "Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.",
     faqs: DEFAULT_FAQS,
   });
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [activePackageTier, setActivePackageTier] = useState('all');
-  const [activeMode, setActiveMode] = useState('qrsync');
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [activePackageTier, setActivePackageTier] = useState("all");
+  const [activeMode, setActiveMode] = useState("qrsync");
   const [openFaqIdx, setOpenFaqIdx] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 36);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -350,30 +371,29 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             const dJson = t.default_content_json || {};
             const meta = TEMPLATE_META_BY_CODE[t.template_code] || {
               category:
-                t.template_code.includes('jawa') ||
-                t.template_code.includes('sunda')
-                  ? 'tradisional'
-                  : t.template_code.includes('rustic') ||
-                    t.template_code.includes('forest')
-                  ? 'rustic'
-                  : 'modern',
-              tag: 'Atelier',
+                t.template_code.includes("jawa") ||
+                t.template_code.includes("sunda")
+                  ? "tradisional"
+                  : t.template_code.includes("rustic") ||
+                      t.template_code.includes("forest")
+                    ? "rustic"
+                    : "modern",
+              tag: "Atelier",
             };
             const eventCategory = (
               dJson.templateEventType ||
               dJson.eventType ||
-              'wedding'
+              "wedding"
             ).toLowerCase();
-            const packageTier = (dJson.packageTier || 'all').toLowerCase();
+            const packageTier = (dJson.packageTier || "all").toLowerCase();
             const styleCategory = dJson.styleCategory || meta.category;
             const tag = dJson.tag || meta.tag;
             const fallbackImg =
               DEFAULT_DB_TEMPLATES.find((d) => d.code === t.template_code)
-                ?.image ||
-              'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80';
+                ?.image || "/images/defaults/couple-cover.jpg";
             return {
               id: t.id,
-              no: String(idx + 1).padStart(2, '0'),
+              no: String(idx + 1).padStart(2, "0"),
               code: t.template_code,
               name: t.name,
               category: styleCategory,
@@ -419,50 +439,52 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
   }, []);
 
   const PACKAGE_TIER_META = {
-    intimate: { code: '01', label: 'Intimate' },
-    signature: { code: '02', label: 'Signature' },
-    bespoke: { code: '03', label: 'Bespoke' },
+    intimate: { code: "01", label: "Intimate" },
+    signature: { code: "02", label: "Signature" },
+    bespoke: { code: "03", label: "Bespoke" },
   };
 
   const categoryFilteredTemplates =
-    activeCategory === 'all'
+    activeCategory === "all"
       ? templates
-      : ['wedding', 'engagement', 'birthday', 'event'].includes(activeCategory)
-      ? templates.filter(
-          (t) =>
-            (t.eventCategory || 'wedding') === activeCategory ||
-            t.eventCategory === 'all'
-        )
-      : templates.filter((t) => t.category === activeCategory);
+      : ["wedding", "engagement", "birthday", "event"].includes(activeCategory)
+        ? templates.filter(
+            (t) =>
+              (t.eventCategory || "wedding") === activeCategory ||
+              t.eventCategory === "all",
+          )
+        : templates.filter((t) => t.category === activeCategory);
 
   const filteredTemplates =
-    activePackageTier === 'all'
+    activePackageTier === "all"
       ? categoryFilteredTemplates
       : categoryFilteredTemplates.filter(
           (t) =>
-            (t.packageTier || 'all') === 'all' ||
-            (t.packageTier || 'all') === activePackageTier
+            (t.packageTier || "all") === "all" ||
+            (t.packageTier || "all") === activePackageTier,
         );
 
   const eventCategoryTabs = [
-    { id: 'engagement', label: 'Lamaran' },
-    { id: 'birthday', label: 'Ulang Tahun' },
-    { id: 'event', label: 'Acara Umum' },
+    { id: "engagement", label: "Lamaran" },
+    { id: "birthday", label: "Ulang Tahun" },
+    { id: "event", label: "Acara Umum" },
   ].filter((tab) =>
     templates.some(
-      (t) => t.eventCategory === tab.id || t.eventCategory === 'all'
-    )
+      (t) => t.eventCategory === tab.id || t.eventCategory === "all",
+    ),
   );
 
   const modesList = cms.systemModes || SYSTEM_MODES;
   const currentMode =
-    modesList.find((m) => m.id === activeMode) || modesList[1] || SYSTEM_MODES[1];
+    modesList.find((m) => m.id === activeMode) ||
+    modesList[1] ||
+    SYSTEM_MODES[1];
 
   const handleGoAuth = () => {
     if (onNavigate) {
-      onNavigate(isAuthenticated ? '/dashboard' : '/login');
+      onNavigate(isAuthenticated ? "/dashboard" : "/login");
     } else {
-      window.location.href = isAuthenticated ? '/dashboard' : '/login';
+      window.location.href = isAuthenticated ? "/dashboard" : "/login";
     }
   };
 
@@ -477,8 +499,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
       <header
         className={`fixed top-0 inset-x-0 z-40 transition-colors duration-500 ${
           scrolled
-            ? 'bg-[#2B0C0C]/95 backdrop-blur-md border-b border-[#633A2C]/50'
-            : 'bg-transparent'
+            ? "bg-[#2B0C0C]/95 backdrop-blur-md border-b border-[#633A2C]/50"
+            : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-10 h-20 flex items-center justify-between">
@@ -486,7 +508,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             href="/"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             className="focus:outline-none"
           >
@@ -499,13 +521,22 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
           </a>
 
           <nav className="hidden md:flex items-center gap-10 text-[11px] uppercase tracking-[0.26em] text-[#D8BFA6]">
-            <a href="#koleksi" className="hover:text-[#E6D2BE] transition-colors">
+            <a
+              href="#koleksi"
+              className="hover:text-[#E6D2BE] transition-colors"
+            >
               Katalog
             </a>
-            <a href="#sistem" className="hover:text-[#E6D2BE] transition-colors">
+            <a
+              href="#sistem"
+              className="hover:text-[#E6D2BE] transition-colors"
+            >
               Sistem
             </a>
-            <a href="#pricelist" className="hover:text-[#E6D2BE] transition-colors">
+            <a
+              href="#pricelist"
+              className="hover:text-[#E6D2BE] transition-colors"
+            >
               Pricelist
             </a>
             <a href="#faq" className="hover:text-[#E6D2BE] transition-colors">
@@ -519,7 +550,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               onClick={handleGoAuth}
               className="px-5 py-2 border border-[#C9A98B]/60 hover:border-[#E6D2BE] hover:bg-[#E6D2BE] hover:text-[#2B0C0C] text-[#E6D2BE] text-[10px] uppercase tracking-[0.24em] font-semibold transition-all duration-300 cursor-pointer"
             >
-              {isAuthenticated ? 'Dashboard' : 'Masuk'}
+              {isAuthenticated ? "Dashboard" : "Masuk"}
             </button>
           </div>
 
@@ -529,7 +560,11 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             className="md:hidden p-2 text-[#E6D2BE]"
             aria-label="Menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </button>
         </div>
 
@@ -554,7 +589,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               onClick={handleGoAuth}
               className="w-full py-3 bg-[#E6D2BE] text-[#2B0C0C] text-xs uppercase tracking-[0.22em] font-semibold"
             >
-              {isAuthenticated ? 'Dashboard' : 'Masuk'}
+              {isAuthenticated ? "Dashboard" : "Masuk"}
             </button>
           </div>
         )}
@@ -569,7 +604,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 50% 42%, rgba(99,58,44,0.28) 0%, rgba(43,12,12,0.65) 100%)',
+              "radial-gradient(circle at 50% 42%, rgba(99,58,44,0.28) 0%, rgba(43,12,12,0.65) 100%)",
           }}
         />
 
@@ -635,7 +670,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
       {/* ============================================================== */}
       {/* INTERACTIVE SYSTEM SWITCHER (MINIMAL WORDS, KINETIC STAGE)     */}
       {/* ============================================================== */}
-      <section id="sistem" className="bg-[#E6D2BE] border-b border-[#C9A98B] py-20 sm:py-28 px-6 sm:px-10">
+      <section
+        id="sistem"
+        className="bg-[#E6D2BE] border-b border-[#C9A98B] py-20 sm:py-28 px-6 sm:px-10"
+      >
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-10 border-b border-[#C9A98B]">
@@ -647,7 +685,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   className="text-4xl sm:text-5xl font-normal text-[#2B0C0C]"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
-                  Tiga Mode <span className="italic text-[#4A1515]">Penggunaan</span>
+                  Tiga Mode{" "}
+                  <span className="italic text-[#4A1515]">Penggunaan</span>
                 </h2>
               </div>
 
@@ -662,8 +701,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                       onClick={() => setActiveMode(m.id)}
                       className={`px-4 sm:px-6 py-3 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 cursor-pointer ${
                         active
-                          ? 'bg-[#3B1010] text-[#E6D2BE]'
-                          : 'bg-transparent text-[#3B1010] hover:bg-[#D8BFA6]'
+                          ? "bg-[#3B1010] text-[#E6D2BE]"
+                          : "bg-transparent text-[#3B1010] hover:bg-[#D8BFA6]"
                       }`}
                     >
                       <span className="hidden sm:inline mr-1.5 opacity-60">
@@ -734,7 +773,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
       {/* ============================================================== */}
       {/* VISUAL LOOKBOOK GALLERY (MINIMAL TEXT, STAGGERED MOTION)       */}
       {/* ============================================================== */}
-      <section id="koleksi" className="bg-[#E0D6B8] border-b border-[#C9A98B] py-20 sm:py-28 px-6 sm:px-10">
+      <section
+        id="koleksi"
+        className="bg-[#E0D6B8] border-b border-[#C9A98B] py-20 sm:py-28 px-6 sm:px-10"
+      >
         <div className="max-w-7xl mx-auto">
           <Reveal>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-10 border-b border-[#C9A98B]">
@@ -752,10 +794,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
 
               <div className="flex flex-wrap gap-6 text-[11px] uppercase tracking-[0.22em]">
                 {[
-                  { id: 'all', label: 'Semua' },
-                  { id: 'modern', label: 'Modern' },
-                  { id: 'tradisional', label: 'Adat' },
-                  { id: 'rustic', label: 'Botanical' },
+                  { id: "all", label: "Semua" },
+                  { id: "modern", label: "Modern" },
+                  { id: "tradisional", label: "Adat" },
+                  { id: "rustic", label: "Botanical" },
                   ...eventCategoryTabs,
                 ].map((tab) => (
                   <button
@@ -764,8 +806,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     onClick={() => setActiveCategory(tab.id)}
                     className={`pb-1 transition-all cursor-pointer ${
                       activeCategory === tab.id
-                        ? 'text-[#2B0C0C] font-bold border-b-2 border-[#3B1010]'
-                        : 'text-[#633A2C] hover:text-[#2B0C0C]'
+                        ? "text-[#2B0C0C] font-bold border-b-2 border-[#3B1010]"
+                        : "text-[#633A2C] hover:text-[#2B0C0C]"
                     }`}
                   >
                     {tab.label}
@@ -778,10 +820,10 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             <div className="mt-5 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.2em]">
               <span className="text-[#633A2C]/80 mr-1">Tipe Paket:</span>
               {[
-                { id: 'all', label: 'Semua Paket' },
-                { id: 'intimate', label: '01 / Intimate' },
-                { id: 'signature', label: '02 / Signature' },
-                { id: 'bespoke', label: '03 / Bespoke' },
+                { id: "all", label: "Semua Paket" },
+                { id: "intimate", label: "01 / Intimate" },
+                { id: "signature", label: "02 / Signature" },
+                { id: "bespoke", label: "03 / Bespoke" },
               ].map((pkg) => (
                 <button
                   key={pkg.id}
@@ -789,8 +831,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   onClick={() => setActivePackageTier(pkg.id)}
                   className={`px-3 py-1.5 border transition-all cursor-pointer ${
                     activePackageTier === pkg.id
-                      ? 'bg-[#3B1010] text-[#E6D2BE] border-[#3B1010] font-semibold'
-                      : 'bg-transparent text-[#633A2C] border-[#C9A98B] hover:border-[#3B1010] hover:text-[#2B0C0C]'
+                      ? "bg-[#3B1010] text-[#E6D2BE] border-[#3B1010] font-semibold"
+                      : "bg-transparent text-[#633A2C] border-[#C9A98B] hover:border-[#3B1010] hover:text-[#2B0C0C]"
                   }`}
                 >
                   {pkg.label}
@@ -802,13 +844,14 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
           {filteredTemplates.length === 0 ? (
             <div className="mt-12 py-16 px-6 border border-[#C9A98B] text-center space-y-3">
               <p className="text-sm text-[#633A2C]">
-                Belum ada tema pada kombinasi filter kategori &amp; tipe paket ini.
+                Belum ada tema pada kombinasi filter kategori &amp; tipe paket
+                ini.
               </p>
               <button
                 type="button"
                 onClick={() => {
-                  setActiveCategory('all');
-                  setActivePackageTier('all');
+                  setActiveCategory("all");
+                  setActivePackageTier("all");
                 }}
                 className="inline-flex items-center px-4 py-2 text-[10px] uppercase tracking-[0.22em] border border-[#3B1010] text-[#3B1010] hover:bg-[#3B1010] hover:text-[#E6D2BE] transition-colors cursor-pointer"
               >
@@ -816,59 +859,60 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </button>
             </div>
           ) : (
-          <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
-            {filteredTemplates.map((tpl, idx) => {
-              const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
-              return (
-              <Reveal key={tpl.code} delay={idx * 70}>
-                <a href={`/preview/${tpl.code}`} className="group block">
-                  <div className="relative aspect-[3/4] overflow-hidden bg-[#2B0C0C] border border-[#C9A98B]">
-                    <img
-                      src={tpl.image}
-                      alt={tpl.name}
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&auto=format&fit=crop&q=80';
-                      }}
-                      className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-108 opacity-92"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#2B0C0C]/85 via-transparent to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
+            <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
+              {filteredTemplates.map((tpl, idx) => {
+                const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
+                return (
+                  <Reveal key={tpl.code} delay={idx * 70}>
+                    <a href={`/preview/${tpl.code}`} className="group block">
+                      <div className="relative aspect-[3/4] overflow-hidden bg-[#2B0C0C] border border-[#C9A98B]">
+                        <img
+                          src={tpl.image}
+                          alt={tpl.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "/images/defaults/couple-cover.jpg";
+                          }}
+                          className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-108 opacity-92"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#2B0C0C]/85 via-transparent to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
 
-                    <span className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 text-[9px] sm:text-[10px] font-mono tracking-widest text-[#E6D2BE]">
-                      /{tpl.no}
-                    </span>
-                    <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-1.5">
-                      {pkgInfo && (
-                        <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em]">
-                          {pkgInfo.label}
+                        <span className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 text-[9px] sm:text-[10px] font-mono tracking-widest text-[#E6D2BE]">
+                          /{tpl.no}
                         </span>
-                      )}
-                      <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.22em] text-[#E6D2BE]">
-                        {tpl.tag}
-                      </span>
-                    </div>
+                        <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-1.5">
+                          {pkgInfo && (
+                            <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em]">
+                              {pkgInfo.label}
+                            </span>
+                          )}
+                          <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.22em] text-[#E6D2BE]">
+                            {tpl.tag}
+                          </span>
+                        </div>
 
-                    <div className="absolute inset-x-3 bottom-3 sm:inset-x-5 sm:bottom-5 flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-3 text-[#E6D2BE]">
-                      <h3
-                        className="text-base sm:text-3xl italic font-normal leading-tight line-clamp-2"
-                        style={{
-                          fontFamily: "'Cormorant Garamond', Georgia, serif",
-                        }}
-                      >
-                        {tpl.name}
-                      </h3>
-                      <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.22em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
-                        <span>Demo</span>
-                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                </a>
-              </Reveal>
-              );
-            })}
-          </div>
+                        <div className="absolute inset-x-3 bottom-3 sm:inset-x-5 sm:bottom-5 flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-3 text-[#E6D2BE]">
+                          <h3
+                            className="text-base sm:text-3xl italic font-normal leading-tight line-clamp-2"
+                            style={{
+                              fontFamily:
+                                "'Cormorant Garamond', Georgia, serif",
+                            }}
+                          >
+                            {tpl.name}
+                          </h3>
+                          <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.22em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
+                            <span>Demo</span>
+                            <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  </Reveal>
+                );
+              })}
+            </div>
           )}
         </div>
       </section>
@@ -892,14 +936,18 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   {(() => {
-                    const titleText = (cms.pricelistTitle || 'Pricelist & Custom').trim();
-                    const parts = titleText.split(' ');
+                    const titleText = (
+                      cms.pricelistTitle || "Pricelist & Custom"
+                    ).trim();
+                    const parts = titleText.split(" ");
                     if (parts.length <= 1) return titleText;
                     const lastWord = parts.pop();
                     return (
                       <>
-                        {parts.join(' ')}{' '}
-                        <span className="italic text-[#C9A98B]">{lastWord}</span>
+                        {parts.join(" ")}{" "}
+                        <span className="italic text-[#C9A98B]">
+                          {lastWord}
+                        </span>
                       </>
                     );
                   })()}
@@ -907,7 +955,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </div>
               <p className="text-xs text-[#D8BFA6] tracking-wide max-w-sm sm:text-right">
                 {cms.pricelistSubtitle ||
-                  'Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda.'}
+                  "Pilih paket undangan digital sesuai kebutuhan acara dan alur tamu Anda."}
               </p>
             </div>
           </Reveal>
@@ -915,8 +963,8 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
           <div
             className={`grid grid-cols-1 ${
               (cms.pricelist || []).length === 2
-                ? 'lg:grid-cols-2'
-                : 'lg:grid-cols-3'
+                ? "lg:grid-cols-2"
+                : "lg:grid-cols-3"
             } divide-y lg:divide-y-0 lg:divide-x divide-[#633A2C] border-b border-[#633A2C]`}
           >
             {(cms.pricelist || []).map((pkg, idx) => (
@@ -925,12 +973,12 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                 delay={idx * 120}
                 className={`py-10 ${
                   idx === 0
-                    ? 'lg:pr-10'
+                    ? "lg:pr-10"
                     : idx === (cms.pricelist || []).length - 1
-                    ? 'lg:pl-10'
-                    : 'lg:px-10'
+                      ? "lg:pl-10"
+                      : "lg:px-10"
                 } ${
-                  pkg.featured ? 'bg-[#4A1515]/70 px-6 lg:px-10' : ''
+                  pkg.featured ? "bg-[#4A1515]/70 px-6 lg:px-10" : ""
                 } flex flex-col justify-between`}
               >
                 <div>
@@ -939,7 +987,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   </span>
                   <h3
                     className="text-3xl font-normal text-[#E6D2BE]"
-                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                    style={{
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    }}
                   >
                     {pkg.name}
                   </h3>
@@ -961,7 +1011,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                       </span>
                       <span
                         className="text-5xl font-normal text-[#E6D2BE]"
-                        style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        style={{
+                          fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        }}
                       >
                         {pkg.price}
                       </span>
@@ -970,9 +1022,12 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
 
                   <ul className="space-y-2.5 text-xs text-[#D8BFA6]">
                     {(pkg.items || [])
-                      .filter((it) => String(it || '').trim() !== '')
+                      .filter((it) => String(it || "").trim() !== "")
                       .map((it, itemIdx) => (
-                        <li key={`${it}-${itemIdx}`} className="flex items-start gap-2.5">
+                        <li
+                          key={`${it}-${itemIdx}`}
+                          className="flex items-start gap-2.5"
+                        >
                           <span className="text-[#C9A98B] shrink-0">—</span>
                           <span>{it}</span>
                         </li>
@@ -985,11 +1040,11 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   onClick={handleGoAuth}
                   className={`mt-9 w-full py-3.5 text-[11px] uppercase tracking-[0.22em] font-semibold transition-all duration-300 cursor-pointer ${
                     pkg.featured
-                      ? 'bg-[#E6D2BE] hover:bg-[#D8BFA6] text-[#2B0C0C]'
-                      : 'border border-[#C9A98B] hover:bg-[#E6D2BE] hover:text-[#2B0C0C] text-[#E6D2BE]'
+                      ? "bg-[#E6D2BE] hover:bg-[#D8BFA6] text-[#2B0C0C]"
+                      : "border border-[#C9A98B] hover:bg-[#E6D2BE] hover:text-[#2B0C0C] text-[#E6D2BE]"
                   }`}
                 >
-                  {pkg.ctaLabel || 'Pilih Paket'}
+                  {pkg.ctaLabel || "Pilih Paket"}
                 </button>
               </Reveal>
             ))}
@@ -1016,14 +1071,18 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   {(() => {
-                    const titleText = (cms.faqTitle || 'Pertanyaan Umum').trim();
-                    const parts = titleText.split(' ');
+                    const titleText = (
+                      cms.faqTitle || "Pertanyaan Umum"
+                    ).trim();
+                    const parts = titleText.split(" ");
                     if (parts.length <= 1) return titleText;
                     const lastWord = parts.pop();
                     return (
                       <>
-                        {parts.join(' ')}{' '}
-                        <span className="italic text-[#633A2C]">{lastWord}</span>
+                        {parts.join(" ")}{" "}
+                        <span className="italic text-[#633A2C]">
+                          {lastWord}
+                        </span>
                       </>
                     );
                   })()}
@@ -1031,7 +1090,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </div>
               <p className="text-xs text-[#633A2C] tracking-wide max-w-sm sm:text-right">
                 {cms.faqSubtitle ||
-                  'Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in.'}
+                  "Jawaban singkat seputar cara pemesanan, fitur undangan digital, hingga integrasi QR check-in."}
               </p>
             </div>
           </Reveal>
@@ -1050,7 +1109,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                     >
                       <div className="flex items-baseline gap-4 sm:gap-6 min-w-0">
                         <span className="text-[11px] font-mono tracking-widest text-[#633A2C]/80 shrink-0">
-                          {String(idx + 1).padStart(2, '0')}
+                          {String(idx + 1).padStart(2, "0")}
                         </span>
                         <span
                           className="text-xl sm:text-2xl font-normal text-[#2B0C0C] group-hover:text-[#4A1515] transition-colors leading-snug"
@@ -1168,7 +1227,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               onClick={handleGoAuth}
               className="inline-flex items-center gap-2 text-[#E6D2BE] hover:text-[#C9A98B] transition-colors cursor-pointer"
             >
-              <span>{isAuthenticated ? 'Buka Dashboard' : 'Masuk Panel Akun'}</span>
+              <span>
+                {isAuthenticated ? "Buka Dashboard" : "Masuk Panel Akun"}
+              </span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

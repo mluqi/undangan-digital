@@ -192,7 +192,7 @@ class InvitationService {
           id: 7,
           template_code: mappedCode,
           name: mappedCode === 'crimson-rose' ? 'Crimson Rose & Pure Elegance' : mappedCode,
-          thumbnail_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80',
+          thumbnail_url: '/images/defaults/couple-cover.jpg',
         };
       }
 

@@ -59,14 +59,15 @@ export const PublicInvitationPage = ({ slug }) => {
       coverImage = content.galeri[0];
     }
     if (!coverImage) {
-      coverImage =
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80';
+      coverImage = '/images/defaults/couple-cover.jpg';
     }
 
     // Pastikan foto cover ber-URL absolut (protokol http/https) agar dapat diambil oleh scraper WhatsApp
     const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
-    if (coverImage.startsWith('/')) {
+    if (coverImage.startsWith('/uploads/')) {
       coverImage = `${apiBase || window.location.origin}${coverImage}`;
+    } else if (coverImage.startsWith('/')) {
+      coverImage = `${window.location.origin}${coverImage}`;
     } else if (
       coverImage.includes('/uploads/') &&
       (coverImage.includes('localhost') || coverImage.includes('127.0.0.1')) &&
