@@ -145,12 +145,38 @@ const DEFAULT_LANDING_CMS = {
   ],
 };
 
-// @desc    Get all templates
+// @desc    Get all templates (supports optional server-side pagination & filtering)
 // @route   GET /api/templates
 // @access  Public
 const getAllTemplates = async (req, res) => {
   try {
     const isActiveOnly = req.query.active === 'true';
+    const paginate =
+      req.query.page !== undefined || req.query.limit !== undefined;
+
+    if (paginate) {
+      const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const limit = Math.min(48, Math.max(1, parseInt(req.query.limit, 10) || 12));
+      const category = String(req.query.category || 'all').trim().toLowerCase();
+      const packageTier = String(req.query.packageTier || 'all').trim().toLowerCase();
+
+      const result = await templateService.getAllTemplates({
+        isActiveOnly,
+        paginate: true,
+        page,
+        limit,
+        category,
+        packageTier,
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: result.rows,
+        pagination: result.pagination,
+        meta: result.meta,
+      });
+    }
+
     const templates = await templateService.getAllTemplates({ isActiveOnly });
 
     return res.status(200).json({

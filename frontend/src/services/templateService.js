@@ -1,8 +1,25 @@
 import { request } from './apiClient';
 
 export const templateService = {
-  async getAll(activeOnly = false) {
-    return await request(`/templates${activeOnly ? '?active=true' : ''}`);
+  async getAll(params = false) {
+    if (typeof params === 'boolean') {
+      return await request(`/templates${params ? '?active=true' : ''}`);
+    }
+    if (params && typeof params === 'object') {
+      const query = new URLSearchParams();
+      if (params.active || params.is_active) query.set('active', 'true');
+      if (params.page !== undefined) query.set('page', String(params.page));
+      if (params.limit !== undefined) query.set('limit', String(params.limit));
+      if (params.category && params.category !== 'all') {
+        query.set('category', params.category);
+      }
+      if (params.packageTier && params.packageTier !== 'all') {
+        query.set('packageTier', params.packageTier);
+      }
+      const qs = query.toString();
+      return await request(`/templates${qs ? `?${qs}` : ''}`);
+    }
+    return await request('/templates');
   },
   async getById(id) {
     return await request(`/templates/${id}`);

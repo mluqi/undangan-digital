@@ -1,5 +1,45 @@
 const { Template, Invitation } = require("../models");
 
+const TEMPLATE_STYLE_FALLBACK = {
+  mildness: "modern",
+  "snap-photo": "modern",
+  "timeless-snapshot": "rustic",
+  serein: "modern",
+  "rustic-wood": "rustic",
+  "elegant-gold": "modern",
+  "royal-gold": "modern",
+  "jawa-keraton": "tradisional",
+  "sunda-priangan": "tradisional",
+  "crimson-rose": "modern",
+  "forest-tropical": "rustic",
+  "jawa-kembar-mayang": "tradisional",
+  "noir-velvet": "modern",
+  "drapery-pink": "modern",
+};
+
+const EVENT_CATEGORY_KEYS = ["wedding", "engagement", "birthday", "event"];
+const EXTRA_EVENT_TABS = ["engagement", "birthday", "event"];
+
+function resolveTemplateCatalogMeta(template) {
+  const code = String(template.template_code || "").toLowerCase();
+  const dJson = template.default_content_json || {};
+  const fallbackCategory =
+    TEMPLATE_STYLE_FALLBACK[code] ||
+    (code.includes("jawa") || code.includes("sunda")
+      ? "tradisional"
+      : code.includes("rustic") || code.includes("forest")
+        ? "rustic"
+        : "modern");
+
+  const styleCategory = String(dJson.styleCategory || fallbackCategory).toLowerCase();
+  const eventCategory = String(
+    dJson.templateEventType || dJson.eventType || "wedding",
+  ).toLowerCase();
+  const packageTier = String(dJson.packageTier || "all").toLowerCase();
+
+  return { styleCategory, eventCategory, packageTier };
+}
+
 class TemplateService {
   /**
    * Mengambil semua template
@@ -94,10 +134,119 @@ class TemplateService {
       where.is_active = true;
     }
 
-    return await Template.findAll({
+    if (!options.paginate) {
+      return await Template.findAll({
+        where,
+        order: [["created_at", "DESC"]],
+      });
+    }
+
+    const page = Math.max(1, parseInt(options.page, 10) || 1);
+    const limit = Math.min(48, Math.max(1, parseInt(options.limit, 10) || 12));
+    const category = String(options.category || "all").toLowerCase();
+    const packageTier = String(options.packageTier || "all").toLowerCase();
+
+    // Kumpulkan kategori acara yang tersedia agar tab filter tetap akurat meski dipaginasi
+    const metaRows = await Template.findAll({
       where,
-      order: [["created_at", "DESC"]],
+      attributes: ["template_code", "default_content_json"],
     });
+    const availableEventSet = new Set();
+    for (const row of metaRows) {
+      const { eventCategory } = resolveTemplateCatalogMeta(row);
+      if (eventCategory === "all") {
+        EXTRA_EVENT_TABS.forEach((k) => availableEventSet.add(k));
+      } else if (EXTRA_EVENT_TABS.includes(eventCategory)) {
+        availableEventSet.add(eventCategory);
+      }
+    }
+    const availableEventCategories = EXTRA_EVENT_TABS.filter((k) =>
+      availableEventSet.has(k),
+    );
+
+    // Jika tidak ada filter JSON/kategori, gunakan SQL LIMIT/OFFSET langsung di database
+    if (category === "all" && packageTier === "all") {
+      const offset = (page - 1) * limit;
+      const { count, rows } = await Template.findAndCountAll({
+        where,
+        order: [["id", "ASC"]],
+        limit,
+        offset,
+      });
+      const totalPages = Math.max(1, Math.ceil(count / limit));
+      const safePage = Math.min(page, totalPages);
+      const finalRows =
+        safePage !== page && count > 0
+          ? await Template.findAll({
+              where,
+              order: [["id", "ASC"]],
+              limit,
+              offset: (safePage - 1) * limit,
+            })
+          : rows;
+
+      return {
+        rows: finalRows,
+        pagination: {
+          page: safePage,
+          limit,
+          total: count,
+          totalPages,
+          hasNext: safePage < totalPages,
+          hasPrev: safePage > 1,
+        },
+        meta: {
+          availableEventCategories,
+        },
+      };
+    }
+
+    // Jika ada filter category atau packageTier, filter di server lalu kirim hanya slice halaman aktif
+    const allRows = await Template.findAll({
+      where,
+      order: [["id", "ASC"]],
+    });
+
+    const filtered = allRows.filter((tmpl) => {
+      const meta = resolveTemplateCatalogMeta(tmpl);
+
+      const matchesCategory =
+        category === "all"
+          ? true
+          : EVENT_CATEGORY_KEYS.includes(category)
+            ? meta.eventCategory === category || meta.eventCategory === "all"
+            : meta.styleCategory === category;
+
+      if (!matchesCategory) return false;
+
+      const matchesTier =
+        packageTier === "all"
+          ? true
+          : meta.packageTier === "all" || meta.packageTier === packageTier;
+
+      return matchesTier;
+    });
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const safePage = Math.min(page, totalPages);
+    const offset = (safePage - 1) * limit;
+    const paginatedRows = filtered.slice(offset, offset + limit);
+
+    return {
+      rows: paginatedRows,
+      pagination: {
+        page: safePage,
+        limit,
+        total,
+        totalPages,
+        hasNext: safePage < totalPages,
+        hasPrev: safePage > 1,
+      },
+      meta: {
+        availableEventCategories,
+      },
+    };
   }
 
   /**

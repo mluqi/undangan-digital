@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Menu,
   X,
   Plus,
@@ -288,8 +290,12 @@ function Reveal({ children, delay = 0, className = "" }) {
   );
 }
 
+const TEMPLATES_PER_PAGE = 12;
+
 export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
-  const [templates, setTemplates] = useState(DEFAULT_DB_TEMPLATES);
+  const [templates, setTemplates] = useState(() =>
+    DEFAULT_DB_TEMPLATES.slice(0, TEMPLATES_PER_PAGE),
+  );
   const [cms, setCms] = useState({
     heroSubtitle:
       "Undangan pernikahan digital. Mandiri, terkoneksi QR Check-In sistem luar, atau dirancang custom.",
@@ -348,6 +354,20 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
   });
   const [activeCategory, setActiveCategory] = useState("all");
   const [activePackageTier, setActivePackageTier] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: TEMPLATES_PER_PAGE,
+    total: DEFAULT_DB_TEMPLATES.length,
+    totalPages: Math.max(
+      1,
+      Math.ceil(DEFAULT_DB_TEMPLATES.length / TEMPLATES_PER_PAGE),
+    ),
+    hasNext: DEFAULT_DB_TEMPLATES.length > TEMPLATES_PER_PAGE,
+    hasPrev: false,
+  });
+  const [availableEventCategories, setAvailableEventCategories] = useState([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
   const [activeMode, setActiveMode] = useState("qrsync");
   const [openFaqIdx, setOpenFaqIdx] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -359,55 +379,9 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Ambil konten CMS Landing Page sekali saat mount
   useEffect(() => {
     let mounted = true;
-    templateService
-      .getAll(true)
-      .then((res) => {
-        const dbList = res?.data;
-        if (mounted && Array.isArray(dbList) && dbList.length > 0) {
-          const sorted = [...dbList].sort((a, b) => a.id - b.id);
-          const mapped = sorted.map((t, idx) => {
-            const dJson = t.default_content_json || {};
-            const meta = TEMPLATE_META_BY_CODE[t.template_code] || {
-              category:
-                t.template_code.includes("jawa") ||
-                t.template_code.includes("sunda")
-                  ? "tradisional"
-                  : t.template_code.includes("rustic") ||
-                      t.template_code.includes("forest")
-                    ? "rustic"
-                    : "modern",
-              tag: "Atelier",
-            };
-            const eventCategory = (
-              dJson.templateEventType ||
-              dJson.eventType ||
-              "wedding"
-            ).toLowerCase();
-            const packageTier = (dJson.packageTier || "all").toLowerCase();
-            const styleCategory = dJson.styleCategory || meta.category;
-            const tag = dJson.tag || meta.tag;
-            const fallbackImg =
-              DEFAULT_DB_TEMPLATES.find((d) => d.code === t.template_code)
-                ?.image || "/images/defaults/couple-cover.jpg";
-            return {
-              id: t.id,
-              no: String(idx + 1).padStart(2, "0"),
-              code: t.template_code,
-              name: t.name,
-              category: styleCategory,
-              eventCategory,
-              packageTier,
-              tag,
-              image: t.thumbnail_url || fallbackImg,
-            };
-          });
-          setTemplates(mapped);
-        }
-      })
-      .catch(() => {});
-
     templateService
       .getLandingCms()
       .then((res) => {
@@ -438,41 +412,187 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
     };
   }, []);
 
+  // Ambil katalog tema terpaginasi dari backend (maks. 12 tema per halaman)
+  useEffect(() => {
+    let mounted = true;
+    setIsLoadingTemplates(true);
+
+    templateService
+      .getAll({
+        active: true,
+        page: currentPage,
+        limit: TEMPLATES_PER_PAGE,
+        category: activeCategory,
+        packageTier: activePackageTier,
+      })
+      .then((res) => {
+        if (!mounted) return;
+        const dbList = Array.isArray(res?.data) ? res.data : [];
+        const srvPage = res?.pagination?.page || currentPage;
+        const srvLimit = res?.pagination?.limit || TEMPLATES_PER_PAGE;
+        const srvTotal =
+          res?.pagination?.total !== undefined
+            ? res.pagination.total
+            : dbList.length;
+        const srvTotalPages =
+          res?.pagination?.totalPages ||
+          Math.max(1, Math.ceil(srvTotal / srvLimit));
+
+        const mapped = dbList.slice(0, TEMPLATES_PER_PAGE).map((t, idx) => {
+          const dJson = t.default_content_json || {};
+          const meta = TEMPLATE_META_BY_CODE[t.template_code] || {
+            category:
+              t.template_code.includes("jawa") ||
+              t.template_code.includes("sunda")
+                ? "tradisional"
+                : t.template_code.includes("rustic") ||
+                    t.template_code.includes("forest")
+                  ? "rustic"
+                  : "modern",
+            tag: "Atelier",
+          };
+          const eventCategory = (
+            dJson.templateEventType ||
+            dJson.eventType ||
+            "wedding"
+          ).toLowerCase();
+          const packageTier = (dJson.packageTier || "all").toLowerCase();
+          const styleCategory = dJson.styleCategory || meta.category;
+          const tag = dJson.tag || meta.tag;
+          const fallbackImg =
+            DEFAULT_DB_TEMPLATES.find((d) => d.code === t.template_code)
+              ?.image || "/images/defaults/couple-cover.jpg";
+          return {
+            id: t.id,
+            no: String((srvPage - 1) * srvLimit + idx + 1).padStart(2, "0"),
+            code: t.template_code,
+            name: t.name,
+            category: styleCategory,
+            eventCategory,
+            packageTier,
+            tag,
+            image: t.thumbnail_url || fallbackImg,
+          };
+        });
+
+        setTemplates(mapped);
+        setPagination({
+          page: srvPage,
+          limit: srvLimit,
+          total: srvTotal,
+          totalPages: srvTotalPages,
+          hasNext:
+            res?.pagination?.hasNext !== undefined
+              ? res.pagination.hasNext
+              : srvPage < srvTotalPages,
+          hasPrev:
+            res?.pagination?.hasPrev !== undefined
+              ? res.pagination.hasPrev
+              : srvPage > 1,
+        });
+
+        if (Array.isArray(res?.meta?.availableEventCategories)) {
+          setAvailableEventCategories(res.meta.availableEventCategories);
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        // Fallback offline tetap dipaginasi maks. 12 item per halaman
+        const byCategory =
+          activeCategory === "all"
+            ? DEFAULT_DB_TEMPLATES
+            : ["wedding", "engagement", "birthday", "event"].includes(
+                  activeCategory,
+                )
+              ? DEFAULT_DB_TEMPLATES.filter(
+                  (t) =>
+                    (t.eventCategory || "wedding") === activeCategory ||
+                    t.eventCategory === "all",
+                )
+              : DEFAULT_DB_TEMPLATES.filter(
+                  (t) => t.category === activeCategory,
+                );
+
+        const byTier =
+          activePackageTier === "all"
+            ? byCategory
+            : byCategory.filter(
+                (t) =>
+                  (t.packageTier || "all") === "all" ||
+                  (t.packageTier || "all") === activePackageTier,
+              );
+
+        const total = byTier.length;
+        const totalPages = Math.max(1, Math.ceil(total / TEMPLATES_PER_PAGE));
+        const safePage = Math.min(currentPage, totalPages);
+        const start = (safePage - 1) * TEMPLATES_PER_PAGE;
+        setTemplates(byTier.slice(start, start + TEMPLATES_PER_PAGE));
+        setPagination({
+          page: safePage,
+          limit: TEMPLATES_PER_PAGE,
+          total,
+          totalPages,
+          hasNext: safePage < totalPages,
+          hasPrev: safePage > 1,
+        });
+      })
+      .finally(() => {
+        if (mounted) setIsLoadingTemplates(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentPage, activeCategory, activePackageTier]);
+
   const PACKAGE_TIER_META = {
     intimate: { code: "01", label: "Intimate" },
     signature: { code: "02", label: "Signature" },
     bespoke: { code: "03", label: "Bespoke" },
   };
 
-  const categoryFilteredTemplates =
-    activeCategory === "all"
-      ? templates
-      : ["wedding", "engagement", "birthday", "event"].includes(activeCategory)
-        ? templates.filter(
-            (t) =>
-              (t.eventCategory || "wedding") === activeCategory ||
-              t.eventCategory === "all",
-          )
-        : templates.filter((t) => t.category === activeCategory);
-
-  const filteredTemplates =
-    activePackageTier === "all"
-      ? categoryFilteredTemplates
-      : categoryFilteredTemplates.filter(
-          (t) =>
-            (t.packageTier || "all") === "all" ||
-            (t.packageTier || "all") === activePackageTier,
-        );
+  const filteredTemplates = templates;
 
   const eventCategoryTabs = [
     { id: "engagement", label: "Lamaran" },
     { id: "birthday", label: "Ulang Tahun" },
     { id: "event", label: "Acara Umum" },
-  ].filter((tab) =>
-    templates.some(
-      (t) => t.eventCategory === tab.id || t.eventCategory === "all",
-    ),
-  );
+  ].filter((tab) => availableEventCategories.includes(tab.id));
+
+  const handleSelectCategory = (catId) => {
+    setActiveCategory(catId);
+    setCurrentPage(1);
+  };
+
+  const handleSelectPackageTier = (tierId) => {
+    setActivePackageTier(tierId);
+    setCurrentPage(1);
+  };
+
+  const handleChangePage = (nextPage) => {
+    const clamped = Math.max(1, Math.min(pagination.totalPages, nextPage));
+    if (clamped === currentPage) return;
+    setCurrentPage(clamped);
+    const section = document.getElementById("koleksi");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const getVisiblePageNumbers = () => {
+    const totalPages = pagination.totalPages || 1;
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    if (start > 2) pages.push("ellipsis-start");
+    for (let p = start; p <= end; p += 1) pages.push(p);
+    if (end < totalPages - 1) pages.push("ellipsis-end");
+    pages.push(totalPages);
+    return pages;
+  };
 
   const modesList = cms.systemModes || SYSTEM_MODES;
   const currentMode =
@@ -803,7 +923,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveCategory(tab.id)}
+                    onClick={() => handleSelectCategory(tab.id)}
                     className={`pb-1 transition-all cursor-pointer ${
                       activeCategory === tab.id
                         ? "text-[#2B0C0C] font-bold border-b-2 border-[#3B1010]"
@@ -828,7 +948,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                 <button
                   key={pkg.id}
                   type="button"
-                  onClick={() => setActivePackageTier(pkg.id)}
+                  onClick={() => handleSelectPackageTier(pkg.id)}
                   className={`px-3 py-1.5 border transition-all cursor-pointer ${
                     activePackageTier === pkg.id
                       ? "bg-[#3B1010] text-[#E6D2BE] border-[#3B1010] font-semibold"
@@ -841,7 +961,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
             </div>
           </Reveal>
 
-          {filteredTemplates.length === 0 ? (
+          {filteredTemplates.length === 0 && !isLoadingTemplates ? (
             <div className="mt-12 py-16 px-6 border border-[#C9A98B] text-center space-y-3">
               <p className="text-sm text-[#633A2C]">
                 Belum ada tema pada kombinasi filter kategori &amp; tipe paket
@@ -852,6 +972,7 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
                 onClick={() => {
                   setActiveCategory("all");
                   setActivePackageTier("all");
+                  setCurrentPage(1);
                 }}
                 className="inline-flex items-center px-4 py-2 text-[10px] uppercase tracking-[0.22em] border border-[#3B1010] text-[#3B1010] hover:bg-[#3B1010] hover:text-[#E6D2BE] transition-colors cursor-pointer"
               >
@@ -859,60 +980,142 @@ export const LandingPage = ({ isAuthenticated = false, onNavigate }) => {
               </button>
             </div>
           ) : (
-            <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
-              {filteredTemplates.map((tpl, idx) => {
-                const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
-                return (
-                  <Reveal key={tpl.code} delay={idx * 70}>
-                    <a href={`/preview/${tpl.code}`} className="group block">
-                      <div className="relative aspect-[3/4] overflow-hidden bg-[#2B0C0C] border border-[#C9A98B]">
-                        <img
-                          src={tpl.image}
-                          alt={tpl.name}
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/images/defaults/couple-cover.jpg";
-                          }}
-                          className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-108 opacity-92"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#2B0C0C]/85 via-transparent to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
-
-                        <span className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 text-[9px] sm:text-[10px] font-mono tracking-widest text-[#E6D2BE]">
-                          /{tpl.no}
-                        </span>
-                        <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-1.5">
-                          {pkgInfo && (
-                            <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#E6D2BE] text-[#2B0C0C] text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.2em]">
-                              {pkgInfo.label}
-                            </span>
-                          )}
-                          <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-[#2B0C0C]/70 backdrop-blur-xs text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.22em] text-[#E6D2BE]">
-                            {tpl.tag}
-                          </span>
-                        </div>
-
-                        <div className="absolute inset-x-3 bottom-3 sm:inset-x-5 sm:bottom-5 flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-3 text-[#E6D2BE]">
-                          <h3
-                            className="text-base sm:text-3xl italic font-normal leading-tight line-clamp-2"
-                            style={{
-                              fontFamily:
-                                "'Cormorant Garamond', Georgia, serif",
+            <>
+              <div
+                className={`mt-8 sm:mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6 transition-opacity duration-300 ${
+                  isLoadingTemplates ? "opacity-55 pointer-events-none" : "opacity-100"
+                }`}
+              >
+                {filteredTemplates.map((tpl, idx) => {
+                  const pkgInfo = PACKAGE_TIER_META[tpl.packageTier];
+                  return (
+                    <Reveal key={`${pagination.page}-${tpl.code}`} delay={idx * 50}>
+                      <a href={`/preview/${tpl.code}`} className="group block">
+                        <div className="relative aspect-[3/4] overflow-hidden bg-[#2B0C0C] border border-[#C9A98B]">
+                          <img
+                            src={tpl.image}
+                            alt={tpl.name}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "/images/defaults/couple-cover.jpg";
                             }}
-                          >
-                            {tpl.name}
-                          </h3>
-                          <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.22em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
-                            <span>Demo</span>
-                            <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-108 opacity-92"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#2B0C0C]/85 via-transparent to-transparent opacity-75 group-hover:opacity-90 transition-opacity duration-500" />
+
+                          <span className="absolute top-2.5 left-2.5 sm:top-3.5 sm:left-3.5 text-[9px] sm:text-[10px] font-mono tracking-widest text-[#E6D2BE]">
+                            /{tpl.no}
                           </span>
+                          <div className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 flex flex-col items-end gap-1">
+                            {pkgInfo && (
+                              <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 bg-[#E6D2BE] text-[#2B0C0C] text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.18em]">
+                                {pkgInfo.label}
+                              </span>
+                            )}
+                            <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 bg-[#2B0C0C]/70 backdrop-blur-xs text-[8px] sm:text-[9px] uppercase tracking-[0.14em] sm:tracking-[0.18em] text-[#E6D2BE]">
+                              {tpl.tag}
+                            </span>
+                          </div>
+
+                          <div className="absolute inset-x-3 bottom-3 sm:inset-x-4 sm:bottom-4 flex flex-col sm:flex-row sm:items-end justify-between gap-1 sm:gap-2 text-[#E6D2BE]">
+                            <h3
+                              className="text-base sm:text-xl lg:text-2xl italic font-normal leading-tight line-clamp-2"
+                              style={{
+                                fontFamily:
+                                  "'Cormorant Garamond', Georgia, serif",
+                              }}
+                            >
+                              {tpl.name}
+                            </h3>
+                            <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] text-[#C9A98B] shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300">
+                              <span>Demo</span>
+                              <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </a>
-                  </Reveal>
-                );
-              })}
-            </div>
+                      </a>
+                    </Reveal>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Katalog */}
+              {pagination.total > 0 && (
+                <div className="mt-10 sm:mt-14 pt-6 border-t border-[#C9A98B] flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-[#633A2C]">
+                    Menampilkan{" "}
+                    <span className="font-semibold text-[#2B0C0C]">
+                      {(pagination.page - 1) * pagination.limit + 1}–
+                      {Math.min(
+                        pagination.page * pagination.limit,
+                        pagination.total,
+                      )}
+                    </span>{" "}
+                    dari{" "}
+                    <span className="font-semibold text-[#2B0C0C]">
+                      {pagination.total}
+                    </span>{" "}
+                    tema
+                  </p>
+
+                  {pagination.totalPages > 1 && (
+                    <nav
+                      aria-label="Navigasi halaman katalog tema"
+                      className="flex items-center gap-1.5 sm:gap-2"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleChangePage(currentPage - 1)}
+                        disabled={!pagination.hasPrev || isLoadingTemplates}
+                        className="inline-flex items-center gap-1 px-3 py-2 text-[10px] uppercase tracking-[0.18em] border border-[#C9A98B] text-[#3B1010] hover:border-[#3B1010] hover:bg-[#3B1010] hover:text-[#E6D2BE] disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-[#3B1010] disabled:hover:border-[#C9A98B] disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Prev</span>
+                      </button>
+
+                      {getVisiblePageNumbers().map((item) =>
+                        typeof item === "string" ? (
+                          <span
+                            key={item}
+                            className="px-2 text-xs text-[#633A2C] select-none"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => handleChangePage(item)}
+                            disabled={isLoadingTemplates}
+                            aria-current={
+                              item === pagination.page ? "page" : undefined
+                            }
+                            className={`min-w-[34px] h-[34px] px-2 text-xs font-mono border transition-colors cursor-pointer ${
+                              item === pagination.page
+                                ? "bg-[#3B1010] text-[#E6D2BE] border-[#3B1010] font-semibold"
+                                : "bg-transparent text-[#3B1010] border-[#C9A98B] hover:border-[#3B1010] hover:bg-[#3B1010]/10"
+                            }`}
+                          >
+                            {item}
+                          </button>
+                        ),
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleChangePage(currentPage + 1)}
+                        disabled={!pagination.hasNext || isLoadingTemplates}
+                        className="inline-flex items-center gap-1 px-3 py-2 text-[10px] uppercase tracking-[0.18em] border border-[#C9A98B] text-[#3B1010] hover:border-[#3B1010] hover:bg-[#3B1010] hover:text-[#E6D2BE] disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-[#3B1010] disabled:hover:border-[#C9A98B] disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      >
+                        <span className="hidden sm:inline">Next</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </nav>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
